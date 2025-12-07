@@ -32,5 +32,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Ayarlar Paneli - Sağdan açılır -->
+    <include
+        android:id="@+id/settings_panel_container"
+        layout="@layout/player_settings_panel"
+        android:layout_width="400dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
 

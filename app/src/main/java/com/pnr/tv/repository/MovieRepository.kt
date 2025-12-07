@@ -70,6 +70,10 @@ class MovieRepository
                 val moviesDto = api.getMovies(user, pass, ApiActions.GET_VOD_STREAMS)
                 Timber.d("✅ API'den ${moviesDto.size} film alındı")
                 
+                // Veri doğrulama - eksik field'ları kontrol et
+                val validationReport = com.pnr.tv.util.DataValidationHelper.validateMovies(moviesDto)
+                validationReport.logReport()
+                
                 // İlk 3 filmin örnek verisini göster
                 if (moviesDto.isNotEmpty()) {
                     Timber.d("───────────────────────────────────────")

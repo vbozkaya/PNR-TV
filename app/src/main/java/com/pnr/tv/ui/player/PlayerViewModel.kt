@@ -6,7 +6,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.Tracks
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import com.pnr.tv.Constants
 import com.pnr.tv.repository.ContentRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,6 +22,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,6 +34,7 @@ class PlayerViewModel @Inject constructor(
 
     private var player: ExoPlayer? = null
     private var positionUpdateJob: Job? = null
+    private var currentTracks: Tracks? = null
 
     private companion object {
         const val KEY_WATCHING_CHANNEL_ID = "watching_channel_id"
@@ -76,6 +81,11 @@ class PlayerViewModel @Inject constructor(
         ) {
             updateCurrentPosition()
         }
+
+        override fun onTracksChanged(tracks: Tracks) {
+            currentTracks = tracks
+            Timber.d("📊 Track'ler güncellendi: ${tracks.groups.size} grup")
+        }
     }
 
     init {
@@ -84,9 +94,13 @@ class PlayerViewModel @Inject constructor(
 
     private fun initializeExoPlayer() {
         if (player == null) {
-            player = ExoPlayer.Builder(context).build().apply {
-                addListener(playerListener)
-            }
+            val trackSelector = DefaultTrackSelector(context)
+            player = ExoPlayer.Builder(context)
+                .setTrackSelector(trackSelector)
+                .build()
+                .apply {
+                    addListener(playerListener)
+                }
         }
     }
 
@@ -152,6 +166,219 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun getPlayer(): ExoPlayer? = player
+    
+    /**
+     * Ses dillerini getirir
+     */
+    @UnstableApi
+    fun getAudioTracks(): List<TrackInfo> {
+        val tracks = currentTracks ?: return emptyList()
+        
+        val audioTracks = mutableListOf<TrackInfo>()
+        var groupIndex = 0
+        
+        for (group in tracks.groups) {
+            if (group.type == androidx.media3.common.C.TRACK_TYPE_AUDIO) {
+                val trackGroup = group.mediaTrackGroup
+                for (i in 0 until trackGroup.length) {
+                    val format = trackGroup.getFormat(i)
+                    val language = format.language
+                    val formatLabel = format.label
+                    val isSelected = group.isSelected && group.isTrackSelected(i)
+                    
+                    // HAM VERİYİ LOGLA - Tek satırda kompakt format
+                    Timber.d("🔊 SES[$i] | lang=${format.language} | label='${format.label}' | id=${format.id} | mime=${format.sampleMimeType} | codecs=${format.codecs} | bitrate=${format.bitrate} | channels=${format.channelCount} | rate=${format.sampleRate} | role=${format.roleFlags} | selected=$isSelected")
+                    Timber.d("🔊 SES[$i] FULL_FORMAT: $format")
+                    
+                    // Kaynaktan gelen label'ı direkt kullan, yoksa dil kodundan çevir
+                    val displayLabel = if (!formatLabel.isNullOrBlank()) {
+                        formatLabel.trim()
+                    } else if (!language.isNullOrBlank()) {
+                        getLanguageDisplayName(language)
+                    } else {
+                        "Bilinmeyen"
+                    }
+                    
+                    audioTracks.add(
+                        TrackInfo(
+                            groupIndex = groupIndex,
+                            trackIndex = i,
+                            language = language,
+                            label = displayLabel,
+                            isSelected = isSelected
+                        )
+                    )
+                }
+                groupIndex++
+            }
+        }
+        
+        Timber.d("🔊 Ses dilleri bulundu: ${audioTracks.size}")
+        return audioTracks.distinctBy { it.language }
+    }
+    
+    /**
+     * Alt yazı dillerini getirir
+     */
+    @UnstableApi
+    fun getSubtitleTracks(): List<TrackInfo> {
+        val tracks = currentTracks ?: return emptyList()
+        
+        val subtitleTracks = mutableListOf<TrackInfo>()
+        var groupIndex = 0
+        
+        for (group in tracks.groups) {
+            if (group.type == androidx.media3.common.C.TRACK_TYPE_TEXT) {
+                val trackGroup = group.mediaTrackGroup
+                for (i in 0 until trackGroup.length) {
+                    val format = trackGroup.getFormat(i)
+                    val language = format.language
+                    val formatLabel = format.label
+                    val isSelected = group.isSelected && group.isTrackSelected(i)
+                    
+                    // HAM VERİYİ LOGLA - Tek satırda kompakt format
+                    Timber.d("📝 SUB[$i] | lang=${format.language} | label='${format.label}' | id=${format.id} | mime=${format.sampleMimeType} | codecs=${format.codecs} | bitrate=${format.bitrate} | role=${format.roleFlags} | selected=$isSelected")
+                    Timber.d("📝 SUB[$i] FULL_FORMAT: $format")
+                    
+                    // Kaynaktan gelen label'ı direkt kullan, yoksa dil kodundan çevir
+                    val displayLabel = if (!formatLabel.isNullOrBlank()) {
+                        formatLabel.trim()
+                    } else if (!language.isNullOrBlank()) {
+                        getLanguageDisplayName(language)
+                    } else {
+                        "Bilinmeyen"
+                    }
+                    
+                    Timber.d("📝 Alt yazı track: language=$language, formatLabel=$formatLabel, displayLabel=$displayLabel")
+                    
+                    subtitleTracks.add(
+                        TrackInfo(
+                            groupIndex = groupIndex,
+                            trackIndex = i,
+                            language = language,
+                            label = displayLabel,
+                            isSelected = isSelected
+                        )
+                    )
+                }
+                groupIndex++
+            }
+        }
+        
+        Timber.d("📝 Alt yazı dilleri bulundu: ${subtitleTracks.size}")
+        return subtitleTracks.distinctBy { it.language }
+    }
+    
+    /**
+     * Dil kodunu tam dil adına çevirir (örn: "tr" -> "Türkçe", "en" -> "İngilizce")
+     */
+    private fun getLanguageDisplayName(languageCode: String?): String {
+        if (languageCode.isNullOrBlank()) return "Bilinmeyen"
+        
+        return try {
+            val locale = Locale(languageCode)
+            locale.getDisplayLanguage(Locale("tr", "TR"))
+        } catch (e: Exception) {
+            languageCode.uppercase()
+        }
+    }
+    
+    /**
+     * Ses dilini seçer
+     */
+    @UnstableApi
+    fun selectAudioTrack(trackInfo: TrackInfo) {
+        val player = player as? ExoPlayer ?: return
+        val trackSelector = player.trackSelector as? DefaultTrackSelector ?: return
+        
+        Timber.d("🔊 Ses dili seçiliyor: ${trackInfo.label} (group=${trackInfo.groupIndex}, track=${trackInfo.trackIndex})")
+        
+        val tracks = currentTracks ?: return
+        val audioGroups = tracks.groups.filter { it.type == androidx.media3.common.C.TRACK_TYPE_AUDIO }
+        
+        if (trackInfo.groupIndex >= audioGroups.size) {
+            Timber.e("❌ Geçersiz groupIndex: ${trackInfo.groupIndex}")
+            return
+        }
+        
+        val group = audioGroups[trackInfo.groupIndex]
+        val trackGroup = group.mediaTrackGroup
+        
+        val parameters = trackSelector.parameters.buildUpon()
+            .setRendererDisabled(androidx.media3.common.C.TRACK_TYPE_AUDIO, false)
+            .clearSelectionOverrides(androidx.media3.common.C.TRACK_TYPE_AUDIO)
+            .build()
+        
+        val override = androidx.media3.common.TrackSelectionOverride(
+            trackGroup,
+            trackInfo.trackIndex
+        )
+        
+        val newParameters = parameters.buildUpon()
+            .addOverride(override)
+            .build()
+        
+        trackSelector.parameters = newParameters
+        Timber.d("✅ Ses dili seçildi: ${trackInfo.label}")
+    }
+    
+    /**
+     * Alt yazıyı seçer (null = alt yazıyı kapat)
+     */
+    @UnstableApi
+    fun selectSubtitleTrack(trackInfo: TrackInfo?) {
+        val player = player as? ExoPlayer ?: return
+        val trackSelector = player.trackSelector as? DefaultTrackSelector ?: return
+        
+        if (trackInfo == null) {
+            Timber.d("📝 Alt yazı kapatılıyor")
+            
+            // Önce mevcut parametreleri al
+            val currentParameters = trackSelector.parameters
+            val builder = currentParameters.buildUpon()
+            
+            // Text renderer'ı devre dışı bırak
+            builder.setRendererDisabled(androidx.media3.common.C.TRACK_TYPE_TEXT, true)
+            
+            // Tüm text track selection override'larını temizle
+            builder.clearSelectionOverrides(androidx.media3.common.C.TRACK_TYPE_TEXT)
+            
+            val newParameters = builder.build()
+            trackSelector.parameters = newParameters
+            
+            Timber.d("✅ Alt yazı kapatıldı - renderer disabled: ${newParameters.getRendererDisabled(androidx.media3.common.C.TRACK_TYPE_TEXT)}")
+        } else {
+            Timber.d("📝 Alt yazı seçiliyor: ${trackInfo.label} (group=${trackInfo.groupIndex}, track=${trackInfo.trackIndex})")
+            
+            val tracks = currentTracks ?: return
+            val textGroups = tracks.groups.filter { it.type == androidx.media3.common.C.TRACK_TYPE_TEXT }
+            
+            if (trackInfo.groupIndex >= textGroups.size) {
+                Timber.e("❌ Geçersiz groupIndex: ${trackInfo.groupIndex}")
+                return
+            }
+            
+            val group = textGroups[trackInfo.groupIndex]
+            val trackGroup = group.mediaTrackGroup
+            
+            val parameters = trackSelector.parameters.buildUpon()
+                .setRendererDisabled(androidx.media3.common.C.TRACK_TYPE_TEXT, false)
+                .clearSelectionOverrides(androidx.media3.common.C.TRACK_TYPE_TEXT)
+                .build()
+            
+            val override = androidx.media3.common.TrackSelectionOverride(
+                trackGroup,
+                trackInfo.trackIndex
+            )
+            
+            val newParameters = parameters.buildUpon()
+                .addOverride(override)
+                .build()
+            
+            trackSelector.parameters = newParameters
+            Timber.d("✅ Alt yazı seçildi: ${trackInfo.label}")
+        }
+    }
 
     private fun saveCurrentPosition() {
         val contentId = savedStateHandle.get<String>(KEY_CONTENT_ID) ?: return

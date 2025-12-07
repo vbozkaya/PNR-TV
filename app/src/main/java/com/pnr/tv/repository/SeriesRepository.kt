@@ -67,6 +67,10 @@ class SeriesRepository
                 val seriesDto = api.getSeries(user, pass, ApiActions.GET_SERIES)
                 Timber.d("✅ API'den ${seriesDto.size} dizi alındı")
                 
+                // Veri doğrulama - eksik field'ları kontrol et
+                val validationReport = com.pnr.tv.util.DataValidationHelper.validateSeries(seriesDto)
+                validationReport.logReport()
+                
                 // İlk 3 dizinin örnek verisini göster
                 if (seriesDto.isNotEmpty()) {
                     Timber.d("───────────────────────────────────────")

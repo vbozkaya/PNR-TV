@@ -63,6 +63,10 @@ class LiveStreamRepository
                 val liveStreamsDto = api.getLiveStreams(user, pass, ApiActions.GET_LIVE_STREAMS)
                 Timber.d("✅ API'den ${liveStreamsDto.size} canlı yayın alındı")
                 
+                // Veri doğrulama - eksik field'ları kontrol et
+                val validationReport = com.pnr.tv.util.DataValidationHelper.validateLiveStreams(liveStreamsDto)
+                validationReport.logReport()
+                
                 if (liveStreamsDto.isNotEmpty()) {
                     Timber.d("───────────────────────────────────────")
                     Timber.d("📋 İLK 3 CANLI YAYIN ÖRNEĞİ:")

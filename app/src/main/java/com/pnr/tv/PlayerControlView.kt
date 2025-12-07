@@ -23,6 +23,8 @@ interface PlayerControlListener {
     fun onPlayClicked()
     fun onPauseClicked()
     fun onSeekTo(newPositionMs: Long)
+    fun onSubtitleClicked()
+    fun onSpeakClicked()
     fun isPlayingState(): Boolean
     fun getDuration(): Long
     fun getCurrentPosition(): Long // Mevcut video pozisyonunu döndürür (ms cinsinden)
@@ -53,16 +55,9 @@ class PlayerControlView @JvmOverloads constructor(
     companion object {
         private const val CONTROLS_AUTO_HIDE_DELAY = 8000L // 8 saniye
         private const val SEEK_AUTO_COMMIT_DELAY = 1000L // 1 saniye
-        private const val SEEK_INCREMENT_NORMAL = 5000L // 5 saniye (normal basma)
-        private const val SEEK_INCREMENT_LONG = 30000L // 30 saniye (uzun basma)
-        private const val LONG_PRESS_DURATION = 500L // 500ms uzun basma süresi
-        private const val BUTTON_SEEK_AMOUNT_NORMAL = 10000L // 10 saniye (normal basma)
-        private const val BUTTON_SEEK_AMOUNT_LONG = 30000L // 30 saniye (uzun basma)
+        private const val SEEK_INCREMENT = 30000L // 30 saniye
+        private const val BUTTON_SEEK_AMOUNT = 30000L // 30 saniye
     }
-    
-    // SeekBar için uzun basma takibi
-    private var seekBarKeyDownTime = 0L
-    private var seekBarLastKeyCode = -1
 
     init {
         binding = ViewPlayerControlsBinding.inflate(LayoutInflater.from(context), this, true)
@@ -74,6 +69,8 @@ class PlayerControlView @JvmOverloads constructor(
         setupSeekBar()
         setupPlayStopButtons()
         setupForwardBackwardButtons()
+        setupSubtitleButton()
+        setupSpeakButton()
     }
     
     /**
@@ -92,8 +89,10 @@ class PlayerControlView @JvmOverloads constructor(
         binding.btnBackward.isFocusableInTouchMode = true
         binding.btnForward.isFocusable = true
         binding.btnForward.isFocusableInTouchMode = true
-        binding.btnSettings.isFocusable = true
-        binding.btnSettings.isFocusableInTouchMode = true
+        binding.btnSubtitle.isFocusable = true
+        binding.btnSubtitle.isFocusableInTouchMode = true
+        binding.btnSpeak.isFocusable = true
+        binding.btnSpeak.isFocusableInTouchMode = true
         
         timber.log.Timber.d("✅ Tüm view'lar focusable yapıldı")
     }
@@ -114,6 +113,15 @@ class PlayerControlView @JvmOverloads constructor(
      */
     fun isVisible(): Boolean {
         return visibility == View.VISIBLE
+    }
+
+    /**
+     * Ayarlar panelinin açık olup olmadığını kontrol eden callback
+     */
+    private var isSettingsPanelOpenCallback: (() -> Boolean)? = null
+
+    fun setSettingsPanelOpenCallback(callback: () -> Boolean) {
+        isSettingsPanelOpenCallback = callback
     }
 
     fun setContentInfo(title: String?, rating: Double?) {
@@ -173,7 +181,8 @@ class PlayerControlView @JvmOverloads constructor(
         binding.btnStop.visibility = if (listener?.isPlayingState() == true) View.VISIBLE else View.GONE
         binding.btnBackward.visibility = View.VISIBLE
         binding.btnForward.visibility = View.VISIBLE
-        binding.btnSettings.visibility = View.VISIBLE
+        binding.btnSpeak.visibility = View.VISIBLE
+        binding.btnSubtitle.visibility = View.VISIBLE
         
         // Child view'ların background'larını da şeffaf yap
         binding.panelTopSection.setBackgroundColor(android.graphics.Color.TRANSPARENT)
@@ -201,63 +210,31 @@ class PlayerControlView @JvmOverloads constructor(
         val slideIn = AnimationUtils.loadAnimation(context, R.anim.slide_in_bottom)
         startAnimation(slideIn)
 
+        // HER ZAMAN kontrol bar açıldığında play/stop butonuna focus ver
         // İlk açılışta butona focus ver (ama click çalışmasın)
-        if (isFirstOpen) {
+        val shouldUseInitialFocus = isFirstOpen
+        if (shouldUseInitialFocus) {
             isInitialFocus = true
             isFirstPanelOpen = false
-            
-            // Animasyon bitince focus ver
-            slideIn.setAnimationListener(object : android.view.animation.Animation.AnimationListener {
-                override fun onAnimationStart(animation: android.view.animation.Animation?) {}
-                override fun onAnimationRepeat(animation: android.view.animation.Animation?) {}
-                override fun onAnimationEnd(animation: android.view.animation.Animation?) {
-                    post {
-                        // Hangi buton görünürse ona focus ver
-                        val targetButton = if (listener?.isPlayingState() == true) {
-                            binding.btnStop
-                        } else {
-                            binding.btnPlay
-                        }
-                        
-                        if (targetButton.visibility == View.VISIBLE && targetButton.isFocusable) {
-                            // Önce mevcut focus'u temizle
-                            clearFocus()
-                            // Sonra hedef butona focus ver
-                            targetButton.requestFocus()
-                            timber.log.Timber.d("🎯 İlk açılış: ${if (listener?.isPlayingState() == true) "Stop" else "Play"} butonuna focus verildi")
-                            
-                            // 200ms sonra click'i aktif et (ilk basışta çalışmasın)
-                            viewScope?.launch {
-                                delay(200)
-                                isInitialFocus = false
-                                timber.log.Timber.d("✅ İlk focus süresi bitti, click aktif")
-                            }
-                        } else {
-                            timber.log.Timber.w("⚠️ Hedef buton focusable değil veya görünür değil")
-                        }
-                    }
-                }
-            })
-        } else {
-            // Panel zaten açılmışsa, mevcut focus'u koru veya ilk focusable view'a ver
-            post {
-                val currentFocus = findFocus()
-                if (currentFocus == null || !currentFocus.isFocused) {
-                    // Focus yoksa, görünür olan ilk focusable view'a ver
-                    val firstFocusable = when {
-                        binding.seekbarProgress.visibility == View.VISIBLE -> binding.seekbarProgress
-                        listener?.isPlayingState() == true && binding.btnStop.visibility == View.VISIBLE -> binding.btnStop
-                        binding.btnPlay.visibility == View.VISIBLE -> binding.btnPlay
-                        binding.btnBackward.visibility == View.VISIBLE -> binding.btnBackward
-                        binding.btnForward.visibility == View.VISIBLE -> binding.btnForward
-                        binding.btnSettings.visibility == View.VISIBLE -> binding.btnSettings
-                        else -> null
-                    }
-                    firstFocusable?.requestFocus()
-                    timber.log.Timber.d("🎯 Focus yenilendi: ${firstFocusable?.javaClass?.simpleName}")
+        }
+        
+        // Animasyon bitince focus ver - HER ZAMAN play/stop butonuna
+        slideIn.setAnimationListener(object : android.view.animation.Animation.AnimationListener {
+            override fun onAnimationStart(animation: android.view.animation.Animation?) {}
+            override fun onAnimationRepeat(animation: android.view.animation.Animation?) {}
+            override fun onAnimationEnd(animation: android.view.animation.Animation?) {
+                // HER ZAMAN kontrol bar açıldığında Play/Stop butonuna focus ver
+                requestFocusOnPlayStopButton()
+                
+                // İlk açılış için flag'i kısa bir süre sonra sıfırla (ilk focus'ta click çalışmasın)
+                if (shouldUseInitialFocus) {
+                    postDelayed({
+                        isInitialFocus = false
+                        timber.log.Timber.d("✅ İlk focus flag'i sıfırlandı")
+                    }, 300)
                 }
             }
-        }
+        })
 
         // Otomatik gizlenme sayacını başlat
         resetAutoHideTimer()
@@ -267,6 +244,12 @@ class PlayerControlView @JvmOverloads constructor(
 
     fun hideControls() {
         if (visibility != View.VISIBLE) return
+
+        // Ayarlar paneli açıksa kontrol bar'ı kapatma
+        if (isSettingsPanelOpenCallback?.invoke() == true) {
+            timber.log.Timber.d("⚠️ Ayarlar paneli açık, kontrol bar kapanmayacak")
+            return
+        }
 
         // Paneli gizle ve animasyonu başlat
         val slideOut = AnimationUtils.loadAnimation(context, R.anim.slide_out_bottom)
@@ -296,6 +279,26 @@ class PlayerControlView @JvmOverloads constructor(
         }
         timber.log.Timber.d("🎮 Buton durumu güncellendi: isPlaying=$isPlaying")
     }
+    
+    /**
+     * Play/Stop butonlarından hangisi görünürse ona focus verir
+     */
+    fun requestFocusOnPlayStopButton() {
+        val isPlaying = listener?.isPlayingState() ?: false
+        val targetButton = if (isPlaying) binding.btnStop else binding.btnPlay
+        
+        if (targetButton.visibility == View.VISIBLE) {
+            targetButton.requestFocus()
+            timber.log.Timber.d("🎯 Focus verildi: ${targetButton.javaClass.simpleName}")
+        } else {
+            // Eğer hedef buton görünür değilse, diğerine ver
+            val fallbackButton = if (isPlaying) binding.btnPlay else binding.btnStop
+            if (fallbackButton.visibility == View.VISIBLE) {
+                fallbackButton.requestFocus()
+                timber.log.Timber.d("🎯 Fallback focus verildi: ${fallbackButton.javaClass.simpleName}")
+            }
+        }
+    }
 
     fun updateProgress(position: Long) {
         // Mevcut pozisyonu sakla (seek işlemleri için kullanılacak)
@@ -322,7 +325,8 @@ class PlayerControlView @JvmOverloads constructor(
             binding.btnStop -> "Stop"
             binding.btnBackward -> "Backward"
             binding.btnForward -> "Forward"
-            binding.btnSettings -> "Settings"
+            binding.btnSpeak -> "Speak"
+            binding.btnSubtitle -> "Subtitle"
             null -> "NULL"
             else -> focusedView?.javaClass?.simpleName ?: "UNKNOWN"
         }
@@ -331,6 +335,12 @@ class PlayerControlView @JvmOverloads constructor(
         
         when (event.action) {
             KeyEvent.ACTION_DOWN -> {
+                // Panel görünürken herhangi bir tuş olayı (BACK hariç) timer'ı sıfırlar
+                if (isVisible() && event.keyCode != KeyEvent.KEYCODE_BACK) {
+                    resetAutoHideTimer()
+                    timber.log.Timber.d("⏱️ Timer sıfırlandı (tuş basıldı)")
+                }
+                
                 // Geri tuşu - Panel açıksa kapat
                 if (event.keyCode == KeyEvent.KEYCODE_BACK) {
                     if (isVisible()) {
@@ -341,26 +351,19 @@ class PlayerControlView @JvmOverloads constructor(
                 // SeekBar odaktaysa, tuş olaylarını özel olarak yönet
                 if (focusedView == binding.seekbarProgress) {
                     timber.log.Timber.d("📊 SeekBar'da tuş basıldı: keyCode=${event.keyCode}")
-                    val currentTime = System.currentTimeMillis()
-                    // Eğer aynı tuşa tekrar basılıyorsa ve 500ms geçtiyse uzun basma
-                    val isLongPress = (event.keyCode == seekBarLastKeyCode && 
-                                     seekBarKeyDownTime > 0 && 
-                                     currentTime - seekBarKeyDownTime >= LONG_PRESS_DURATION)
-                    
-                    if (event.keyCode != seekBarLastKeyCode) {
-                        // Yeni tuş basıldı, zamanı kaydet
-                        seekBarKeyDownTime = currentTime
-                        seekBarLastKeyCode = event.keyCode
-                    }
-                    
-                    val handled = handleSeekBarKeyEvent(event.keyCode, true, isLongPress)
+                    val handled = handleSeekBarKeyEvent(event.keyCode, true)
                     if (handled) {
-                        // SeekBar event'ini işledik, focus'un SeekBar'da kalmasını garanti et
-                        post {
-                            if (findFocus() != binding.seekbarProgress) {
-                                timber.log.Timber.w("⚠️ Focus SeekBar'dan kaydı, geri alınıyor...")
-                                binding.seekbarProgress.requestFocus()
+                        // LEFT/RIGHT tuşları için focus'un SeekBar'da kalmasını garanti et
+                        // DOWN tuşu için focus butona geçmeli, geri almayalım
+                        if (event.keyCode != KeyEvent.KEYCODE_DPAD_DOWN) {
+                            post {
+                                if (findFocus() != binding.seekbarProgress) {
+                                    timber.log.Timber.w("⚠️ Focus SeekBar'dan kaydı, geri alınıyor...")
+                                    binding.seekbarProgress.requestFocus()
+                                }
                             }
+                        } else {
+                            timber.log.Timber.d("✅ DPAD_DOWN ile butona focus geçişi yapıldı, geri alınmayacak")
                         }
                         return true
                     }
@@ -373,13 +376,20 @@ class PlayerControlView @JvmOverloads constructor(
                         return false // super.dispatchKeyEvent'e gitmesin, onClick çalışsın
                     }
                 }
-                // Diğer butonlarda DPAD DOWN kontrol bar'ı kapatsın
+                // Diğer butonlarda DPAD DOWN kontrol bar'ı kapatsın (ayarlar paneli açık değilse)
                 if (event.keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                    // Ayarlar paneli açıksa kontrol bar kapanmasın
+                    if (isSettingsPanelOpenCallback?.invoke() == true) {
+                        timber.log.Timber.d("⚠️ Ayarlar paneli açık, DPAD_DOWN ile kontrol bar kapanmayacak")
+                        return false // Normal focus geçişine izin ver
+                    }
+                    
                     if (focusedView == binding.btnPlay || 
                         focusedView == binding.btnStop ||
                         focusedView == binding.btnBackward ||
                         focusedView == binding.btnForward ||
-                        focusedView == binding.btnSettings) {
+                        focusedView == binding.btnSpeak ||
+                        focusedView == binding.btnSubtitle) {
                         hideControls()
                         return true
                     }
@@ -406,25 +416,25 @@ class PlayerControlView @JvmOverloads constructor(
                     binding.btnStop -> "Stop"
                     binding.btnBackward -> "Backward"
                     binding.btnForward -> "Forward"
-                    binding.btnSettings -> "Settings"
+                    binding.btnSubtitle -> "Subtitle"
                     null -> "NULL"
                     else -> newFocusedView?.javaClass?.simpleName ?: "UNKNOWN"
                 }
                 timber.log.Timber.d("🔍 ACTION_UP: keyCode=${event?.keyCode}, focus değişti mi? ${focusedView != newFocusedView}, yeni focus=$newFocusedViewName")
                 
                 if (focusedView == binding.seekbarProgress) {
-                    // Tuş bırakıldığında sıfırla
-                    if (event.keyCode == seekBarLastKeyCode) {
-                        seekBarKeyDownTime = 0L
-                        seekBarLastKeyCode = -1
-                    }
-                    val handled = handleSeekBarKeyEvent(event.keyCode, false, false)
-                    // Eğer focus değiştiyse ve SeekBar'dayken tuş basıldıysa, focus'u geri al
-                    if (newFocusedView != binding.seekbarProgress && newFocusedView != focusedView) {
-                        timber.log.Timber.w("⚠️ ACTION_UP: Focus SeekBar'dan ${newFocusedViewName}'a kaydı, geri alınıyor...")
-                        post {
-                            binding.seekbarProgress.requestFocus()
+                    val handled = handleSeekBarKeyEvent(event.keyCode, false)
+                    // LEFT/RIGHT tuşları için focus değiştiyse geri al
+                    // DOWN tuşu için focus butona geçmeli, geri almayalım
+                    if (event.keyCode != KeyEvent.KEYCODE_DPAD_DOWN) {
+                        if (newFocusedView != binding.seekbarProgress && newFocusedView != focusedView) {
+                            timber.log.Timber.w("⚠️ ACTION_UP: Focus SeekBar'dan ${newFocusedViewName}'a kaydı, geri alınıyor...")
+                            post {
+                                binding.seekbarProgress.requestFocus()
+                            }
                         }
+                    } else {
+                        timber.log.Timber.d("✅ ACTION_UP: DPAD_DOWN ile butona focus geçişi korunuyor")
                     }
                     return handled
                 }
@@ -438,7 +448,8 @@ class PlayerControlView @JvmOverloads constructor(
             binding.btnStop -> "Stop"
             binding.btnBackward -> "Backward"
             binding.btnForward -> "Forward"
-            binding.btnSettings -> "Settings"
+            binding.btnSpeak -> "Speak"
+            binding.btnSubtitle -> "Subtitle"
             null -> "NULL"
             else -> finalFocusedView?.javaClass?.simpleName ?: "UNKNOWN"
         }
@@ -446,21 +457,19 @@ class PlayerControlView @JvmOverloads constructor(
         return result
     }
 
-    private fun handleSeekBarKeyEvent(keyCode: Int, isKeyDown: Boolean, isLongPress: Boolean): Boolean {
+    private fun handleSeekBarKeyEvent(keyCode: Int, isKeyDown: Boolean): Boolean {
         // Sadece tuşa ilk basılma anıyla ilgileniyoruz.
         if (!isKeyDown) return false
 
         when (keyCode) {
             KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                val seekIncrement = if (isLongPress) SEEK_INCREMENT_LONG else SEEK_INCREMENT_NORMAL
-                handleSeekButtonClick(seekIncrement) // DOĞRU ÇALIŞAN MERKEZİ FONKSİYONU KULLAN
-                timber.log.Timber.d("⏩ SeekBar ileri: ${seekIncrement / 1000}s")
+                handleSeekButtonClick(SEEK_INCREMENT)
+                timber.log.Timber.d("⏩ SeekBar ileri: ${SEEK_INCREMENT / 1000}s")
                 return true
             }
             KeyEvent.KEYCODE_DPAD_LEFT -> {
-                val seekIncrement = if (isLongPress) SEEK_INCREMENT_LONG else SEEK_INCREMENT_NORMAL
-                handleSeekButtonClick(-seekIncrement) // DOĞRU ÇALIŞAN MERKEZİ FONKSİYONU KULLAN
-                timber.log.Timber.d("⏪ SeekBar geri: ${seekIncrement / 1000}s")
+                handleSeekButtonClick(-SEEK_INCREMENT)
+                timber.log.Timber.d("⏪ SeekBar geri: ${SEEK_INCREMENT / 1000}s")
                 return true
             }
             KeyEvent.KEYCODE_DPAD_DOWN -> {
@@ -625,16 +634,28 @@ class PlayerControlView @JvmOverloads constructor(
     }
     
     private fun setupForwardBackwardButtons() {
-        val SEEK_SHORT = 10000L // 10 saniye
-
         binding.btnBackward.setOnClickListener {
-            handleSeekButtonClick(-SEEK_SHORT)
+            handleSeekButtonClick(-BUTTON_SEEK_AMOUNT)
             timber.log.Timber.d("⏪ Geri Sar Butonu tıklandı")
         }
 
         binding.btnForward.setOnClickListener {
-            handleSeekButtonClick(SEEK_SHORT)
+            handleSeekButtonClick(BUTTON_SEEK_AMOUNT)
             timber.log.Timber.d("⏩ İleri Sar Butonu tıklandı")
+        }
+    }
+    
+    private fun setupSubtitleButton() {
+        binding.btnSubtitle.setOnClickListener {
+            timber.log.Timber.d("📝 Alt yazı butonuna tıklandı")
+            listener?.onSubtitleClicked()
+        }
+    }
+    
+    private fun setupSpeakButton() {
+        binding.btnSpeak.setOnClickListener {
+            timber.log.Timber.d("🔊 Ses butonuna tıklandı")
+            listener?.onSpeakClicked()
         }
     }
     
