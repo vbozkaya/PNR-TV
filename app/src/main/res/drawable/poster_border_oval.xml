@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <!-- Beyaz border -->
+    <stroke
+        android:width="3dp"
+        android:color="@android:color/white" />
+    <!-- Oval köşeler -->
+    <corners android:radius="12dp" />
+    <!-- Şeffaf arka plan (posterin görünmesi için) -->
+    <solid android:color="@android:color/transparent" />
+</shape>
+
+
+
+

@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/home_background">
+
+    <!-- Navbar (Sabit - Kaydırılmaz) -->
+    <include
+        android:id="@+id/navbar"
+        layout="@layout/layout_navbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Kaydırılabilir İçerik Alanı -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:descendantFocusability="afterDescendants"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/navbar"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <!-- Sol Taraf: Dizi Posteri Container -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/poster_container"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_margin="24dp"
+                app:cardCornerRadius="12dp"
+                android:elevation="0dp"
+                app:cardBackgroundColor="@android:color/white"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintWidth_percent="0.17"
+                app:layout_constraintDimensionRatio="2:3">
+
+                <ImageView
+                    android:id="@+id/img_series_poster"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="6dp"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="@string/cd_series_poster" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- Sağ Taraf: Sadece Dizi Bilgileri (Üst Blok) -->
+            <LinearLayout
+                android:id="@+id/info_panel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="24dp"
+                android:layout_marginEnd="24dp"
+                android:paddingStart="48dp"
+                android:paddingEnd="0dp"
+                app:layout_constraintStart_toEndOf="@id/poster_container"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <!-- Başlık ve Favori Butonu -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/txt_series_title"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textColor="@android:color/white"
+                        android:textSize="32sp"
+                        android:textStyle="bold"
+                        tools:text="Breaking Bad" />
+
+            <!-- Favorilere Ekle Butonu (Film detay ile aynı) -->
+            <ImageButton
+                android:id="@+id/btn_add_to_favorites"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:src="@drawable/heart"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/btn_add_favorite"
+                android:scaleType="fitCenter"
+                android:padding="12dp"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:layout_marginEnd="12dp" />
+
+                </LinearLayout>
+
+        <!-- IMDB Puanı (Film detay ile aynı) -->
+        <TextView
+            android:id="@+id/txt_series_rating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:drawablePadding="8dp"
+            android:gravity="center_vertical"
+            android:textColor="@color/imdb_yellow"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:paddingBottom="16dp"
+            app:drawableStartCompat="@drawable/ic_star_rating"
+            tools:text="9.5 / 10" />
+
+                <!-- Yaratıcı bilgisi -->
+                <LinearLayout
+                    android:id="@+id/layout_creator"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="12dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/series_creator"
+                        android:textSize="16sp"
+                        android:textColor="#FFFFFF"
+                        android:textStyle="bold"
+                        android:paddingEnd="8dp" />
+
+                    <TextView
+                        android:id="@+id/txt_series_creator"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="16sp"
+                        android:textColor="#CCCCCC" />
+                </LinearLayout>
+
+                <!-- Tür bilgisi -->
+                <LinearLayout
+                    android:id="@+id/layout_genre"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/movie_genre"
+                        android:textSize="16sp"
+                        android:textColor="#FFFFFF"
+                        android:textStyle="bold"
+                        android:paddingEnd="8dp" />
+
+                    <TextView
+                        android:id="@+id/txt_series_genre"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="16sp"
+                        android:textColor="#CCCCCC" />
+                </LinearLayout>
+
+                <!-- Oyuncular bilgisi -->
+                <LinearLayout
+                    android:id="@+id/layout_cast"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/movie_cast"
+                        android:textSize="16sp"
+                        android:textColor="#FFFFFF"
+                        android:textStyle="bold"
+                        android:paddingEnd="8dp" />
+
+                    <TextView
+                        android:id="@+id/txt_series_cast"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="16sp"
+                        android:textColor="#CCCCCC" />
+                </LinearLayout>
+
+                <!-- Açıklama Bölümü -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/movie_overview_label"
+                        android:textSize="16sp"
+                        android:textColor="#FFFFFF"
+                        android:textStyle="bold"
+                        android:paddingEnd="8dp" />
+
+                    <TextView
+                        android:id="@+id/txt_series_plot"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:maxLines="3"
+                        android:ellipsize="end"
+                        android:textColor="#CCCCCC"
+                        android:textSize="16sp"
+                        android:justificationMode="inter_word"
+                        tools:text="A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine." />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Alt Bölüm: Sezon ve Bölümler (Poster altından başlar, tam genişlik) -->
+            <LinearLayout
+                android:id="@+id/seasons_episodes_panel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="24dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/poster_container">
+
+                <!-- Sezon Sekmeleri (TabLayout - SOLA HİZALI) -->
+                <com.google.android.material.tabs.TabLayout
+                    android:id="@+id/tab_layout_seasons"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    app:tabBackground="@drawable/season_tab_background_selector"
+                    app:tabIndicatorColor="@android:color/white"
+                    app:tabIndicatorHeight="3dp"
+                    app:tabMode="scrollable"
+                    app:tabGravity="start"
+                    app:tabRippleColor="@null"
+                    app:tabSelectedTextColor="@android:color/white"
+                    app:tabTextColor="#A0A0A0"
+                    app:tabPaddingStart="0dp"
+                    app:tabPaddingEnd="24dp"
+                    app:tabMinWidth="0dp" />
+
+                <!-- Bölümler (Flexbox Layout ile yan yana kutucuklar) -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:minHeight="200dp">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recycler_episodes"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:clipToPadding="false"
+                        tools:listitem="@layout/item_episode_chip" />
+
+                    <!-- Loading Indicator -->
+                    <ProgressBar
+                        android:id="@+id/loading_indicator"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:contentDescription="@string/cd_loading"
+                        android:visibility="gone" />
+
+                    <!-- Empty State -->
+                    <TextView
+                        android:id="@+id/txt_empty_state"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="@string/no_episodes_found"
+                        android:textColor="@android:color/white"
+                        android:textSize="18sp"
+                        android:gravity="center"
+                        android:visibility="gone" />
+
+                </FrameLayout>
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

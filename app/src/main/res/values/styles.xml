@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="FullscreenDialogTheme" parent="ThemeOverlay.AppCompat.Dialog.Alert">
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowCloseOnTouchOutside">false</item>
+    </style>
+
+    <!-- ShapeableImageView için oval köşe stili -->
+    <style name="ShapeAppearance.App.CornerSize8dp" parent="">
+        <item name="cornerSize">8dp</item>
+    </style>
+</resources>

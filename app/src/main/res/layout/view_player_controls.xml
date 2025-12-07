@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent"
+    android:focusable="false"
+    android:focusableInTouchMode="false"
+    android:descendantFocusability="beforeDescendants">
+    
+    <!-- Bölücü çizgi - oynatma alanını üst ve alt kısma ayırır -->
+    <View
+        android:id="@+id/panel_divider"
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:background="@drawable/panel_divider_line"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.25" />
+    
+    <!-- ÜST KISIM: Film/Dizi adı ve IMDB puanı -->
+    <FrameLayout
+        android:id="@+id/panel_top_section"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:paddingStart="40dp"
+        android:paddingEnd="40dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/panel_divider"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+        
+        <!-- Film/Dizi adı ve IMDB puanı -->
+        <TextView
+            android:id="@+id/txt_content_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|start"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:text="" />
+        
+    </FrameLayout>
+    
+    <!-- ALT KISIM: SeekBar ve zaman göstergeleri -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/panel_bottom_section"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        app:layout_constraintTop_toBottomOf="@id/panel_divider"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+        
+        <!-- Guideline'lar - Butonların eşit aralıklarla yerleşmesi için (4 buton için 5 eşit bölüm) -->
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_btn1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.125" />
+        
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_btn2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.375" />
+        
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_btn3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.625" />
+        
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_btn4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.875" />
+        
+        <!-- SeekBar - tam genişlikte -->
+        <SeekBar
+            android:id="@+id/seekbar_progress"
+            android:layout_width="0dp"
+            android:layout_height="4dp"
+            android:progressDrawable="@drawable/seekbar_progress"
+            android:thumb="@drawable/seekbar_thumb_selector"
+            android:max="100"
+            android:progress="0"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:minHeight="4dp"
+            android:maxHeight="4dp"
+            android:background="@drawable/seekbar_focus_background"
+            android:layout_marginTop="30dp"
+            android:nextFocusDown="@id/btn_play"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+        
+        <!-- Geçen süre - SeekBar'ın üstünde, sol -->
+        <TextView
+            android:id="@+id/txt_current_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintStart_toStartOf="@id/seekbar_progress"
+            app:layout_constraintBottom_toTopOf="@id/seekbar_progress" />
+        
+        <!-- Toplam süre - SeekBar'ın üstünde, sağ -->
+        <TextView
+            android:id="@+id/txt_total_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintEnd_toEndOf="@id/seekbar_progress"
+            app:layout_constraintBottom_toTopOf="@id/seekbar_progress" />
+        
+        <!-- Butonlar satırı - Guideline'lara göre eşit aralıklarla yerleştirilmiş -->
+        <!-- Play Butonu - Video durdurulmuşsa görünür -->
+        <ImageButton
+            android:id="@+id/btn_play"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_play"
+            android:background="@drawable/button_focus_background"
+            android:contentDescription="Oynat"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:visibility="gone"
+            android:padding="0dp"
+            android:layout_marginBottom="16dp"
+            android:nextFocusRight="@id/btn_backward"
+            android:nextFocusUp="@id/seekbar_progress"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@id/guideline_btn1"
+            app:layout_constraintEnd_toStartOf="@id/guideline_btn1" />
+        
+        <!-- Stop Butonu - Video oynatılıyorsa görünür (Play ile aynı constraint'ler) -->
+        <ImageButton
+            android:id="@+id/btn_stop"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_stop"
+            android:background="@drawable/button_focus_background"
+            android:contentDescription="Durdur"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:visibility="gone"
+            android:padding="0dp"
+            android:layout_marginBottom="16dp"
+            android:nextFocusRight="@id/btn_backward"
+            android:nextFocusUp="@id/seekbar_progress"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@id/guideline_btn1"
+            app:layout_constraintEnd_toStartOf="@id/guideline_btn1" />
+        
+        <!-- Backward Butonu -->
+        <ImageButton
+            android:id="@+id/btn_backward"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_backward"
+            android:background="@drawable/button_focus_background"
+            android:contentDescription="Geri Sar"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:padding="0dp"
+            android:layout_marginBottom="16dp"
+            android:nextFocusRight="@id/btn_forward"
+            android:nextFocusUp="@id/seekbar_progress"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@id/guideline_btn2"
+            app:layout_constraintEnd_toStartOf="@id/guideline_btn2" />
+        
+        <!-- Forward Butonu -->
+        <ImageButton
+            android:id="@+id/btn_forward"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_forward"
+            android:background="@drawable/button_focus_background"
+            android:contentDescription="İleri Sar"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:padding="0dp"
+            android:layout_marginBottom="16dp"
+            android:nextFocusRight="@id/btn_settings"
+            android:nextFocusLeft="@id/btn_backward"
+            android:nextFocusUp="@id/seekbar_progress"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@id/guideline_btn3"
+            app:layout_constraintEnd_toStartOf="@id/guideline_btn3" />
+        
+        <!-- Settings Butonu - En sonda -->
+        <ImageButton
+            android:id="@+id/btn_settings"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_playersettings"
+            android:background="@drawable/button_focus_background"
+            android:contentDescription="Ayarlar"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:padding="0dp"
+            android:layout_marginBottom="16dp"
+            android:nextFocusLeft="@id/btn_forward"
+            android:nextFocusUp="@id/seekbar_progress"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@id/guideline_btn4"
+            app:layout_constraintEnd_toStartOf="@id/guideline_btn4" />
+        
+    </androidx.constraintlayout.widget.ConstraintLayout>
+    
+</androidx.constraintlayout.widget.ConstraintLayout>

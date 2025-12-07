@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PNR TV</string>
+    
+    <!-- Sayfa Başlıkları -->
+    <string name="page_main">Ana Sayfa</string>
+    <string name="page_settings">Ayarlar</string>
+    <string name="page_user_management">Kullanıcı Yönetimi</string>
+    <string name="page_users_list">Mevcut Kullanıcılar</string>
+    <string name="page_add_user">Yeni Kullanıcı Ekle</string>
+    <string name="page_live_streams">Canlı Yayınlar</string>
+    <string name="page_movies">Filmler</string>
+    <string name="page_movie_details">Film Detayları</string>
+    <string name="page_series">Diziler</string>
+    <string name="page_series_details">Dizi Detayları</string>
+    <string name="category_favorites">FAVORİLER</string>
+    <string name="category_recently_added">SON EKLENENLER</string>
+    <string name="category_recently_watched">Son İzlenenler</string>
+    <string name="category_all_series">TÜM DİZİLER</string>
+    <string name="label_seasons">Sezonlar</string>
+    <string name="empty_favorites">Henüz favori kanalınız yok.</string>
+    <string name="empty_recently_watched">Son izlenen kanal bulunmuyor.</string>
+    <string name="toast_favorite_added">Favorilere eklendi</string>
+    <string name="toast_favorite_removed">Favorilerden çıkarıldı</string>
+    <string name="no_episodes_found">Bu sezona ait bölüm bulunamadı</string>
+    <string name="error_title">Hata</string>
+    <string name="retry">Tekrar Dene</string>
+    <string name="cancel">İptal</string>
+    
+    <!-- Content Descriptions (Accessibility) -->
+    <string name="cd_series_poster">Dizi posteri</string>
+    <string name="cd_navbar_back">Geri dön</string>
+    <string name="cd_navbar_home">Ana sayfaya git</string>
+    <string name="cd_loading">Yükleniyor</string>
+    <string name="cd_episode_watched">İzlendi</string>
+    <string name="add_to_favorites">Favorilere ekle</string>
+    
+    <!-- Add User Page -->
+    <string name="hint_account_name">Hesap Adı (herhangi bir ad)</string>
+    <string name="hint_username">Kullanıcı Adı</string>
+    <string name="hint_password">Şifre</string>
+    <string name="hint_dns">DNS (URL)</string>
+    <string name="btn_save">Kaydet</string>
+    <string name="error_fill_fields">Lütfen tüm alanları doldurun</string>
+    <string name="toast_user_saved">Kullanıcı kaydedildi</string>
+    <string name="toast_user_updated">Kullanıcı güncellendi</string>
+    <string name="toast_user_deleted">Kullanıcı silindi</string>
+    <string name="toast_select_placeholder">Bu seçenek yakında aktif olacak</string>
+    <string name="toast_user_selected">%1$s seçildi</string>
+    <string name="label_account_name">Hesap Adı</string>
+    <string name="empty_users_list">Henüz kullanıcı eklenmedi</string>
+    <string name="cd_edit_user">Kullanıcıyı düzenle</string>
+    <string name="cd_delete_user">Kullanıcıyı sil</string>
+    <string name="cd_select_user">Kullanıcıyı seç</string>
+    <string name="current_user_section_title">Mevcut Kullanıcı</string>
+    <string name="current_user_placeholder">Seçilmedi</string>
+    <string name="dialog_delete_user_title">Kullanıcıyı Sil</string>
+    <string name="dialog_delete_user_message">%1$s kullanıcısını silmek istiyor musunuz?</string>
+    
+    <!-- Butonlar ve Navigasyon -->
+    <string name="btn_back">Geri</string>
+    <string name="btn_home">Ana Sayfa</string>
+    <string name="btn_filter">Filtre</string>
+    <string name="search_hint">İçerik Ara</string>
+    <string name="btn_exit">Çıkış</string>
+    
+    <!-- Sıralama Dialog -->
+    <string name="dialog_sort_title">Sıralama Seçenekleri</string>
+    <string name="sort_a_to_z">A\'dan Z\'ye Sırala</string>
+    <string name="sort_z_to_a">Z\'den A\'ya Sırala</string>
+    <string name="sort_rating_high_to_low">Yüksek Puandan Düşüğe Sırala</string>
+    <string name="sort_rating_low_to_high">Düşük Puandan Yükseğe Sırala</string>
+    <string name="sort_date_new_to_old">Eklenme Tarihi Yeniden Eskiye</string>
+    <string name="sort_date_old_to_new">Eklenme Tarihi Eskiden Yeniye</string>
+    <string name="btn_update">Güncelle</string>
+    <string name="btn_play">Oynat</string>
+    <string name="btn_add_favorite">Favoriye Ekle</string>
+    
+    <!-- Dialog Mesajları -->
+    <string name="dialog_exit_title">Çıkış</string>
+    <string name="dialog_exit_message">Uygulamadan çıkış yapmak istediğinize emin misiniz?</string>
+    <string name="dialog_yes">Evet</string>
+    <string name="dialog_no">Hayır</string>
+    
+    <!-- Kullanıcı Bilgileri -->
+    <string name="current_user_label">Mevcut Kullanıcı: %1$s</string>
+    <string name="current_user_none">Mevcut Kullanıcı: -</string>
+    
+    <!-- Yükleme Mesajları -->
+    <string name="loading_content">İçerik Güncelleniyor ve İşleniyor...</string>
+    <string name="loading_completed">Güncelleme Tamamlandı</string>
+    
+    <!-- Hata Mesajları -->
+    <string name="error_unknown">Bilinmeyen hata</string>
+    <string name="error_with_message">Hata: %1$s</string>
+    <string name="error_user_not_found">Kullanıcı bilgisi bulunamadı veya DNS bilgisi eksik</string>
+    <string name="error_network_connection">Ağ bağlantı hatası</string>
+    <string name="error_network_generic">Ağ hatası: %1$d %2$s</string>
+    <string name="error_unexpected">Beklenmeyen hata: %1$s</string>
+    <string name="error_categories_load_failed">Kategoriler yüklenemedi: %1$s</string>
+    <string name="error_movies_load_failed">Filmler yüklenemedi: %1$s</string>
+    <string name="error_series_load_failed">Diziler yüklenemedi: %1$s</string>
+    <string name="error_categories_load">Kategoriler yüklenirken hata: %1$s</string>
+    <string name="error_movies_load">Filmler yüklenirken hata: %1$s</string>
+    <string name="error_series_load">Diziler yüklenirken hata: %1$s</string>
+    <string name="error_image_preload">Resim ön yükleme hatası: %1$s</string>
+    
+    <!-- Kategori İsimleri -->
+    <string name="category_all_movies">TÜM FİLMLER</string>
+    
+    <!-- Kullanıcı Durum Bilgileri -->
+    <string name="status_label">Durum: %1$s</string>
+    <string name="expiry_date_label">Bitiş Tarihi: %1$s</string>
+    <string name="connection_label">Bağlantı: %1$s/%2$s</string>
+    <string name="trial_label">Trial: %1$s</string>
+    <string name="yes">Evet</string>
+    <string name="no">Hayır</string>
+    
+    <!-- İçerik Etiketleri -->
+    <string name="movie_label">Film: %1$s</string>
+    <string name="series_label">Dizi: %1$s</string>
+    <string name="description_not_available">Açıklama bulunmuyor.</string>
+    <string name="episode_number_format">Bölüm %1$d</string>
+    
+    <!-- Player -->
+    <string name="subtitles">Altyazılar</string>
+    <string name="audio_language">Ses Dili</string>
+    
+    <!-- Viewer Management -->
+    <string name="page_viewers">İzleyiciler</string>
+    <string name="hint_viewer_name">İzleyici Adı</string>
+    <string name="btn_add_viewer">İzleyici Ekle</string>
+    <string name="btn_delete_viewer">Sil</string>
+    <string name="error_cannot_delete_default_viewer">Varsayılan izleyici silinemez</string>
+    <string name="toast_viewer_added">İzleyici eklendi</string>
+    <string name="toast_viewer_deleted">İzleyici silindi</string>
+    <string name="dialog_delete_viewer_title">İzleyiciyi Sil</string>
+    <string name="dialog_delete_viewer_message">%1$s izleyicisini silmek istiyor musunuz? Tüm favorileri de silinecektir.</string>
+    <string name="empty_viewers_list">Henüz izleyici eklenmedi</string>
+    
+    <!-- Favorite Selection -->
+    <string name="dialog_select_viewer_title">Favoriye Ekle</string>
+    <string name="dialog_select_viewer_message">Hangi izleyici için favoriye eklemek istersiniz?</string>
+    <string name="viewer_favorites_category">%1$s FAVORİLER</string>
+    
+    <!-- Movie Detail -->
+    <string name="movie_director">Yönetmen:</string>
+    <string name="movie_genre">Tür:</string>
+    <string name="movie_cast">Oyuncular:</string>
+    <string name="movie_overview_label">Açıklama:</string>
+    <string name="no_overview">Açıklama Yok</string>
+    
+    <!-- Series Detail -->
+    <string name="series_creator">Yaratıcı:</string>
+    <string name="error_movie_not_found">Film bulunamadı</string>
+    <string name="loading_movie_details">Film detayları yükleniyor...</string>
+    <string name="error_loading_movie">Film yüklenirken hata oluştu</string>
+</resources>
+

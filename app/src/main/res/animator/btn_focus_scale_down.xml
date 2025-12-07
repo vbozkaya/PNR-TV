@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Butondan odak kaybolunca normale dönme animasyonu -->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:ordering="together">
+    
+    <objectAnimator
+        android:propertyName="scaleX"
+        android:duration="150"
+        android:valueTo="1.0"
+        android:valueType="floatType"
+        android:interpolator="@android:interpolator/accelerate_quad" />
+    
+    <objectAnimator
+        android:propertyName="scaleY"
+        android:duration="150"
+        android:valueTo="1.0"
+        android:valueType="floatType"
+        android:interpolator="@android:interpolator/accelerate_quad" />
+    
+    <objectAnimator
+        android:propertyName="alpha"
+        android:duration="150"
+        android:valueTo="0.85"
+        android:valueType="floatType" />
+    
+</set>
+
+
+
+

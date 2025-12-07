@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Oynatıcı alt paneli - TAMAMEN ŞEFFAF, sadece üst kenar parlak mavi çizgili -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Ana panel - TAMAMEN ŞEFFAF -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </item>
+    
+    <!-- Üst kenar için parlak mavi çizgi - sadece üstte, kavisli -->
+    <item 
+        android:top="0dp"
+        android:height="3dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="linear"
+                android:angle="0"
+                android:startColor="#0000D9FF"
+                android:centerColor="#FF00D9FF"
+                android:endColor="#0000D9FF" />
+        </shape>
+    </item>
+    
+    <!-- Kavisli üst köşeler için overlay (üst çizgiyi yumuşatır) -->
+    <item android:top="0dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/transparent" />
+            <corners
+                android:topLeftRadius="60dp"
+                android:topRightRadius="60dp" />
+        </shape>
+    </item>
+</layer-list>
+

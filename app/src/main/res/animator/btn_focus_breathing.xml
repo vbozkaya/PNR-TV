@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Odaklanmış buton için sürekli "nefes alma" (breathing) animasyonu -->
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <objectAnimator
+        android:propertyName="alpha"
+        android:duration="1200"
+        android:valueFrom="1.0"
+        android:valueTo="0.7"
+        android:valueType="floatType"
+        android:repeatMode="reverse"
+        android:repeatCount="infinite"
+        android:interpolator="@android:interpolator/accelerate_decelerate" />
+    
+</set>
+
+
+
+

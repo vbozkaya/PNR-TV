@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/navbar_background"
+    android:elevation="24dp"
+    android:translationZ="24dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="4dp"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp">
+
+    <ImageView
+        android:id="@+id/btn_navbar_back"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:contentDescription="@string/cd_navbar_back"
+        android:src="@drawable/ic_left"
+        android:background="@drawable/navyfocus_selector"
+        android:padding="5dp"
+        android:focusable="true"
+        android:clickable="true"
+        android:focusableInTouchMode="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/btn_navbar_home"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="12dp"
+        android:contentDescription="@string/cd_navbar_home"
+        android:src="@drawable/home_line"
+        android:background="@drawable/navyfocus_selector"
+        android:padding="5dp"
+        android:focusable="true"
+        android:clickable="true"
+        android:focusableInTouchMode="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/btn_navbar_back" />
+
+    <EditText
+        android:id="@+id/edt_navbar_search"
+        android:layout_width="0dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="8dp"
+        android:hint="@string/search_hint"
+        android:textSize="14sp"
+        android:textColor="@android:color/white"
+        android:textColorHint="#CCFFFFFF"
+        android:background="@drawable/search_field_background"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:singleLine="true"
+        android:focusable="true"
+        android:focusableInTouchMode="false"
+        android:visibility="gone"
+        android:imeOptions="actionSearch"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/btn_navbar_home"
+        app:layout_constraintEnd_toStartOf="@id/btn_navbar_filter"
+        app:layout_constraintWidth_min="200dp"
+        app:layout_constraintWidth_max="400dp" />
+
+    <ImageView
+        android:id="@+id/btn_navbar_filter"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="12dp"
+        android:contentDescription="@string/btn_filter"
+        android:src="@drawable/ic_filter"
+        android:background="@drawable/navyfocus_selector"
+        android:padding="5dp"
+        android:focusable="true"
+        android:clickable="true"
+        android:focusableInTouchMode="true"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/txt_navbar_title" />
+
+    <TextView
+        android:id="@+id/txt_navbar_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:textColor="@android:color/white"
+        android:textStyle="bold"
+        android:gravity="end|center_vertical"
+        app:layout_constraintTop_toTopOf="@id/btn_navbar_home"
+        app:layout_constraintBottom_toBottomOf="@id/btn_navbar_home"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+

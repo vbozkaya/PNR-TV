@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- TV için temel boyutlar -->
+    <dimen name="tv_margin_small">16dp</dimen>
+    <dimen name="tv_margin_medium">24dp</dimen>
+    <dimen name="tv_margin_large">32dp</dimen>
+    <dimen name="tv_margin_xlarge">48dp</dimen>
+    
+    <!-- Padding değerleri -->
+    <dimen name="tv_padding_small">12dp</dimen>
+    <dimen name="tv_padding_medium">16dp</dimen>
+    <dimen name="tv_padding_large">24dp</dimen>
+    <dimen name="tv_padding_xlarge">32dp</dimen>
+    
+    <!-- Metin boyutları -->
+    <dimen name="tv_text_size_small">14sp</dimen>
+    <dimen name="tv_text_size_medium">18sp</dimen>
+    <dimen name="tv_text_size_large">24sp</dimen>
+    <dimen name="tv_text_size_xlarge">32sp</dimen>
+    <dimen name="tv_text_size_title">40sp</dimen>
+    
+    <!-- Minimum dokunma hedefi (TV için önemli) -->
+    <dimen name="tv_min_touch_target">48dp</dimen>
+    
+    <!-- Focus çerçevesi için padding -->
+    <dimen name="tv_focus_frame_padding">4dp</dimen>
+</resources>
+
+
+
+

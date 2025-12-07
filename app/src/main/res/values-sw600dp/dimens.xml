@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 600dp-719dp (orta boy TV'ler) için özel boyutlar -->
+    <dimen name="tv_margin_small">20dp</dimen>
+    <dimen name="tv_margin_medium">28dp</dimen>
+    <dimen name="tv_margin_large">40dp</dimen>
+    <dimen name="tv_margin_xlarge">56dp</dimen>
+    
+    <dimen name="tv_padding_small">14dp</dimen>
+    <dimen name="tv_padding_medium">20dp</dimen>
+    <dimen name="tv_padding_large">28dp</dimen>
+    <dimen name="tv_padding_xlarge">40dp</dimen>
+    
+    <dimen name="tv_text_size_small">15sp</dimen>
+    <dimen name="tv_text_size_medium">19sp</dimen>
+    <dimen name="tv_text_size_large">26sp</dimen>
+    <dimen name="tv_text_size_xlarge">34sp</dimen>
+    <dimen name="tv_text_size_title">44sp</dimen>
+</resources>
+
+
+
+
+
+

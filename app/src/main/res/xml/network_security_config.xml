@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- 
+        Güvenli Ağ Yapılandırması
+        
+        Strateji:
+        - Varsayılan: HTTP izni (IPTV servisleri için uyumluluk)
+        - TMDB API: HTTPS zorunlu (özel domain-config ile güvenli)
+        
+        Not: Android network security config'de IP adresleri otomatik olarak domain olarak algılanır
+        ve varsayılan yapılandırmayı kullanır.
+    -->
+    
+    <!-- Varsayılan: HTTP izni (IPTV servisleri için uyumluluk) -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <!-- Sadece sistem sertifikalarına güven (güvenlik için) -->
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- TMDB API için özel güvenli yapılandırma - HTTPS zorunlu -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">api.themoviedb.org</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>
+

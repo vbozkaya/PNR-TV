@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android TV için Leanback teması - API 27+ için ek özellikler -->
+    <style name="Theme.Leanback" parent="Theme.AppCompat.NoActionBar">
+        <!-- Ekran boyutlarına göre ölçeklendirme (API 27+) -->
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+</resources>
+
+
+
+
+
+

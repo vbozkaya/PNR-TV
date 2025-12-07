@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@drawable/navbar_background">
+    
+    <TextView
+        android:id="@+id/txt_dialog_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/dialog_sort_title"
+        android:textColor="@android:color/white"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp" />
+    
+    <RadioGroup
+        android:id="@+id/radio_group_sort"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        
+        <RadioButton
+            android:id="@+id/radio_a_to_z"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/sort_a_to_z"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:buttonTint="@android:color/white"
+            android:background="@drawable/navyfocus_selector"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        
+        <RadioButton
+            android:id="@+id/radio_z_to_a"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/sort_z_to_a"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:buttonTint="@android:color/white"
+            android:background="@drawable/navyfocus_selector"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        
+        <RadioButton
+            android:id="@+id/radio_rating_high_to_low"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/sort_rating_high_to_low"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:buttonTint="@android:color/white"
+            android:background="@drawable/navyfocus_selector"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        
+        <RadioButton
+            android:id="@+id/radio_rating_low_to_high"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/sort_rating_low_to_high"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:buttonTint="@android:color/white"
+            android:background="@drawable/navyfocus_selector"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        
+        <RadioButton
+            android:id="@+id/radio_date_new_to_old"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/sort_date_new_to_old"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:buttonTint="@android:color/white"
+            android:background="@drawable/navyfocus_selector"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        
+        <RadioButton
+            android:id="@+id/radio_date_old_to_new"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/sort_date_old_to_new"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:buttonTint="@android:color/white"
+            android:background="@drawable/navyfocus_selector"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        
+    </RadioGroup>
+    
+    <Button
+        android:id="@+id/btn_save_sort"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_save"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginTop="24dp"
+        android:padding="16dp"
+        android:background="@drawable/navyfocus_selector"
+        android:textColor="@android:color/white"
+        android:focusable="true"
+        android:focusableInTouchMode="true" />
+    
+</LinearLayout>
+
+
+
+
+

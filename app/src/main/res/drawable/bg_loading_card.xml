@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Arka plan görseli (yuvarlatılmış köşelerle) -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="16dp" />
+        </shape>
+    </item>
+    <item android:drawable="@drawable/home_background" />
+    
+    <!-- Yarı saydam overlay (okunabilirlik için) -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#40000000" />
+            <corners android:radius="16dp" />
+        </shape>
+    </item>
+    
+    <!-- Beyaz çerçeve (4dp kalınlık) -->
+    <item>
+        <shape android:shape="rectangle">
+            <stroke
+                android:width="4dp"
+                android:color="@android:color/white" />
+            <corners android:radius="16dp" />
+        </shape>
+    </item>
+</layer-list>

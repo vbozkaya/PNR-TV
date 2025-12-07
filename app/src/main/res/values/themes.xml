@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android TV için Leanback teması -->
+    <style name="Theme.Leanback" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@drawable/home_background</item>
+        <!-- TV için optimize edilmiş pencere ayarları -->
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+    </style>
+</resources>
+
