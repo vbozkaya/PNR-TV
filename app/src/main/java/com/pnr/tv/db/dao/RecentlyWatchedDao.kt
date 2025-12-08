@@ -19,6 +19,12 @@ interface RecentlyWatchedDao {
         "DELETE FROM recently_watched_channels WHERE channelId NOT IN (SELECT channelId FROM recently_watched_channels ORDER BY watchedAt DESC LIMIT :limit)",
     )
     suspend fun trim(limit: Int)
+
+    /**
+     * Tüm son izlenenleri siler (kullanıcı silindiğinde kullanılır).
+     */
+    @Query("DELETE FROM recently_watched_channels")
+    suspend fun deleteAll()
 }
 
 

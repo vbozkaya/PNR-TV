@@ -32,4 +32,10 @@ interface FavoriteDao {
 
     @Query("SELECT DISTINCT viewerId FROM favorite_channels")
     fun getViewerIdsWithFavorites(): Flow<List<Int>>
+
+    /**
+     * Tüm favorileri siler (kullanıcı silindiğinde kullanılır).
+     */
+    @Query("DELETE FROM favorite_channels")
+    suspend fun deleteAll()
 }

@@ -1,11 +1,14 @@
 package com.pnr.tv
 
 import android.app.Application
+import android.content.Context
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.pnr.tv.BuildConfig
+import com.pnr.tv.util.LocaleHelper
 import dagger.hilt.android.HiltAndroidApp
 import okhttp3.Dispatcher
 import okhttp3.OkHttpClient
@@ -14,12 +17,16 @@ import javax.inject.Inject
 
 @HiltAndroidApp
 class PnrTvApplication : Application(), ImageLoaderFactory, Configuration.Provider {
+    override fun attachBaseContext(base: Context) {
+        super.attachBaseContext(LocaleHelper.wrapContext(base))
+    }
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
     override fun onCreate() {
         super.onCreate()
         initializeCrashlytics()
         setupTimber()
+        initializeLeakCanary()
     }
 
     /**
@@ -53,19 +60,46 @@ class PnrTvApplication : Application(), ImageLoaderFactory, Configuration.Provid
     private fun initializeCrashlytics() {
         val crashlytics = FirebaseCrashlytics.getInstance()
         
-        // Kullanıcı bilgilerini ayarla (opsiyonel)
-        // crashlytics.setUserId("user_id")
-        
-        // Custom key'ler ekle (opsiyonel)
-        // crashlytics.setCustomKey("app_version", BuildConfig.VERSION_NAME)
-        
         val isDebug = applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0
+        
+        // Custom key'ler ekle - her crash'te bu bilgiler gönderilecek
+        try {
+            crashlytics.setCustomKey("app_version", BuildConfig.VERSION_NAME)
+            crashlytics.setCustomKey("version_code", BuildConfig.VERSION_CODE)
+            crashlytics.setCustomKey("build_type", if (isDebug) "debug" else "release")
+            crashlytics.setCustomKey("package_name", packageName)
+        } catch (e: Exception) {
+            Timber.e(e, "Crashlytics custom key'ler ayarlanırken hata oluştu")
+        }
+        
+        // Önceki default handler'ı sakla
+        val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
+        
+        // Uncaught exception handler ekle - yakalanmayan tüm exception'ları Firebase'e gönder
+        Thread.setDefaultUncaughtExceptionHandler { thread, exception ->
+            try {
+                // Önce Crashlytics'e gönder
+                crashlytics.recordException(exception)
+                
+                // Custom log ekle
+                crashlytics.log("Uncaught exception in thread: ${thread.name}")
+                crashlytics.setCustomKey("crash_thread_name", thread.name)
+                
+                // Crashlytics'in exception'ı göndermesi için bir süre bekle
+                Thread.sleep(2000)
+            } catch (e: Exception) {
+                // Crashlytics'e gönderirken hata olursa en azından log'la
+                android.util.Log.e("Crashlytics", "Exception gönderilemedi", e)
+            }
+            
+            // Önceki handler'ı çağır (genellikle sistem default handler)
+            defaultHandler?.uncaughtException(thread, exception)
+        }
+        
         if (isDebug) {
-            // Debug modda Crashlytics'i devre dışı bırak (opsiyonel)
-            // crashlytics.setCrashlyticsCollectionEnabled(false)
-            Timber.d("🔥 Crashlytics başlatıldı (DEBUG mod)")
+            Timber.d("🔥 Crashlytics başlatıldı (DEBUG mod) - Tüm çökmeler Firebase'e gönderilecek")
         } else {
-            Timber.d("🔥 Crashlytics başlatıldı (PRODUCTION mod)")
+            Timber.d("🔥 Crashlytics başlatıldı (PRODUCTION mod) - Tüm çökmeler Firebase'e gönderilecek")
         }
     }
 
@@ -80,6 +114,19 @@ class PnrTvApplication : Application(), ImageLoaderFactory, Configuration.Provid
         } else {
             // Production için Crashlytics entegre edilmiş Timber Tree
             Timber.plant(CrashlyticsTree())
+        }
+    }
+
+    /**
+     * LeakCanary'yi başlatır (sadece debug build'de)
+     * Memory leak'leri otomatik olarak tespit eder ve bildirir
+     * 
+     * Not: LeakCanary otomatik olarak başlatılır, sadece debug build'de çalışır
+     * debugImplementation ile eklendiği için release build'de class bulunamaz
+     */
+    private fun initializeLeakCanary() {
+        if (BuildConfig.DEBUG) {
+            Timber.d("🔍 LeakCanary aktif - Memory leak'ler otomatik tespit edilecek")
         }
     }
 

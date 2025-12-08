@@ -66,5 +66,7 @@ interface ApiService {
     suspend fun getUserInfo(
         @Query("username") username: String,
         @Query("password") password: String,
+        // Bazı IPTV API'leri action parametresi olmadan kullanıcı bilgilerini döndürür
+        // @Query("action") action: String = "get_user_info",
     ): AuthenticationResponseDto
 }

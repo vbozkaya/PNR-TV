@@ -66,7 +66,7 @@ class TrackSelectionAdapter(
         private val textView: TextView = itemView.findViewById(R.id.txt_track_name)
 
         fun bind(track: TrackInfo, isSelected: Boolean, isFirstItem: Boolean, isLastItem: Boolean, position: Int, onClick: () -> Unit) {
-            textView.text = track.label ?: "Bilinmeyen"
+            textView.text = track.label ?: itemView.context.getString(R.string.unknown)
             radioButton.isChecked = isSelected
             
             // RecyclerView içindeki item'lar otomatik olarak birbirine bağlanır

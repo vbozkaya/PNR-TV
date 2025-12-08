@@ -64,7 +64,7 @@
                 style="@style/ExoStyledControls.Button"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:contentDescription="Geri sarma" />
+                android:contentDescription="@string/cd_rewind" />
 
             <!-- Oynat -->
             <ImageButton
@@ -72,7 +72,7 @@
                 style="@style/ExoStyledControls.Button"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:contentDescription="Oynat" />
+                android:contentDescription="@string/cd_play" />
 
             <!-- Durdur -->
             <ImageButton
@@ -80,7 +80,7 @@
                 style="@style/ExoStyledControls.Button"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:contentDescription="Durdur" />
+                android:contentDescription="@string/cd_pause" />
 
             <!-- İleri Sarma -->
             <ImageButton
@@ -88,21 +88,21 @@
                 style="@style/ExoStyledControls.Button"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:contentDescription="İleri sarma" />
+                android:contentDescription="@string/cd_fast_forward" />
 
             <!-- Altyazı -->
             <ImageButton
                 android:id="@+id/exo_subtitle"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:contentDescription="Altyazı" />
+                android:contentDescription="@string/cd_subtitle" />
 
             <!-- Ses Dili -->
             <ImageButton
                 android:id="@+id/exo_audio_track"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:contentDescription="Ses Dili" />
+                android:contentDescription="@string/cd_audio_track" />
 
         </LinearLayout>
 

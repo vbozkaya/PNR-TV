@@ -33,6 +33,16 @@ class ViewersActivity : BaseActivity() {
         observeToastEvents()
     }
 
+    override fun onStart() {
+        super.onStart()
+        // Activity açıldığında Home butonuna focus ver
+        binding.root.post {
+            val navbar = binding.root.findViewById<View>(R.id.navbar)
+            val homeButton = navbar?.findViewById<View>(R.id.btn_navbar_home)
+            homeButton?.requestFocus()
+        }
+    }
+
     override fun getNavbarTitle(): String? {
         return getString(R.string.page_viewers)
     }
@@ -54,11 +64,25 @@ class ViewersActivity : BaseActivity() {
         }
     }
 
+    private var previousViewerCount = 0
+    
     private fun observeViewers() {
         lifecycleScope.launch {
             viewModel.getAllViewers().collectLatest { viewers ->
+                val wasViewerAdded = viewers.size > previousViewerCount
+                previousViewerCount = viewers.size
+                
                 adapter.submitList(viewers)
                 binding.emptyView.visibility = if (viewers.isEmpty()) View.VISIBLE else View.GONE
+                
+                binding.recyclerViewers.post {
+                    if (wasViewerAdded && viewers.isNotEmpty()) {
+                        // Yeni izleyici eklendiğinde son item'ın sil butonuna focus ver
+                        val lastPosition = viewers.size - 1
+                        val lastItem = binding.recyclerViewers.findViewHolderForAdapterPosition(lastPosition)
+                        lastItem?.itemView?.findViewById<android.widget.Button>(R.id.btn_delete)?.requestFocus()
+                    }
+                }
             }
         }
     }
@@ -86,7 +110,7 @@ class ViewersActivity : BaseActivity() {
                         Toast.makeText(this, getString(R.string.error_fill_fields), Toast.LENGTH_SHORT).show()
                     }
                 }
-                .setNegativeButton(R.string.dialog_no, null)
+                .setNegativeButton(R.string.btn_exit, null)
                 .create()
 
         dialog.show()
@@ -94,14 +118,18 @@ class ViewersActivity : BaseActivity() {
     }
 
     private fun showDeleteDialog(viewer: ViewerEntity) {
-        AlertDialog.Builder(this)
+        val dialog = AlertDialog.Builder(this)
             .setTitle(R.string.dialog_delete_viewer_title)
             .setMessage(getString(R.string.dialog_delete_viewer_message, viewer.name))
             .setPositiveButton(R.string.dialog_yes) { _, _ ->
                 viewModel.deleteViewer(viewer)
             }
             .setNegativeButton(R.string.dialog_no, null)
-            .show()
+            .create()
+        
+        dialog.show()
+        // Güvenlik için "Hayır" butonuna focus ver
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.requestFocus()
     }
 }
 

@@ -9,6 +9,8 @@
     android:focusable="true"
     android:foreground="@drawable/episode_item_selector"
     android:defaultFocusHighlightEnabled="false"
+    android:clipChildren="true"
+    android:clipToPadding="true"
     app:cardBackgroundColor="@android:color/transparent"
     app:cardCornerRadius="8dp"
     app:cardElevation="0dp">
@@ -16,7 +18,9 @@
     <!-- İçerik: ConstraintLayout -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:clipChildren="true"
+        android:clipToPadding="true">
 
         <!-- Katman 1: Arka Plan Görseli -->
         <ImageView
@@ -26,6 +30,7 @@
             android:contentDescription="@null"
             android:scaleType="centerCrop"
             android:src="@drawable/episode_background"
+            android:clipToOutline="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

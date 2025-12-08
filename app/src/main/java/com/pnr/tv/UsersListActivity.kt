@@ -31,12 +31,31 @@ class UsersListActivity : BaseActivity(), UsersListAdapter.OnUserActionListener 
         observeUsers()
     }
 
+    override fun onStart() {
+        super.onStart()
+        // Activity açıldığında RecyclerView'ın ilk öğesine focus ver
+        binding.rvUsers.post {
+            if (usersAdapter.itemCount > 0) {
+                val firstItem = binding.rvUsers.findViewHolderForAdapterPosition(0)
+                firstItem?.itemView?.requestFocus()
+            }
+        }
+    }
+
     private fun observeUsers() {
         lifecycleScope.launch {
             viewModel.allUsers.collectLatest { users ->
                 usersAdapter.submitList(users)
                 binding.rvUsers.isVisible = users.isNotEmpty()
                 binding.tvEmptyState.isVisible = users.isEmpty()
+                
+                // RecyclerView'a veri geldiğinde ilk öğeye focus ver
+                if (users.isNotEmpty()) {
+                    binding.rvUsers.post {
+                        val firstItem = binding.rvUsers.findViewHolderForAdapterPosition(0)
+                        firstItem?.itemView?.requestFocus()
+                    }
+                }
             }
         }
     }
@@ -61,7 +80,7 @@ class UsersListActivity : BaseActivity(), UsersListAdapter.OnUserActionListener 
     }
 
     override fun onDelete(user: UserAccountEntity) {
-        AlertDialog.Builder(this, R.style.FullscreenDialogTheme)
+        val dialog = AlertDialog.Builder(this, R.style.FullscreenDialogTheme)
             .setTitle(R.string.dialog_delete_user_title)
             .setMessage(getString(R.string.dialog_delete_user_message, user.accountName))
             .setPositiveButton(R.string.dialog_yes) { _, _ ->
@@ -70,6 +89,10 @@ class UsersListActivity : BaseActivity(), UsersListAdapter.OnUserActionListener 
             }
             .setNegativeButton(R.string.dialog_no, null)
             .setCancelable(false)
-            .show()
+            .create()
+        
+        dialog.show()
+        // Güvenlik için "Hayır" butonuna focus ver
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.requestFocus()
     }
 }

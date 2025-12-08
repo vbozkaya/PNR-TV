@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PNR TV</string>
+    
+    <!-- Títulos de Página -->
+    <string name="page_main">Inicio</string>
+    <string name="page_settings">Configuración</string>
+    <string name="page_user_management">Gestión de Usuarios</string>
+    <string name="page_users_list">Usuarios Actuales</string>
+    <string name="page_add_user">Agregar Nuevo Usuario</string>
+    <string name="page_live_streams">Transmisiones en Vivo</string>
+    <string name="page_movies">Películas</string>
+    <string name="page_movie_details">Detalles de Película</string>
+    <string name="page_series">Series</string>
+    <string name="page_series_details">Detalles de Serie</string>
+    <string name="category_favorites">FAVORITOS</string>
+    <string name="category_viewer_favorites">%1$s FAVORITOS</string>
+    <string name="category_recently_added">RECIÉN AGREGADOS</string>
+    <string name="category_recently_watched">Recientemente Vistos</string>
+    <string name="category_all_series">TODAS LAS SERIES</string>
+    <string name="label_seasons">Temporadas</string>
+    <string name="empty_favorites">Aún no tienes canales favoritos.</string>
+    <string name="empty_recently_watched">No se encontró ningún canal visto recientemente.</string>
+    <string name="toast_favorite_added">Agregado a favoritos</string>
+    <string name="toast_favorite_removed">Eliminado de favoritos</string>
+    <string name="no_episodes_found">No se encontraron episodios para esta temporada</string>
+    <string name="error_title">Error</string>
+    <string name="retry">Reintentar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="ok">OK</string>
+    
+    <!-- Descripciones de Contenido (Accesibilidad) -->
+    <string name="cd_series_poster">Póster de serie</string>
+    <string name="cd_navbar_back">Volver</string>
+    <string name="cd_navbar_home">Ir a inicio</string>
+    <string name="cd_loading">Cargando</string>
+    <string name="cd_episode_watched">Visto</string>
+    <string name="add_to_favorites">Agregar a favoritos</string>
+    
+    <!-- Página Agregar Usuario -->
+    <string name="hint_account_name">Nombre de Cuenta (cualquier nombre)</string>
+    <string name="hint_username">Nombre de Usuario</string>
+    <string name="hint_password">Contraseña</string>
+    <string name="hint_dns">DNS (URL)</string>
+    <string name="btn_save">Guardar</string>
+    <string name="error_fill_fields">Por favor complete todos los campos</string>
+    <string name="toast_user_saved">Usuario guardado</string>
+    <string name="toast_user_updated">Usuario actualizado</string>
+    <string name="toast_user_deleted">Usuario eliminado</string>
+    <string name="toast_select_placeholder">Esta opción estará disponible pronto</string>
+    <string name="toast_user_selected">%1$s seleccionado</string>
+    <string name="label_account_name">Nombre de Cuenta</string>
+    <string name="empty_users_list">Aún no se han agregado usuarios</string>
+    <string name="cd_edit_user">Editar usuario</string>
+    <string name="cd_delete_user">Eliminar usuario</string>
+    <string name="cd_select_user">Seleccionar usuario</string>
+    <string name="current_user_section_title">Usuario Actual</string>
+    <string name="current_user_placeholder">No seleccionado</string>
+    <string name="dialog_delete_user_title">Eliminar Usuario</string>
+    <string name="dialog_delete_user_message">¿Desea eliminar el usuario %1$s?</string>
+    
+    <!-- Botones y Navegación -->
+    <string name="btn_back">Atrás</string>
+    <string name="btn_home">Inicio</string>
+    <string name="btn_filter">Filtro</string>
+    <string name="search_hint">Buscar Contenido</string>
+    <string name="btn_exit">Salir</string>
+    
+    <!-- Diálogo de Ordenamiento -->
+    <string name="dialog_sort_title">Opciones de Ordenamiento</string>
+    <string name="sort_a_to_z">Ordenar A a Z</string>
+    <string name="sort_z_to_a">Ordenar Z a A</string>
+    <string name="sort_rating_high_to_low">Ordenar por Calificación Alta a Baja</string>
+    <string name="sort_rating_low_to_high">Ordenar por Calificación Baja a Alta</string>
+    <string name="sort_date_new_to_old">Ordenar por Fecha Nueva a Antigua</string>
+    <string name="sort_date_old_to_new">Ordenar por Fecha Antigua a Nueva</string>
+    <string name="btn_update">Actualizar</string>
+    <string name="btn_play">Reproducir</string>
+    <string name="btn_add_favorite">Agregar a Favoritos</string>
+    
+    <!-- Mensajes de Diálogo -->
+    <string name="dialog_exit_title">Salir</string>
+    <string name="dialog_exit_message">¿Está seguro de que desea salir de la aplicación?</string>
+    <string name="dialog_yes">Sí</string>
+    <string name="dialog_no">No</string>
+    
+    <!-- Información de Usuario -->
+    <string name="current_user_label">Usuario Actual: %1$s</string>
+    <string name="current_user_none">Usuario Actual: -</string>
+    
+    <!-- Mensajes de Carga -->
+    <string name="loading_content">El contenido se está actualizando y procesando...</string>
+    <string name="loading_completed">Actualización Completada</string>
+    
+    <!-- Mensajes de Error -->
+    <string name="error_unknown">Error desconocido</string>
+    <string name="error_with_message">Error: %1$s</string>
+    <string name="error_user_not_found">Información de usuario no encontrada o falta información DNS</string>
+    <string name="error_network_connection">Error de conexión de red</string>
+    <string name="error_network_generic">Error de red: %1$d %2$s</string>
+    <string name="error_unexpected">Error inesperado: %1$s</string>
+    
+    <!-- Mensajes de Error de Actualización de Pantalla Principal -->
+    <string name="error_user_not_exists">No Hay Usuario</string>
+    <string name="error_user_not_selected">Usuario No Seleccionado</string>
+    <string name="error_user_invalid_credentials">Credenciales de Usuario Inválidas</string>
+    <string name="error_server_error">Error del Servidor</string>
+    <string name="error_content_info_failed">No Se Pudo Cargar la Información del Contenido</string>
+    <string name="error_no_internet">Sin Conexión a Internet</string>
+    <string name="error_timeout">La conexión expiró. Por favor, inténtelo de nuevo.</string>
+    <string name="error_timeout_connect">No se puede conectar al servidor. La conexión expiró.</string>
+    <string name="error_timeout_read">Se produjo un tiempo de espera al recibir datos del servidor. Por favor, inténtelo de nuevo.</string>
+    <string name="error_offline">Sin conexión a Internet. Mostrando datos de la caché.</string>
+    <string name="error_retry_failed">El reintento falló. Por favor, verifique su conexión a Internet.</string>
+    <string name="btn_retry">Reintentar</string>
+    <string name="toast_retrying">Reintentando...</string>
+    <string name="toast_retry_success">Conexión exitosa</string>
+    <string name="toast_retry_failed">Reintento falló</string>
+    <string name="error_categories_load_failed">Error al cargar categorías: %1$s</string>
+    <string name="error_movies_load_failed">Error al cargar películas: %1$s</string>
+    <string name="error_series_load_failed">Error al cargar series: %1$s</string>
+    <string name="error_categories_load">Error al cargar categorías: %1$s</string>
+    <string name="error_movies_load">Error al cargar películas: %1$s</string>
+    <string name="error_series_load">Error al cargar series: %1$s</string>
+    <string name="error_image_preload">Error de precarga de imagen: %1$s</string>
+    
+    <!-- Nombres de Categoría -->
+    <string name="category_all_movies">TODAS LAS PELÍCULAS</string>
+    
+    <!-- Información de Estado de Usuario -->
+    <string name="status_label">Estado: %1$s</string>
+    <string name="expiry_date_label">Fecha de Vencimiento: %1$s</string>
+    <string name="connection_label">Conexión: %1$s/%2$s</string>
+    <string name="trial_label">Prueba: %1$s</string>
+    <string name="yes">Sí</string>
+    <string name="no">No</string>
+    
+    <!-- Etiquetas de Contenido -->
+    <string name="movie_label">Película: %1$s</string>
+    <string name="series_label">Serie: %1$s</string>
+    <string name="description_not_available">Descripción no disponible.</string>
+    <string name="episode_number_format">Episodio %1$d</string>
+    
+    <!-- Reproductor -->
+    <string name="subtitles">Subtítulos</string>
+    <string name="audio_language">Idioma de Audio</string>
+    
+    <!-- Gestión de Espectadores -->
+    <string name="page_viewers">Espectadores</string>
+    <string name="hint_viewer_name">Nombre del Espectador</string>
+    <string name="btn_add_viewer">Agregar Espectador</string>
+    <string name="btn_delete_viewer">Eliminar</string>
+    <string name="error_cannot_delete_default_viewer">No se puede eliminar el espectador predeterminado</string>
+    <string name="toast_viewer_added">Espectador agregado</string>
+    <string name="toast_viewer_deleted">Espectador eliminado</string>
+    <string name="dialog_delete_viewer_title">Eliminar Espectador</string>
+    <string name="dialog_delete_viewer_message">¿Desea eliminar el espectador %1$s? Todos los favoritos también se eliminarán.</string>
+    <string name="empty_viewers_list">Aún no se han agregado espectadores</string>
+    
+    <!-- Selección de Favoritos -->
+    <string name="dialog_select_viewer_title">Agregar a Favoritos</string>
+    <string name="dialog_select_viewer_message">¿Para qué espectador desea agregar a favoritos?</string>
+    <string name="viewer_favorites_category">%1$s FAVORITOS</string>
+    
+    <!-- Detalle de Película -->
+    <string name="movie_director">Director:</string>
+    <string name="movie_genre">Género:</string>
+    <string name="movie_cast">Reparto:</string>
+    <string name="movie_overview_label">Resumen:</string>
+    <string name="no_overview">Sin Resumen</string>
+    
+    <!-- Detalle de Serie -->
+    <string name="series_creator">Creador:</string>
+    <string name="error_movie_not_found">Película no encontrada</string>
+    <string name="loading_movie_details">Cargando detalles de película...</string>
+    <string name="error_loading_movie">Error al cargar película</string>
+    
+    <!-- Configuración -->
+    <string name="settings_user_status">Estado de Usuario</string>
+    <string name="settings_app_language">Idioma de la Aplicación</string>
+    <string name="settings_clear_cache">Limpiar Caché y Todos los Datos</string>
+    <string name="dialog_select_language_title">Seleccionar Idioma</string>
+    <string name="dialog_clear_cache_title">Limpiar Todos los Datos</string>
+    <string name="dialog_clear_cache_message">Todos los datos (usuarios, favoritos, historial de visualización, contenido, etc.) se eliminarán y la aplicación se abrirá como si estuviera recién instalada. Esta acción no se puede deshacer. ¿Desea continuar?</string>
+    <string name="toast_cache_cleared">Todos los datos limpiados</string>
+    
+    <!-- Reproductor -->
+    <string name="player_subtitles_title">Subtítulos</string>
+    <string name="player_audio_language_title">Idioma de Audio</string>
+    <string name="player_subtitles_off">Desactivado</string>
+    
+    <!-- Episodio y Temporada -->
+    <string name="episode_format">Episodio %1$d</string>
+    <string name="season_format">Temporada %1$d</string>
+    <string name="season_format_with_episodes">Temporada %1$d (%2$d)</string>
+    
+    <!-- Idiomas -->
+    <string name="language_turkish">Turco</string>
+    <string name="language_english">Inglés</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_indonesian">Indonesio</string>
+    <string name="language_hindi">Hindi</string>
+    <string name="language_portuguese">Portugués</string>
+    <string name="language_french">Francés</string>
+    
+    <!-- Mensajes de Error Adicionales -->
+    <string name="error_video_url_not_found">URL de video no encontrada</string>
+    <string name="default_viewer_name">Predeterminado</string>
+    
+    <!-- Símbolos y Marcadores de Posición Generales -->
+    <string name="data_unavailable">-</string>
+    <string name="bullet_symbol">•</string>
+    <string name="star_symbol">⭐</string>
+    <string name="save">Guardar</string>
+    
+    <!-- Prefijo de Usuario Actual -->
+    <string name="current_user_prefix">Usuario Actual:</string>
+    
+    <!-- Descripciones de Contenido del Reproductor -->
+    <string name="cd_rewind">Rebobinar</string>
+    <string name="cd_play">Reproducir</string>
+    <string name="cd_pause">Pausar</string>
+    <string name="cd_fast_forward">Avance Rápido</string>
+    <string name="cd_subtitle">Subtítulo</string>
+    <string name="cd_audio_track">Idioma de Audio</string>
+    
+    <!-- Prefijos del Diálogo de Estado del Usuario -->
+    <string name="status_prefix">Estado:</string>
+    <string name="expiry_date_prefix">Fecha de Vencimiento:</string>
+    <string name="connection_prefix">Conexión:</string>
+    <string name="trial_prefix">Prueba:</string>
+    
+    <!-- Selección de Pista -->
+    <string name="track_language_turkish">Turco</string>
+    
+    <!-- Valores Desconocidos/Predeterminados -->
+    <string name="unknown">Desconocido</string>
+    
+    <!-- Nombres de Categorías (Categorías de Películas/Series) -->
+    <string name="category_action">Acción</string>
+    <string name="category_adventure">Aventura</string>
+    <string name="category_animation">Animación</string>
+    <string name="category_comedy">Comedia</string>
+    <string name="category_crime">Crimen</string>
+    <string name="category_documentary">Documental</string>
+    <string name="category_drama">Drama</string>
+    <string name="category_family">Familia</string>
+    <string name="category_fantasy">Fantasía</string>
+    <string name="category_horror">Terror</string>
+    <string name="category_music">Música</string>
+    <string name="category_mystery">Misterio</string>
+    <string name="category_romance">Romance</string>
+    <string name="category_science_fiction">Ciencia Ficción</string>
+    <string name="category_thriller">Suspense</string>
+    <string name="category_war">Guerra</string>
+    <string name="category_western">Western</string>
+    <string name="category_sports">Deportes</string>
+    <string name="category_reality">Realidad</string>
+    <string name="category_talk_show">Programa de Entrevistas</string>
+    <string name="category_news">Noticias</string>
+    <string name="category_kids">Infantil</string>
+    <string name="category_tv_movie">Película de TV</string>
+    <string name="category_all">Todos</string>
+</resources>
+

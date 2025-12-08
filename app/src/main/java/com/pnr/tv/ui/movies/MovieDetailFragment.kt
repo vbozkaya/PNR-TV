@@ -63,6 +63,9 @@ class MovieDetailFragment : Fragment() {
     @Inject
     lateinit var userRepository: UserRepository
 
+    // Focus state kaydetme için
+    private var lastFocusedViewId: Int = R.id.btn_play
+
     private val playerActivityLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             // Oynatıcıdan döndükten sonra yapılacak işlemler
@@ -70,6 +73,7 @@ class MovieDetailFragment : Fragment() {
 
     companion object {
         private const val ARG_MOVIE_ID = "movie_id"
+        private const val KEY_LAST_FOCUSED_VIEW_ID = "movie_detail_fragment_last_focused_view_id"
 
         /**
          * Yeni bir MovieDetailFragment örneği oluşturur.
@@ -86,6 +90,12 @@ class MovieDetailFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Fragment yeniden yaratıldığında kaydedilen hafızayı geri yükle
+        if (savedInstanceState != null) {
+            lastFocusedViewId = savedInstanceState.getInt(KEY_LAST_FOCUSED_VIEW_ID, R.id.btn_play)
+        }
+        
         viewModel =
             ViewModelProvider(
                 this,
@@ -101,6 +111,13 @@ class MovieDetailFragment : Fragment() {
         arguments?.getInt(ARG_MOVIE_ID)?.let { movieId ->
             viewModel.loadMovie(movieId)
         }
+    }
+    
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        
+        // Fragment yok edilmeden önce hafızayı kaydet
+        outState.putInt(KEY_LAST_FOCUSED_VIEW_ID, lastFocusedViewId)
     }
 
     override fun onCreateView(
@@ -127,6 +144,14 @@ class MovieDetailFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         (activity as? MainActivity)?.hideTopMenu()
+        
+        // Fragment geri geldiğinde son focus edilen view'a focus ver
+        view?.post {
+            val lastFocusedView = view?.findViewById<View>(lastFocusedViewId)
+            if (lastFocusedView != null && lastFocusedView.visibility == View.VISIBLE) {
+                lastFocusedView.requestFocus()
+            }
+        }
     }
 
     private fun setupNavbar(view: View) {
@@ -329,11 +354,26 @@ class MovieDetailFragment : Fragment() {
         // Açıklama (Her zaman göster, boşsa "Açıklama Yok")
         moviePlot.text = state.overview?.takeIf { it.isNotBlank() } ?: getString(R.string.no_overview)
 
-        // İlk yükleme olduğunda play butonuna focus ver
-        playButton.requestFocus()
+        // Son focus edilen view'a veya play butonuna focus ver
+        view?.post {
+            val lastFocusedView = view?.findViewById<View>(lastFocusedViewId)
+            if (lastFocusedView != null && lastFocusedView.visibility == View.VISIBLE) {
+                lastFocusedView.requestFocus()
+            } else {
+                playButton.requestFocus()
+                lastFocusedViewId = R.id.btn_play
+            }
+        }
     }
 
     private fun setupPlayButton() {
+        // Focus değiştiğinde kaydet
+        playButton.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                lastFocusedViewId = R.id.btn_play
+            }
+        }
+        
         playButton.setOnClickListener {
             // Filmi oynat
             viewLifecycleOwner.lifecycleScope.launch {
@@ -367,6 +407,13 @@ class MovieDetailFragment : Fragment() {
     }
 
     private fun setupFavoriteButton() {
+        // Focus değiştiğinde kaydet
+        addFavoriteButton.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                lastFocusedViewId = R.id.btn_add_favorite
+            }
+        }
+        
         addFavoriteButton.setOnClickListener {
             // Favoriye ekle - izleyici seçim dialog'unu göster
             viewModel.addToFavorites()

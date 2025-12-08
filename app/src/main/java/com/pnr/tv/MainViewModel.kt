@@ -11,6 +11,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.pnr.tv.R
 import com.pnr.tv.network.dto.AuthenticationResponseDto
 import com.pnr.tv.repository.ContentRepository
 import com.pnr.tv.repository.Result
@@ -24,6 +25,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -32,7 +34,7 @@ import javax.inject.Inject
 class MainViewModel
     @Inject
     constructor(
-        userRepository: UserRepository,
+        private val userRepository: UserRepository,
         private val contentRepository: ContentRepository,
         @ApplicationContext private val context: Context,
     ) : ViewModel() {
@@ -76,15 +78,20 @@ class MainViewModel
                     Timber.d("⚠️ Rate limiting ağ katmanında yapılıyor...")
 
                     // IPTV içeriklerini yenile (rate limiting interceptor tarafından yönetiliyor)
-                    val refreshResult = refreshIptvContent()
+                    val refreshResult = try {
+                        refreshIptvContent()
+                    } catch (e: Exception) {
+                        // refreshIptvContent içindeki hataları yakala
+                        Timber.e(e, "❌ REFRESH IPTV CONTENT HATASI")
+                        context.getString(R.string.error_server_error)
+                    }
 
                     // Sonuçları işle
                     handleRefreshResult(refreshResult)
                 } catch (e: Exception) {
-                    // Beklenmeyen hata durumu
+                    // Beklenmeyen hata durumu - uygulamanın kapanmasını önle
                     Timber.e(e, "❌ GÜNCELLEME HATASI")
-                    val error = ErrorHelper.createUnexpectedError(e, context)
-                    _errorMessage.value = "HATA: ${e.message}\n\n${error.message}"
+                    _errorMessage.value = context.getString(R.string.error_server_error)
                     _updateState.value = UpdateState.ERROR
                 }
             }
@@ -94,40 +101,82 @@ class MainViewModel
          * IPTV içeriklerini yeniler (filmler, diziler, canlı yayınlar).
          * Rate limiting ağ katmanında (RateLimiterInterceptor) yapılıyor.
          * 
-         * @return Hata listesi, başarılı ise boş liste
+         * @return Hata mesajı, başarılı ise null
          */
-        private suspend fun refreshIptvContent(): List<String> {
-            val errors = mutableListOf<String>()
+        private suspend fun refreshIptvContent(): String? {
+            return try {
+                // Önce kullanıcı kontrolü yap
+                val allUsers = try {
+                    userRepository.allUsers.firstOrNull() ?: emptyList()
+                } catch (e: Exception) {
+                    Timber.e(e, "Kullanıcı listesi alınamadı")
+                    emptyList()
+                }
+                
+                if (allUsers.isEmpty()) {
+                    return context.getString(R.string.error_user_not_exists)
+                }
+                
+                val currentUser = try {
+                    userRepository.currentUser.firstOrNull()
+                } catch (e: Exception) {
+                    Timber.e(e, "Mevcut kullanıcı alınamadı")
+                    null
+                }
+                
+                if (currentUser == null) {
+                    return context.getString(R.string.error_user_not_selected)
+                }
 
-            // Filmleri yenile
-            val moviesResult = contentRepository.refreshMovies(skipTmdbSync = true)
-            if (moviesResult is Result.Error) {
-                errors.add("Filmler: ${moviesResult.message}")
+                // Filmleri yenile
+                val moviesResult = try {
+                    contentRepository.refreshMovies(skipTmdbSync = true, forMainScreenUpdate = true)
+                } catch (e: Exception) {
+                    Timber.e(e, "Filmler yenilenirken hata")
+                    Result.Error(message = context.getString(R.string.error_server_error), exception = e)
+                }
+                if (moviesResult is Result.Error) {
+                    return moviesResult.message
+                }
+
+                // Dizileri yenile (rate limiting interceptor tarafından yönetiliyor)
+                val seriesResult = try {
+                    contentRepository.refreshSeries(skipTmdbSync = true, forMainScreenUpdate = true)
+                } catch (e: Exception) {
+                    Timber.e(e, "Diziler yenilenirken hata")
+                    Result.Error(message = context.getString(R.string.error_server_error), exception = e)
+                }
+                if (seriesResult is Result.Error) {
+                    return seriesResult.message
+                }
+
+                // Canlı yayınları yenile (rate limiting interceptor tarafından yönetiliyor)
+                val liveStreamsResult = try {
+                    contentRepository.refreshLiveStreams(forMainScreenUpdate = true)
+                } catch (e: Exception) {
+                    Timber.e(e, "Canlı yayınlar yenilenirken hata")
+                    Result.Error(message = context.getString(R.string.error_server_error), exception = e)
+                }
+                if (liveStreamsResult is Result.Error) {
+                    return liveStreamsResult.message
+                }
+
+                null
+            } catch (e: Exception) {
+                // Beklenmeyen hata - uygulamanın kapanmasını önle
+                Timber.e(e, "refreshIptvContent genel hata")
+                context.getString(R.string.error_server_error)
             }
-
-            // Dizileri yenile (rate limiting interceptor tarafından yönetiliyor)
-            val seriesResult = contentRepository.refreshSeries(skipTmdbSync = true)
-            if (seriesResult is Result.Error) {
-                errors.add("Diziler: ${seriesResult.message}")
-            }
-
-            // Canlı yayınları yenile (rate limiting interceptor tarafından yönetiliyor)
-            val liveStreamsResult = contentRepository.refreshLiveStreams()
-            if (liveStreamsResult is Result.Error) {
-                errors.add("Canlı Yayınlar: ${liveStreamsResult.message}")
-            }
-
-            return errors
         }
 
         /**
          * Yenileme sonuçlarını işler ve durumu günceller.
          * 
-         * @param errors Hata listesi, boş ise başarılı
+         * @param errorMessage Hata mesajı, null ise başarılı
          */
-        private suspend fun handleRefreshResult(errors: List<String>) {
-            if (errors.isNotEmpty()) {
-                _errorMessage.value = errors.joinToString("\n")
+        private suspend fun handleRefreshResult(errorMessage: String?) {
+            if (errorMessage != null) {
+                _errorMessage.value = errorMessage
                 _updateState.value = UpdateState.ERROR
             } else {
                 // Canlı kanal resimlerini ön yükle
@@ -191,13 +240,21 @@ class MainViewModel
 
         fun fetchUserInfo() {
             viewModelScope.launch {
-                when (val result = contentRepository.fetchUserInfo()) {
-                    is Result.Success -> {
-                        userInfo.value = result.data
+                try {
+                    val result = contentRepository.fetchUserInfo()
+                    when (result) {
+                        is Result.Success -> {
+                            userInfo.value = result.data
+                        }
+                        is Result.Error -> {
+                            Timber.e(result.exception, "Kullanıcı bilgileri alınamadı: ${result.message}")
+                            userInfo.value = null
+                            _errorMessage.value = result.message
+                        }
                     }
-                    is Result.Error -> {
-                        userInfo.value = null
-                    }
+                } catch (e: Exception) {
+                    Timber.e(e, "fetchUserInfo() coroutine içinde beklenmeyen hata: ${e.javaClass.simpleName}")
+                    userInfo.value = null
                 }
             }
         }

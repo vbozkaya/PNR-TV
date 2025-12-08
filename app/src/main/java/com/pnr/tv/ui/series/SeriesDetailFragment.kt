@@ -65,6 +65,9 @@ class SeriesDetailFragment : Fragment() {
     @Inject
     lateinit var userRepository: UserRepository
 
+    // Focus state kaydetme için
+    private var lastFocusedEpisodePosition: Int = -1
+
     private val playerActivityLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             // Oynatıcıdan döndükten sonra yapılacak işlemler
@@ -121,6 +124,14 @@ class SeriesDetailFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         (activity as? MainActivity)?.hideTopMenu()
+        
+        // İzlenip geri dönülen bölüme odaklanma
+        if (lastFocusedEpisodePosition >= 0 && episodesAdapter.itemCount > lastFocusedEpisodePosition) {
+            episodesRecyclerView.post {
+                val viewHolder = episodesRecyclerView.findViewHolderForAdapterPosition(lastFocusedEpisodePosition)
+                viewHolder?.itemView?.requestFocus()
+            }
+        }
     }
 
     private fun setupNavbar(view: View) {
@@ -132,8 +143,17 @@ class SeriesDetailFragment : Fragment() {
             parentFragmentManager.popBackStack()
         }
 
-        navbarView.findViewById<View>(R.id.btn_navbar_home)?.setOnClickListener {
+        val homeButton = navbarView.findViewById<View>(R.id.btn_navbar_home)
+        homeButton?.setOnClickListener {
             parentFragmentManager.popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        }
+        
+        // Home butonundan sağ yön tuşuna basıldığında olayı tüket (focus gitmesin)
+        homeButton?.setOnKeyListener { _, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                return@setOnKeyListener true // Olayı tüket
+            }
+            false
         }
     }
 
@@ -159,15 +179,37 @@ class SeriesDetailFragment : Fragment() {
         seasonTabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 (tab?.tag as? SeriesSeason)?.let { viewModel.selectSeason(it.seasonNumber) }
+                // Seçili tab'ın metnini beyaz yap
+                tab?.customView?.let { view ->
+                    (view as? TextView)?.setTextColor(android.graphics.Color.WHITE)
+                }
+                // NOT: Odak isteği episodes.collect bloğunda, layout pass bittikten sonra yapılacak
             }
-            override fun onTabUnselected(tab: TabLayout.Tab?) { }
+            override fun onTabUnselected(tab: TabLayout.Tab?) {
+                // Seçili olmayan tab'ın metnini gri yap
+                tab?.customView?.let { view ->
+                    (view as? TextView)?.setTextColor(android.graphics.Color.parseColor("#A0A0A0"))
+                }
+            }
             override fun onTabReselected(tab: TabLayout.Tab?) { }
         })
 
-        // TV kumandası ile sezon geçişi için OnKeyListener
+        // Sezon sekmelerinin yönlendirmeleri
         seasonTabLayout.setOnKeyListener { _, keyCode, event ->
             if (event.action == KeyEvent.ACTION_DOWN) {
                 when (keyCode) {
+                    KeyEvent.KEYCODE_DPAD_UP -> {
+                        // Yukarı tuşu: Favoriler butonuna odaklan
+                        addFavoriteButton.requestFocus()
+                        return@setOnKeyListener true
+                    }
+                    KeyEvent.KEYCODE_DPAD_DOWN -> {
+                        // Aşağı tuşu: Bölümler listesine odaklan
+                        if (episodesAdapter.itemCount > 0) {
+                            episodesRecyclerView.requestFocus()
+                            return@setOnKeyListener true
+                        }
+                    }
                     KeyEvent.KEYCODE_DPAD_RIGHT -> {
                         // Sağa git
                         val currentPosition = seasonTabLayout.selectedTabPosition
@@ -196,10 +238,38 @@ class SeriesDetailFragment : Fragment() {
                 viewModel.seasons.collect { seasons ->
                     if (seasons.isNotEmpty()) {
                         seasonTabLayout.removeAllTabs()
-                        seasons.forEach { season ->
-                            val tab = seasonTabLayout.newTab().setText("Sezon ${season.seasonNumber}")
+                        seasons.forEachIndexed { index, season ->
+                            // Custom view ile tab oluştur (metin ortalanmış)
+                            val tabView = TextView(requireContext()).apply {
+                                text = season.name
+                                gravity = android.view.Gravity.CENTER
+                                textAlignment = android.view.View.TEXT_ALIGNMENT_CENTER
+                                textSize = 14f
+                                typeface = android.graphics.Typeface.DEFAULT_BOLD
+                                setPadding(12, 16, 12, 16)
+                                minWidth = 0
+                                minHeight = 0
+                                isFocusable = true
+                                isFocusableInTouchMode = true
+                                setTextColor(if (index == 0) android.graphics.Color.WHITE else android.graphics.Color.parseColor("#A0A0A0"))
+                            }
+                            
+                            // TabLayout'un tab container'ı için layoutParams ayarla
+                            tabView.layoutParams = android.view.ViewGroup.LayoutParams(
+                                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                                android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+                            )
+                            
+                            val tab = seasonTabLayout.newTab().setCustomView(tabView)
                             tab.tag = season
                             seasonTabLayout.addTab(tab)
+                        }
+                        
+                        // İlk açılışta odağı ayarlama
+                        seasonTabLayout.post {
+                            if (seasonTabLayout.tabCount > 0) {
+                                seasonTabLayout.getTabAt(0)?.customView?.requestFocus()
+                            }
                         }
                     }
                 }
@@ -210,11 +280,19 @@ class SeriesDetailFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.selectedSeasonNumber.collect { selectedNumber ->
                     if (selectedNumber != null) {
+                        // Tüm tab'ların renklerini güncelle
                         for (i in 0 until seasonTabLayout.tabCount) {
                             val tab = seasonTabLayout.getTabAt(i)
-                            if ((tab?.tag as? SeriesSeason)?.seasonNumber == selectedNumber) {
-                                if (tab?.isSelected == false) tab.select()
-                                break
+                            val isSelected = (tab?.tag as? SeriesSeason)?.seasonNumber == selectedNumber
+                            tab?.customView?.let { view ->
+                                (view as? TextView)?.setTextColor(
+                                    if (isSelected) android.graphics.Color.WHITE 
+                                    else android.graphics.Color.parseColor("#A0A0A0")
+                                )
+                            }
+                            
+                            if (isSelected && tab?.isSelected == false) {
+                                tab.select()
                             }
                         }
                     }
@@ -227,7 +305,11 @@ class SeriesDetailFragment : Fragment() {
         episodesRecyclerView = view.findViewById(R.id.recycler_episodes)
         episodesAdapter = EpisodesAdapter(
             onEpisodeClick = { episode -> playEpisode(episode) },
-            onFocusUpToSeasons = { seasonTabLayout.requestFocus() }
+            onFocusUpToSeasons = { 
+                // Bölüm listesinden yukarı çıkış: Seçili sekmeye odaklan
+                val selectedTab = seasonTabLayout.getTabAt(seasonTabLayout.selectedTabPosition)
+                selectedTab?.customView?.requestFocus()
+            }
         )
 
         // FlexboxLayoutManager ile yan yana kutucuklar
@@ -254,10 +336,45 @@ class SeriesDetailFragment : Fragment() {
                     } else {
                         episodesRecyclerView.visibility = View.VISIBLE
                         emptyStateText.visibility = View.GONE
+                        
+                        // İzlenip geri dönülen bölüme odaklanma
+                        if (lastFocusedEpisodePosition >= 0 && lastFocusedEpisodePosition < episodes.size) {
+                            episodesRecyclerView.post {
+                                val viewHolder = episodesRecyclerView.findViewHolderForAdapterPosition(lastFocusedEpisodePosition)
+                                viewHolder?.itemView?.requestFocus()
+                            }
+                        }
+                    }
+                    
+                    // Bölüm listesi güncellendiğinde, yani layout'un yeniden çizileceği kesinleştiğinde,
+                    // bir sonraki frame'de çalışmak üzere odak isteme eylemini sıraya alıyoruz.
+                    // Bu, layout pass bittikten sonra odağın güvenli bir şekilde ayarlanmasını sağlar.
+                    seasonTabLayout.post {
+                        val selectedTabPosition = seasonTabLayout.selectedTabPosition
+                        if (selectedTabPosition != -1) {
+                            val selectedTab = seasonTabLayout.getTabAt(selectedTabPosition)
+                            selectedTab?.customView?.requestFocus()
+                        }
                     }
                 }
             }
         }
+        
+        // Bölümler RecyclerView'ında focus değiştiğinde pozisyonu kaydet
+        episodesRecyclerView.addOnChildAttachStateChangeListener(object : RecyclerView.OnChildAttachStateChangeListener {
+            override fun onChildViewAttachedToWindow(view: View) {
+                view.setOnFocusChangeListener { focusedView, hasFocus ->
+                    if (hasFocus) {
+                        val position = episodesRecyclerView.getChildAdapterPosition(focusedView)
+                        if (position != RecyclerView.NO_POSITION) {
+                            lastFocusedEpisodePosition = position
+                        }
+                    }
+                }
+            }
+            
+            override fun onChildViewDetachedFromWindow(view: View) {}
+        })
     }
 
     private fun observeLoadingState() {
@@ -364,6 +481,27 @@ class SeriesDetailFragment : Fragment() {
     private fun setupFavoriteButton() {
         addFavoriteButton.setOnClickListener {
             viewModel.addToFavorites()
+        }
+        
+        // Favoriler butonunun yönlendirmeleri
+        addFavoriteButton.setOnKeyListener { _, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN) {
+                when (keyCode) {
+                    KeyEvent.KEYCODE_DPAD_DOWN -> {
+                        // Aşağı tuşu: Seçili sekmeye odaklan
+                        val selectedTab = seasonTabLayout.getTabAt(seasonTabLayout.selectedTabPosition)
+                        if (selectedTab != null && seasonTabLayout.tabCount > 0) {
+                            selectedTab.customView?.requestFocus() ?: seasonTabLayout.getTabAt(0)?.customView?.requestFocus()
+                            return@setOnKeyListener true
+                        }
+                    }
+                    KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                        // Sol ve sağ tuşları: Olayı tüket
+                        return@setOnKeyListener true
+                    }
+                }
+            }
+            false
         }
     }
 

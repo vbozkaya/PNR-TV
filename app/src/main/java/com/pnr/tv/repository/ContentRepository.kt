@@ -10,6 +10,7 @@ import com.pnr.tv.db.entity.SeriesCategoryEntity
 import com.pnr.tv.db.entity.SeriesEntity
 import com.pnr.tv.db.entity.PlaybackPositionEntity
 import com.pnr.tv.di.IptvRetrofit
+import com.pnr.tv.extensions.normalizeDnsUrl
 import com.pnr.tv.network.ApiService
 import com.pnr.tv.network.dto.AuthenticationResponseDto
 import com.pnr.tv.network.dto.SeriesInfoDto
@@ -20,6 +21,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import retrofit2.Retrofit
+import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -58,7 +60,8 @@ class ContentRepository
 
         fun getMovieCategories(): Flow<List<MovieCategoryEntity>> = movieRepository.getMovieCategories()
 
-        suspend fun refreshMovies(skipTmdbSync: Boolean = false): Result<Unit> = movieRepository.refreshMovies(skipTmdbSync)
+        suspend fun refreshMovies(skipTmdbSync: Boolean = false, forMainScreenUpdate: Boolean = false): Result<Unit> = 
+            movieRepository.refreshMovies(skipTmdbSync, forMainScreenUpdate)
 
         suspend fun refreshMovieCategories(): Result<Unit> = movieRepository.refreshMovieCategories()
 
@@ -74,7 +77,8 @@ class ContentRepository
 
         fun getSeriesCategories(): Flow<List<SeriesCategoryEntity>> = seriesRepository.getSeriesCategories()
 
-        suspend fun refreshSeries(skipTmdbSync: Boolean = false): Result<Unit> = seriesRepository.refreshSeries(skipTmdbSync)
+        suspend fun refreshSeries(skipTmdbSync: Boolean = false, forMainScreenUpdate: Boolean = false): Result<Unit> = 
+            seriesRepository.refreshSeries(skipTmdbSync, forMainScreenUpdate)
 
         suspend fun refreshSeriesCategories(): Result<Unit> = seriesRepository.refreshSeriesCategories()
 
@@ -90,7 +94,8 @@ class ContentRepository
 
         fun getLiveStreamCategories(): Flow<List<LiveStreamCategoryEntity>> = liveStreamRepository.getLiveStreamCategories()
 
-        suspend fun refreshLiveStreams(): Result<Unit> = liveStreamRepository.refreshLiveStreams()
+        suspend fun refreshLiveStreams(forMainScreenUpdate: Boolean = false): Result<Unit> = 
+            liveStreamRepository.refreshLiveStreams(forMainScreenUpdate)
 
         suspend fun refreshLiveStreamCategories(): Result<Unit> = liveStreamRepository.refreshLiveStreamCategories()
 
@@ -137,8 +142,17 @@ class ContentRepository
          * Kullanıcı bilgilerini getirir.
          * Bu metod BaseContentRepository'den safeApiCall kullanır.
          */
-        suspend fun fetchUserInfo(): Result<AuthenticationResponseDto> =
-            baseRepository.safeApiCall { api, user, pass ->
-                api.getUserInfo(user, pass)
-            }
+        suspend fun fetchUserInfo(): Result<AuthenticationResponseDto> {
+            return baseRepository.safeApiCall(apiCall = { api, user, pass ->
+                try {
+                    api.getUserInfo(user, pass)
+                } catch (e: com.squareup.moshi.JsonDataException) {
+                    Timber.e(e, "JSON Parse Hatası - API response formatı beklenenle uyuşmuyor: ${e.message}")
+                    throw e
+                } catch (e: Exception) {
+                    Timber.e(e, "API çağrısı sırasında beklenmeyen hata: ${e.javaClass.simpleName} - ${e.message}")
+                    throw e
+                }
+            })
+        }
     }

@@ -152,6 +152,8 @@ class ErrorHelperTest {
     fun `createUnexpectedError should return UnexpectedError`() {
         // Given
         val exception = IllegalStateException("Invalid state")
+        whenever(mockContext.getString(R.string.error_unexpected, "Invalid state"))
+            .thenReturn("Beklenmeyen hata: Invalid state")
 
         // When
         val result = ErrorHelper.createUnexpectedError(exception, mockContext)
@@ -204,6 +206,9 @@ class ErrorHelperTest {
     fun `createImagePreloadError should return ImagePreload error`() {
         // Given
         val exception = Exception("Image load failed")
+        // Setup was already done in @Before, but ensure it's set
+        whenever(mockContext.getString(R.string.error_image_preload, "Image load failed"))
+            .thenReturn("Resim ön yükleme hatası: Image load failed")
 
         // When
         val result = ErrorHelper.createImagePreloadError(exception, mockContext)
@@ -261,6 +266,144 @@ class ErrorHelperTest {
         assertTrue(result is Result.Error)
         assertEquals("Ağ bağlantı hatası", result.message)
         assertEquals(hostException, result.exception)
+    }
+
+    @Test
+    fun `createHttpError should return user invalid credentials for 401 when forMainScreenUpdate is true`() {
+        // Given
+        val httpException = mock<HttpException>()
+        whenever(httpException.code()).thenReturn(401)
+        whenever(mockContext.getString(R.string.error_user_invalid_credentials))
+            .thenReturn("Kullanıcı Bilgileri Hatalı")
+
+        // When
+        val result = ErrorHelper.createHttpError(httpException, mockContext, forMainScreenUpdate = true)
+
+        // Then
+        assertTrue(result is Result.Error)
+        assertEquals("Kullanıcı Bilgileri Hatalı", result.message)
+        assertEquals(httpException, result.exception)
+    }
+
+    @Test
+    fun `createHttpError should return user invalid credentials for 403 when forMainScreenUpdate is true`() {
+        // Given
+        val httpException = mock<HttpException>()
+        whenever(httpException.code()).thenReturn(403)
+        whenever(mockContext.getString(R.string.error_user_invalid_credentials))
+            .thenReturn("Kullanıcı Bilgileri Hatalı")
+
+        // When
+        val result = ErrorHelper.createHttpError(httpException, mockContext, forMainScreenUpdate = true)
+
+        // Then
+        assertTrue(result is Result.Error)
+        assertEquals("Kullanıcı Bilgileri Hatalı", result.message)
+    }
+
+    @Test
+    fun `createHttpError should return server error for 500 when forMainScreenUpdate is true`() {
+        // Given
+        val httpException = mock<HttpException>()
+        whenever(httpException.code()).thenReturn(500)
+        whenever(mockContext.getString(R.string.error_server_error))
+            .thenReturn("Sunucu Hatası")
+
+        // When
+        val result = ErrorHelper.createHttpError(httpException, mockContext, forMainScreenUpdate = true)
+
+        // Then
+        assertTrue(result is Result.Error)
+        assertEquals("Sunucu Hatası", result.message)
+    }
+
+    @Test
+    fun `createHttpError should return server error for 502 when forMainScreenUpdate is true`() {
+        // Given
+        val httpException = mock<HttpException>()
+        whenever(httpException.code()).thenReturn(502)
+        whenever(mockContext.getString(R.string.error_server_error))
+            .thenReturn("Sunucu Hatası")
+
+        // When
+        val result = ErrorHelper.createHttpError(httpException, mockContext, forMainScreenUpdate = true)
+
+        // Then
+        assertTrue(result is Result.Error)
+        assertEquals("Sunucu Hatası", result.message)
+    }
+
+    @Test
+    fun `createNetworkError should return no internet when forMainScreenUpdate is true`() {
+        // Given
+        val ioException = IOException("Network error")
+        whenever(mockContext.getString(R.string.error_no_internet))
+            .thenReturn("İnternet Bağlantısı Yok")
+
+        // When
+        val result = ErrorHelper.createNetworkError(ioException, mockContext, forMainScreenUpdate = true)
+
+        // Then
+        assertTrue(result is Result.Error)
+        assertEquals("İnternet Bağlantısı Yok", result.message)
+        assertEquals(ioException, result.exception)
+    }
+
+    @Test
+    fun `createNetworkError should use default error when forMainScreenUpdate is false`() {
+        // Given
+        val ioException = IOException("Network error")
+
+        // When
+        val result = ErrorHelper.createNetworkError(ioException, mockContext, forMainScreenUpdate = false)
+
+        // Then
+        assertTrue(result is Result.Error)
+        assertEquals("Ağ bağlantı hatası", result.message)
+    }
+
+    @Test
+    fun `createUserNotExistsError should return user not exists error`() {
+        // Given
+        whenever(mockContext.getString(R.string.error_user_not_exists))
+            .thenReturn("Kullanıcı Yok")
+
+        // When
+        val result = ErrorHelper.createUserNotExistsError(mockContext)
+
+        // Then
+        assertTrue(result is Result.Error)
+        assertEquals("Kullanıcı Yok", result.message)
+        assertTrue(result.exception == null)
+    }
+
+    @Test
+    fun `createUserNotExistsError should return user not selected when forMainScreenUpdate is true`() {
+        // Given
+        whenever(mockContext.getString(R.string.error_user_not_selected))
+            .thenReturn("Kullanıcı Seçili Değil")
+
+        // When
+        val result = ErrorHelper.createUserNotFoundError(mockContext, forMainScreenUpdate = true)
+
+        // Then
+        assertTrue(result is Result.Error)
+        assertEquals("Kullanıcı Seçili Değil", result.message)
+    }
+
+    @Test
+    fun `createUnexpectedError should return error with custom message`() {
+        // Given
+        val exception = Exception("Unexpected error")
+        val customMessage = "Custom error message"
+
+        // When
+        val result = ErrorHelper.createUnexpectedError(exception, mockContext, customMessage)
+
+        // Then
+        assertTrue(result is Result.Error)
+        assertEquals(customMessage, result.message)
+        assertEquals(exception, result.exception)
     }
 
 }

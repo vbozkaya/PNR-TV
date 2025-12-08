@@ -120,7 +120,34 @@ object DatabaseModule {
     fun provideUserRepository(
         userDao: UserDao,
         sessionManager: SessionManager,
+        favoriteDao: FavoriteDao,
+        recentlyWatchedDao: RecentlyWatchedDao,
+        playbackPositionDao: PlaybackPositionDao,
+        watchedEpisodeDao: WatchedEpisodeDao,
+        viewerDao: ViewerDao,
+        movieDao: MovieDao,
+        seriesDao: SeriesDao,
+        liveStreamDao: LiveStreamDao,
+        movieCategoryDao: MovieCategoryDao,
+        seriesCategoryDao: SeriesCategoryDao,
+        liveStreamCategoryDao: LiveStreamCategoryDao,
+        tmdbCacheDao: TmdbCacheDao,
     ): UserRepository {
-        return UserRepository(userDao, sessionManager)
+        return UserRepository(
+            userDao,
+            sessionManager,
+            favoriteDao,
+            recentlyWatchedDao,
+            playbackPositionDao,
+            watchedEpisodeDao,
+            viewerDao,
+            movieDao,
+            seriesDao,
+            liveStreamDao,
+            movieCategoryDao,
+            seriesCategoryDao,
+            liveStreamCategoryDao,
+            tmdbCacheDao,
+        )
     }
 }

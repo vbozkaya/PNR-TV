@@ -112,7 +112,7 @@ class ContentViewModel
                             add(
                                 MovieCategoryEntity(
                                     getViewerCategoryId(viewerId),
-                                    "${viewer.name.uppercase()} FAVORİLER",
+                                    context.getString(R.string.category_viewer_favorites, viewer.name.uppercase()),
                                     Constants.SortOrder.DEFAULT,
                                     Constants.SortOrder.FAVORITES,
                                 ),
@@ -172,7 +172,7 @@ class ContentViewModel
                             add(
                                 SeriesCategoryEntity(
                                     getViewerCategoryId(viewerId),
-                                    "${viewer.name.uppercase()} FAVORİLER",
+                                    context.getString(R.string.category_viewer_favorites, viewer.name.uppercase()),
                                     Constants.SortOrder.DEFAULT,
                                     Constants.SortOrder.FAVORITES,
                                 ),

@@ -27,6 +27,18 @@ class UserRepositoryTest {
 
     private val mockUserDao: UserDao = mock()
     private val mockSessionManager: SessionManager = mock()
+    private val mockFavoriteDao: com.pnr.tv.db.dao.FavoriteDao = mock()
+    private val mockRecentlyWatchedDao: com.pnr.tv.db.dao.RecentlyWatchedDao = mock()
+    private val mockPlaybackPositionDao: com.pnr.tv.db.dao.PlaybackPositionDao = mock()
+    private val mockWatchedEpisodeDao: com.pnr.tv.db.dao.WatchedEpisodeDao = mock()
+    private val mockViewerDao: com.pnr.tv.db.dao.ViewerDao = mock()
+    private val mockMovieDao: com.pnr.tv.db.dao.MovieDao = mock()
+    private val mockSeriesDao: com.pnr.tv.db.dao.SeriesDao = mock()
+    private val mockLiveStreamDao: com.pnr.tv.db.dao.LiveStreamDao = mock()
+    private val mockMovieCategoryDao: com.pnr.tv.db.dao.MovieCategoryDao = mock()
+    private val mockSeriesCategoryDao: com.pnr.tv.db.dao.SeriesCategoryDao = mock()
+    private val mockLiveStreamCategoryDao: com.pnr.tv.db.dao.LiveStreamCategoryDao = mock()
+    private val mockTmdbCacheDao: com.pnr.tv.db.dao.TmdbCacheDao = mock()
 
     @Before
     fun setup() {
@@ -61,7 +73,22 @@ class UserRepositoryTest {
                 )
             // Repository zaten oluşturuldu, yeni bir repository oluştur
             whenever(mockUserDao.getAllUsers()).thenReturn(flowOf(testUsers))
-            val testRepository = UserRepository(mockUserDao, mockSessionManager)
+            val testRepository = UserRepository(
+                mockUserDao,
+                mockSessionManager,
+                mockFavoriteDao,
+                mockRecentlyWatchedDao,
+                mockPlaybackPositionDao,
+                mockWatchedEpisodeDao,
+                mockViewerDao,
+                mockMovieDao,
+                mockSeriesDao,
+                mockLiveStreamDao,
+                mockMovieCategoryDao,
+                mockSeriesCategoryDao,
+                mockLiveStreamCategoryDao,
+                mockTmdbCacheDao
+            )
 
             // When
             advanceUntilIdle()
@@ -77,7 +104,22 @@ class UserRepositoryTest {
         runTest {
             // Given
             whenever(mockSessionManager.getCurrentUserId()).thenReturn(flowOf(null))
-            val testRepository = UserRepository(mockUserDao, mockSessionManager)
+            val testRepository = UserRepository(
+                mockUserDao,
+                mockSessionManager,
+                mockFavoriteDao,
+                mockRecentlyWatchedDao,
+                mockPlaybackPositionDao,
+                mockWatchedEpisodeDao,
+                mockViewerDao,
+                mockMovieDao,
+                mockSeriesDao,
+                mockLiveStreamDao,
+                mockMovieCategoryDao,
+                mockSeriesCategoryDao,
+                mockLiveStreamCategoryDao,
+                mockTmdbCacheDao
+            )
 
             // When
             advanceUntilIdle()
@@ -103,7 +145,22 @@ class UserRepositoryTest {
                 )
             whenever(mockSessionManager.getCurrentUserId()).thenReturn(flowOf(userId))
             whenever(mockUserDao.getUserById(userId)).thenReturn(flowOf(testUser))
-            val testRepository = UserRepository(mockUserDao, mockSessionManager)
+            val testRepository = UserRepository(
+                mockUserDao,
+                mockSessionManager,
+                mockFavoriteDao,
+                mockRecentlyWatchedDao,
+                mockPlaybackPositionDao,
+                mockWatchedEpisodeDao,
+                mockViewerDao,
+                mockMovieDao,
+                mockSeriesDao,
+                mockLiveStreamDao,
+                mockMovieCategoryDao,
+                mockSeriesCategoryDao,
+                mockLiveStreamCategoryDao,
+                mockTmdbCacheDao
+            )
 
             // When
             advanceUntilIdle()
@@ -131,7 +188,22 @@ class UserRepositoryTest {
             whenever(mockUserDao.insertUser(testUser)).thenReturn(expectedId)
             whenever(mockUserDao.getAllUsers()).thenReturn(flowOf(emptyList()))
             whenever(mockSessionManager.getCurrentUserId()).thenReturn(flowOf(null))
-            val repository = UserRepository(mockUserDao, mockSessionManager)
+            val repository = UserRepository(
+                mockUserDao,
+                mockSessionManager,
+                mockFavoriteDao,
+                mockRecentlyWatchedDao,
+                mockPlaybackPositionDao,
+                mockWatchedEpisodeDao,
+                mockViewerDao,
+                mockMovieDao,
+                mockSeriesDao,
+                mockLiveStreamDao,
+                mockMovieCategoryDao,
+                mockSeriesCategoryDao,
+                mockLiveStreamCategoryDao,
+                mockTmdbCacheDao
+            )
 
             // When
             val result = repository.addUser(testUser)
@@ -156,7 +228,22 @@ class UserRepositoryTest {
                 )
             whenever(mockUserDao.getAllUsers()).thenReturn(flowOf(emptyList()))
             whenever(mockSessionManager.getCurrentUserId()).thenReturn(flowOf(null))
-            val repository = UserRepository(mockUserDao, mockSessionManager)
+            val repository = UserRepository(
+                mockUserDao,
+                mockSessionManager,
+                mockFavoriteDao,
+                mockRecentlyWatchedDao,
+                mockPlaybackPositionDao,
+                mockWatchedEpisodeDao,
+                mockViewerDao,
+                mockMovieDao,
+                mockSeriesDao,
+                mockLiveStreamDao,
+                mockMovieCategoryDao,
+                mockSeriesCategoryDao,
+                mockLiveStreamCategoryDao,
+                mockTmdbCacheDao
+            )
 
             // When
             repository.updateUser(testUser)
@@ -180,7 +267,22 @@ class UserRepositoryTest {
                 )
             whenever(mockUserDao.getAllUsers()).thenReturn(flowOf(emptyList()))
             whenever(mockSessionManager.getCurrentUserId()).thenReturn(flowOf(null))
-            val repository = UserRepository(mockUserDao, mockSessionManager)
+            val repository = UserRepository(
+                mockUserDao,
+                mockSessionManager,
+                mockFavoriteDao,
+                mockRecentlyWatchedDao,
+                mockPlaybackPositionDao,
+                mockWatchedEpisodeDao,
+                mockViewerDao,
+                mockMovieDao,
+                mockSeriesDao,
+                mockLiveStreamDao,
+                mockMovieCategoryDao,
+                mockSeriesCategoryDao,
+                mockLiveStreamCategoryDao,
+                mockTmdbCacheDao
+            )
 
             // When
             repository.deleteUser(testUser)
@@ -204,7 +306,22 @@ class UserRepositoryTest {
                 )
             whenever(mockUserDao.getAllUsers()).thenReturn(flowOf(emptyList()))
             whenever(mockSessionManager.getCurrentUserId()).thenReturn(flowOf(null))
-            val repository = UserRepository(mockUserDao, mockSessionManager)
+            val repository = UserRepository(
+                mockUserDao,
+                mockSessionManager,
+                mockFavoriteDao,
+                mockRecentlyWatchedDao,
+                mockPlaybackPositionDao,
+                mockWatchedEpisodeDao,
+                mockViewerDao,
+                mockMovieDao,
+                mockSeriesDao,
+                mockLiveStreamDao,
+                mockMovieCategoryDao,
+                mockSeriesCategoryDao,
+                mockLiveStreamCategoryDao,
+                mockTmdbCacheDao
+            )
 
             // When
             repository.setCurrentUser(testUser)
@@ -219,7 +336,22 @@ class UserRepositoryTest {
         runTest {
             // Given
             whenever(mockUserDao.getAllUsers()).thenReturn(flowOf(emptyList()))
-            val repository = UserRepository(mockUserDao, mockSessionManager)
+            val repository = UserRepository(
+                mockUserDao,
+                mockSessionManager,
+                mockFavoriteDao,
+                mockRecentlyWatchedDao,
+                mockPlaybackPositionDao,
+                mockWatchedEpisodeDao,
+                mockViewerDao,
+                mockMovieDao,
+                mockSeriesDao,
+                mockLiveStreamDao,
+                mockMovieCategoryDao,
+                mockSeriesCategoryDao,
+                mockLiveStreamCategoryDao,
+                mockTmdbCacheDao
+            )
 
             // When
             advanceUntilIdle()
@@ -243,7 +375,22 @@ class UserRepositoryTest {
                     dns = "https://single.dns.com",
                 )
             whenever(mockUserDao.getAllUsers()).thenReturn(flowOf(listOf(singleUser)))
-            val repository = UserRepository(mockUserDao, mockSessionManager)
+            val repository = UserRepository(
+                mockUserDao,
+                mockSessionManager,
+                mockFavoriteDao,
+                mockRecentlyWatchedDao,
+                mockPlaybackPositionDao,
+                mockWatchedEpisodeDao,
+                mockViewerDao,
+                mockMovieDao,
+                mockSeriesDao,
+                mockLiveStreamDao,
+                mockMovieCategoryDao,
+                mockSeriesCategoryDao,
+                mockLiveStreamCategoryDao,
+                mockTmdbCacheDao
+            )
 
             // When
             advanceUntilIdle()
@@ -262,7 +409,22 @@ class UserRepositoryTest {
             val userId = 1
             whenever(mockSessionManager.getCurrentUserId()).thenReturn(flowOf(userId))
             whenever(mockUserDao.getUserById(userId)).thenReturn(flowOf(null))
-            val repository = UserRepository(mockUserDao, mockSessionManager)
+            val repository = UserRepository(
+                mockUserDao,
+                mockSessionManager,
+                mockFavoriteDao,
+                mockRecentlyWatchedDao,
+                mockPlaybackPositionDao,
+                mockWatchedEpisodeDao,
+                mockViewerDao,
+                mockMovieDao,
+                mockSeriesDao,
+                mockLiveStreamDao,
+                mockMovieCategoryDao,
+                mockSeriesCategoryDao,
+                mockLiveStreamCategoryDao,
+                mockTmdbCacheDao
+            )
 
             // When
             advanceUntilIdle()
@@ -290,7 +452,22 @@ class UserRepositoryTest {
             whenever(mockUserDao.insertUser(testUser)).thenReturn(expectedId)
             whenever(mockUserDao.getAllUsers()).thenReturn(flowOf(emptyList()))
             whenever(mockSessionManager.getCurrentUserId()).thenReturn(flowOf(null))
-            val repository = UserRepository(mockUserDao, mockSessionManager)
+            val repository = UserRepository(
+                mockUserDao,
+                mockSessionManager,
+                mockFavoriteDao,
+                mockRecentlyWatchedDao,
+                mockPlaybackPositionDao,
+                mockWatchedEpisodeDao,
+                mockViewerDao,
+                mockMovieDao,
+                mockSeriesDao,
+                mockLiveStreamDao,
+                mockMovieCategoryDao,
+                mockSeriesCategoryDao,
+                mockLiveStreamCategoryDao,
+                mockTmdbCacheDao
+            )
 
             // When
             val result = repository.addUser(testUser)
@@ -324,7 +501,22 @@ class UserRepositoryTest {
             whenever(mockUserDao.insertUser(user1)).thenReturn(1L)
             whenever(mockUserDao.getAllUsers()).thenReturn(flowOf(emptyList()))
             whenever(mockSessionManager.getCurrentUserId()).thenReturn(flowOf(null))
-            val repository = UserRepository(mockUserDao, mockSessionManager)
+            val repository = UserRepository(
+                mockUserDao,
+                mockSessionManager,
+                mockFavoriteDao,
+                mockRecentlyWatchedDao,
+                mockPlaybackPositionDao,
+                mockWatchedEpisodeDao,
+                mockViewerDao,
+                mockMovieDao,
+                mockSeriesDao,
+                mockLiveStreamDao,
+                mockMovieCategoryDao,
+                mockSeriesCategoryDao,
+                mockLiveStreamCategoryDao,
+                mockTmdbCacheDao
+            )
 
             // When
             repository.addUser(user1)
@@ -365,7 +557,22 @@ class UserRepositoryTest {
                 )
             whenever(mockUserDao.getAllUsers()).thenReturn(flowOf(emptyList()))
             whenever(mockSessionManager.getCurrentUserId()).thenReturn(flowOf(null))
-            val repository = UserRepository(mockUserDao, mockSessionManager)
+            val repository = UserRepository(
+                mockUserDao,
+                mockSessionManager,
+                mockFavoriteDao,
+                mockRecentlyWatchedDao,
+                mockPlaybackPositionDao,
+                mockWatchedEpisodeDao,
+                mockViewerDao,
+                mockMovieDao,
+                mockSeriesDao,
+                mockLiveStreamDao,
+                mockMovieCategoryDao,
+                mockSeriesCategoryDao,
+                mockLiveStreamCategoryDao,
+                mockTmdbCacheDao
+            )
 
             // When
             repository.setCurrentUser(userWithId1)

@@ -59,9 +59,14 @@ class MovieRepository
          * TMDB senkronizasyonu WorkManager tarafından arka planda yapılır
          * 
          * @param skipTmdbSync True ise TMDB senkronizasyonu atlanır (WorkManager için)
+         * @param forMainScreenUpdate Ana ekran güncelleme için mi? (true ise özel hata mesajları kullanılır)
          */
-        suspend fun refreshMovies(skipTmdbSync: Boolean = false): Result<Unit> =
-            safeApiCall { api, user, pass ->
+        suspend fun refreshMovies(skipTmdbSync: Boolean = false, forMainScreenUpdate: Boolean = false, maxRetries: Int = 2): Result<Unit> =
+            safeApiCall(
+                forMainScreenUpdate = forMainScreenUpdate,
+                maxRetries = maxRetries,
+                retryDelayMs = 2000L,
+                apiCall = { api, user, pass ->
                 Timber.d("═══════════════════════════════════════")
                 Timber.d("📥 FİLM VERİLERİ GÜNCELENİYOR...")
                 Timber.d("═══════════════════════════════════════")
@@ -159,10 +164,11 @@ class MovieRepository
                 Timber.d("   • Açıklama olan: $withPlot / ${entities.size}")
                 Timber.d("   • TMDB ID olan: $withTmdb / ${entities.size}")
                 Timber.d("═══════════════════════════════════════")
-            }
+                }
+            )
 
         suspend fun refreshMovieCategories(): Result<Unit> =
-            safeApiCall { api, user, pass ->
+            safeApiCall(apiCall = { api, user, pass ->
                 Timber.d("═══════════════════════════════════════")
                 Timber.d("📂 FİLM KATEGORİLERİ GÜNCELENİYOR...")
                 Timber.d("═══════════════════════════════════════")
@@ -200,6 +206,7 @@ class MovieRepository
                 movieCategoryDao.replaceAll(entities)
                 Timber.d("💾 ${entities.size} kategori veritabanına kaydedildi")
                 Timber.d("═══════════════════════════════════════")
-            }
+                }
+            )
     }
 

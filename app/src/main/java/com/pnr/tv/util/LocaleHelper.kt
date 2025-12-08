@@ -1,13 +1,76 @@
 package com.pnr.tv.util
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.os.Build
 import java.util.Locale
 
 /**
  * Cihaz dili ve bölge bilgilerini almak için yardımcı sınıf
+ * Dil değiştirme ve kaydetme özellikleri içerir
  */
 object LocaleHelper {
+    private const val PREFS_NAME = "locale_prefs"
+    private const val PREFS_KEY_LANGUAGE = "selected_language"
+    
+    // Desteklenen diller
+    enum class SupportedLanguage(val code: String, val androidCode: String, val displayName: String) {
+        TURKISH("tr", "tr", "Türkçe"),
+        ENGLISH("en", "en", "English"),
+        SPANISH("es", "es", "Español"),
+        INDONESIAN("id", "in", "Bahasa Indonesia"), // Android'de Endonezce için "in" kullanılır
+        HINDI("hi", "hi", "हिन्दी"),
+        PORTUGUESE("pt", "pt", "Português"),
+        FRENCH("fr", "fr", "Français");
+        
+        companion object {
+            fun fromCode(code: String): SupportedLanguage? {
+                return values().find { it.code == code }
+            }
+        }
+    }
+    
+    /**
+     * Kaydedilmiş dili yükler veya cihaz dilini kullanır
+     */
+    fun getSavedLanguage(context: Context): String {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(PREFS_KEY_LANGUAGE, null) ?: getDeviceLanguage(context)
+    }
+    
+    /**
+     * Dil kaydeder
+     */
+    fun saveLanguage(context: Context, languageCode: String) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putString(PREFS_KEY_LANGUAGE, languageCode).apply()
+    }
+    
+    /**
+     * Context'i seçili dile göre wrap eder
+     */
+    @SuppressLint("NewApi")
+    fun wrapContext(context: Context): Context {
+        val language = getSavedLanguage(context)
+        // Android locale kodunu al
+        val androidCode = SupportedLanguage.fromCode(language)?.androidCode ?: language
+        val locale = Locale(androidCode)
+        Locale.setDefault(locale)
+        
+        val config = Configuration(context.resources.configuration)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            config.setLocale(locale)
+            return context.createConfigurationContext(config)
+        } else {
+            @Suppress("DEPRECATION")
+            config.locale = locale
+            @Suppress("DEPRECATION")
+            context.resources.updateConfiguration(config, context.resources.displayMetrics)
+            return context
+        }
+    }
     /**
      * Cihazın mevcut dilini ve bölgesini TMDB formatında döndürür
      * Örnek: "tr-TR", "en-US", "pt-BR", "fr-CA"

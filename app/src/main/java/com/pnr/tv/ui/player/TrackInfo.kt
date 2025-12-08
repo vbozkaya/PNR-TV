@@ -10,3 +10,6 @@ data class TrackInfo(
     val label: String?,       // Label (örn: "Turkish", "English")
     val isSelected: Boolean   // Şu anda seçili mi?
 )
+
+
+

@@ -74,6 +74,11 @@ class PlayerActivity : BaseActivity() {
         if (binding.playerControlView != null) {
             binding.playerControlView.setContentInfo(contentTitle, contentRating)
 
+            // Canlı yayın modunu ayarla - channelId varsa canlı yayındır
+            val isLiveStream = channelId != null
+            binding.playerControlView.setLiveStreamMode(isLiveStream)
+            timber.log.Timber.d("📺 Canlı yayın modu: $isLiveStream (channelId: $channelId)")
+
             // Alt yazı paneli durumu callback'i
             binding.playerControlView.setSettingsPanelOpenCallback {
                 settingsPanelBinding.playerSettingsPanel.visibility == View.VISIBLE
@@ -127,7 +132,7 @@ class PlayerActivity : BaseActivity() {
             }
         } else {
             timber.log.Timber.e("❌ Video URL bulunamadı!")
-            Toast.makeText(this, "Video URL bulunamadı", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.error_video_url_not_found), Toast.LENGTH_SHORT).show()
             finish()
         }
     }
@@ -415,7 +420,7 @@ class PlayerActivity : BaseActivity() {
         }
         
         // Panel başlığını "Alt Yazılar" olarak ayarla
-        settingsPanelBinding.txtSubtitleTitle.text = "Alt Yazılar"
+        settingsPanelBinding.txtSubtitleTitle.text = getString(R.string.player_subtitles_title)
         
         // Alt yazı track'lerini yükle
         loadSubtitleTracks()
@@ -483,7 +488,7 @@ class PlayerActivity : BaseActivity() {
                 groupIndex = -1,
                 trackIndex = -1,
                 language = null,
-                label = "Kapalı",
+                label = getString(R.string.player_subtitles_off),
                 isSelected = true
             )
             subtitleTracks.add(0, closedOption)
@@ -495,7 +500,7 @@ class PlayerActivity : BaseActivity() {
                 groupIndex = -1,
                 trackIndex = -1,
                 language = null,
-                label = "Kapalı",
+                label = getString(R.string.player_subtitles_off),
                 isSelected = false
             )
             subtitleTracks.add(0, closedOption)
@@ -557,7 +562,7 @@ class PlayerActivity : BaseActivity() {
         }
         
         // Panel başlığını "Ses Dili" olarak değiştir
-        settingsPanelBinding.txtSubtitleTitle.text = "Ses Dili"
+        settingsPanelBinding.txtSubtitleTitle.text = getString(R.string.player_audio_language_title)
         
         // Ses track'lerini yükle
         loadAudioTracks()

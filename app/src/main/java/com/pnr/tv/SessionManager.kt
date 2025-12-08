@@ -37,4 +37,13 @@ class SessionManager
                 preferences[CURRENT_USER_ID_KEY]
             }
         }
+
+        /**
+         * Seçili kullanıcıyı temizler (kullanıcı silindiğinde kullanılır).
+         */
+        suspend fun clearCurrentUser() {
+            dataStore.edit { preferences ->
+                preferences.remove(CURRENT_USER_ID_KEY)
+            }
+        }
     }

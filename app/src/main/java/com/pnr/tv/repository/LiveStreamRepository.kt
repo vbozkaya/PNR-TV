@@ -52,8 +52,17 @@ class LiveStreamRepository
 
         // ==================== Refresh Operations ====================
 
-        suspend fun refreshLiveStreams(): Result<Unit> =
-            safeApiCall { api, user, pass ->
+        /**
+         * Canlı yayınları yeniler
+         * 
+         * @param forMainScreenUpdate Ana ekran güncelleme için mi? (true ise özel hata mesajları kullanılır)
+         */
+        suspend fun refreshLiveStreams(forMainScreenUpdate: Boolean = false, maxRetries: Int = 2): Result<Unit> =
+            safeApiCall(
+                forMainScreenUpdate = forMainScreenUpdate,
+                maxRetries = maxRetries,
+                retryDelayMs = 2000L,
+                apiCall = { api, user, pass ->
                 Timber.d("═══════════════════════════════════════")
                 Timber.d("📡 CANLI YAYIN VERİLERİ GÜNCELENİYOR...")
                 Timber.d("═══════════════════════════════════════")
@@ -82,14 +91,16 @@ class LiveStreamRepository
                 liveStreamDao.replaceAll(entities)
                 Timber.d("💾 ${entities.size} canlı yayın veritabanına kaydedildi")
                 Timber.d("═══════════════════════════════════════")
-            }
+                }
+            )
 
         suspend fun refreshLiveStreamCategories(): Result<Unit> =
-            safeApiCall { api, user, pass ->
+            safeApiCall(apiCall = { api, user, pass ->
                 val categoriesDto = api.getLiveStreamCategories(user, pass, ApiActions.GET_LIVE_CATEGORIES)
                 val entities = categoriesDto.mapIndexedNotNull { index, dto -> dto.toEntity(sortOrder = index) }
                 liveStreamCategoryDao.replaceAll(entities)
-            }
+                }
+            )
 
         // ==================== Image Preloading ====================
 

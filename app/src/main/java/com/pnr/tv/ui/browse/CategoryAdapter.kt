@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.pnr.tv.R
 import com.pnr.tv.model.CategoryItem
+import com.pnr.tv.util.CategoryNameHelper
 
 /**
  * Generic category adapter that works with CategoryItem interface.
@@ -89,7 +90,12 @@ class CategoryAdapter(
             isSelected: Boolean,
         ) {
             currentCategory = category
-            categoryNameText.text = category.categoryName ?: ""
+            // Kategori ismini yerelleştir
+            val localizedName = CategoryNameHelper.getLocalizedCategoryName(
+                itemView.context,
+                category.categoryName
+            )
+            categoryNameText.text = localizedName
 
             // Set selected state
             categoryNameText.isSelected = isSelected
@@ -117,9 +123,45 @@ class CategoryAdapter(
             }
 
             // Add focus listener
-            categoryNameText.setOnFocusChangeListener { _, hasFocus ->
+            categoryNameText.setOnFocusChangeListener { focusedView, hasFocus ->
                 if (hasFocus && currentCategory != null) {
                     onCategoryFocused(currentCategory!!)
+                    
+                    // Focus scroll: Focus alındığında item'ı görünür alana getir
+                    val recyclerView = focusedView.parent as? RecyclerView
+                    if (recyclerView != null) {
+                        val layoutManager = recyclerView.layoutManager as? androidx.recyclerview.widget.LinearLayoutManager
+                        if (layoutManager != null) {
+                            val focusedPosition = recyclerView.getChildAdapterPosition(focusedView)
+                            if (focusedPosition != androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
+                                recyclerView.post {
+                                    val firstVisible = layoutManager.findFirstVisibleItemPosition()
+                                    val lastVisible = layoutManager.findLastVisibleItemPosition()
+                                    
+                                    var needsScroll = false
+                                    if (focusedPosition < firstVisible || focusedPosition > lastVisible) {
+                                        needsScroll = true
+                                    } else {
+                                        val viewHolder = recyclerView.findViewHolderForAdapterPosition(focusedPosition)
+                                        viewHolder?.itemView?.let { view ->
+                                            val top = view.top
+                                            val bottom = view.bottom
+                                            val recyclerTop = recyclerView.paddingTop
+                                            val recyclerBottom = recyclerView.height - recyclerView.paddingBottom
+                                            
+                                            if (top < recyclerTop || bottom > recyclerBottom) {
+                                                needsScroll = true
+                                            }
+                                        }
+                                    }
+                                    
+                                    if (needsScroll || focusedPosition == firstVisible || focusedPosition == lastVisible) {
+                                        layoutManager.scrollToPositionWithOffset(focusedPosition, recyclerView.paddingTop + 20)
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
 

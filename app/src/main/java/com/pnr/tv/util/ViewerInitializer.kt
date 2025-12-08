@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
+import com.pnr.tv.R
 import com.pnr.tv.repository.UserRepository
 import com.pnr.tv.db.entity.ViewerEntity
 import com.pnr.tv.repository.ViewerRepository
@@ -31,7 +32,7 @@ class ViewerInitializer
             if (!isInitialized) {
                 // Get current user account name
                 val currentUser = userRepository.currentUser.firstOrNull()
-                val accountName = currentUser?.accountName ?: "Varsayılan"
+                val accountName = currentUser?.accountName ?: context.getString(R.string.default_viewer_name)
 
                 // Create default viewer
                 val defaultViewer =
@@ -45,6 +46,15 @@ class ViewerInitializer
                 context.dataStore.edit { preferences ->
                     preferences[VIEWER_INITIALIZED_KEY] = true
                 }
+            }
+        }
+
+        /**
+         * Viewer initialization flag'ini temizler (cache temizleme için).
+         */
+        suspend fun clearInitializationFlag() {
+            context.dataStore.edit { preferences ->
+                preferences.remove(VIEWER_INITIALIZED_KEY)
             }
         }
     }

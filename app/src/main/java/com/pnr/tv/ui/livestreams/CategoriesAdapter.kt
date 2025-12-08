@@ -84,7 +84,12 @@ class CategoriesAdapter(
             isSelected: Boolean,
         ) {
             currentCategory = category
-            categoryNameText.text = category.categoryName ?: ""
+            // Kategori ismini yerelleştir
+            val localizedName = com.pnr.tv.util.CategoryNameHelper.getLocalizedCategoryName(
+                itemView.context,
+                category.categoryName
+            )
+            categoryNameText.text = localizedName
 
             // Seçili durumunu ayarla
             categoryNameText.isSelected = isSelected

@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PNR TV</string>
+    
+    <!-- पृष्ठ शीर्षक -->
+    <string name="page_main">होम</string>
+    <string name="page_settings">सेटिंग्स</string>
+    <string name="page_user_management">उपयोगकर्ता प्रबंधन</string>
+    <string name="page_users_list">वर्तमान उपयोगकर्ता</string>
+    <string name="page_add_user">नया उपयोगकर्ता जोड़ें</string>
+    <string name="page_live_streams">लाइव स्ट्रीम</string>
+    <string name="page_movies">फिल्में</string>
+    <string name="page_movie_details">फिल्म विवरण</string>
+    <string name="page_series">सीरीज़</string>
+    <string name="page_series_details">सीरीज़ विवरण</string>
+    <string name="category_favorites">पसंदीदा</string>
+    <string name="category_viewer_favorites">%1$s पसंदीदा</string>
+    <string name="category_recently_added">हाल ही में जोड़े गए</string>
+    <string name="category_recently_watched">हाल ही में देखे गए</string>
+    <string name="category_all_series">सभी सीरीज़</string>
+    <string name="label_seasons">सीज़न</string>
+    <string name="empty_favorites">आपके पास अभी तक कोई पसंदीदा चैनल नहीं है।</string>
+    <string name="empty_recently_watched">हाल ही में देखा गया कोई चैनल नहीं मिला।</string>
+    <string name="toast_favorite_added">पसंदीदा में जोड़ा गया</string>
+    <string name="toast_favorite_removed">पसंदीदा से हटाया गया</string>
+    <string name="no_episodes_found">इस सीज़न के लिए कोई एपिसोड नहीं मिला</string>
+    <string name="error_title">त्रुटि</string>
+    <string name="retry">पुनः प्रयास करें</string>
+    <string name="cancel">रद्द करें</string>
+    <string name="ok">ठीक</string>
+    
+    <!-- सामग्री विवरण (पहुंच) -->
+    <string name="cd_series_poster">सीरीज़ पोस्टर</string>
+    <string name="cd_navbar_back">वापस जाएं</string>
+    <string name="cd_navbar_home">होम पर जाएं</string>
+    <string name="cd_loading">लोड हो रहा है</string>
+    <string name="cd_episode_watched">देखा गया</string>
+    <string name="add_to_favorites">पसंदीदा में जोड़ें</string>
+    
+    <!-- उपयोगकर्ता जोड़ें पृष्ठ -->
+    <string name="hint_account_name">खाता नाम (कोई भी नाम)</string>
+    <string name="hint_username">उपयोगकर्ता नाम</string>
+    <string name="hint_password">पासवर्ड</string>
+    <string name="hint_dns">DNS (URL)</string>
+    <string name="btn_save">सहेजें</string>
+    <string name="error_fill_fields">कृपया सभी फ़ील्ड भरें</string>
+    <string name="toast_user_saved">उपयोगकर्ता सहेजा गया</string>
+    <string name="toast_user_updated">उपयोगकर्ता अपडेट किया गया</string>
+    <string name="toast_user_deleted">उपयोगकर्ता हटाया गया</string>
+    <string name="toast_select_placeholder">यह विकल्प जल्द ही उपलब्ध होगा</string>
+    <string name="toast_user_selected">%1$s चुना गया</string>
+    <string name="label_account_name">खाता नाम</string>
+    <string name="empty_users_list">अभी तक कोई उपयोगकर्ता नहीं जोड़ा गया</string>
+    <string name="cd_edit_user">उपयोगकर्ता संपादित करें</string>
+    <string name="cd_delete_user">उपयोगकर्ता हटाएं</string>
+    <string name="cd_select_user">उपयोगकर्ता चुनें</string>
+    <string name="current_user_section_title">वर्तमान उपयोगकर्ता</string>
+    <string name="current_user_placeholder">चयनित नहीं</string>
+    <string name="dialog_delete_user_title">उपयोगकर्ता हटाएं</string>
+    <string name="dialog_delete_user_message">क्या आप उपयोगकर्ता %1$s को हटाना चाहते हैं?</string>
+    
+    <!-- बटन और नेविगेशन -->
+    <string name="btn_back">वापस</string>
+    <string name="btn_home">होम</string>
+    <string name="btn_filter">फ़िल्टर</string>
+    <string name="search_hint">सामग्री खोजें</string>
+    <string name="btn_exit">बाहर निकलें</string>
+    
+    <!-- क्रमबद्धता संवाद -->
+    <string name="dialog_sort_title">क्रमबद्धता विकल्प</string>
+    <string name="sort_a_to_z">A से Z तक क्रमबद्ध करें</string>
+    <string name="sort_z_to_a">Z से A तक क्रमबद्ध करें</string>
+    <string name="sort_rating_high_to_low">रेटिंग उच्च से निम्न तक क्रमबद्ध करें</string>
+    <string name="sort_rating_low_to_high">रेटिंग निम्न से उच्च तक क्रमबद्ध करें</string>
+    <string name="sort_date_new_to_old">तारीख नई से पुरानी तक क्रमबद्ध करें</string>
+    <string name="sort_date_old_to_new">तारीख पुरानी से नई तक क्रमबद्ध करें</string>
+    <string name="btn_update">अपडेट करें</string>
+    <string name="btn_play">चलाएं</string>
+    <string name="btn_add_favorite">पसंदीदा में जोड़ें</string>
+    
+    <!-- संवाद संदेश -->
+    <string name="dialog_exit_title">बाहर निकलें</string>
+    <string name="dialog_exit_message">क्या आप वाकई एप्लिकेशन से बाहर निकलना चाहते हैं?</string>
+    <string name="dialog_yes">हाँ</string>
+    <string name="dialog_no">नहीं</string>
+    
+    <!-- उपयोगकर्ता जानकारी -->
+    <string name="current_user_label">वर्तमान उपयोगकर्ता: %1$s</string>
+    <string name="current_user_none">वर्तमान उपयोगकर्ता: -</string>
+    
+    <!-- लोडिंग संदेश -->
+    <string name="loading_content">सामग्री अपडेट और प्रसंस्कृत की जा रही है...</string>
+    <string name="loading_completed">अपडेट पूर्ण</string>
+    
+    <!-- त्रुटि संदेश -->
+    <string name="error_unknown">अज्ञात त्रुटि</string>
+    <string name="error_with_message">त्रुटि: %1$s</string>
+    <string name="error_user_not_found">उपयोगकर्ता जानकारी नहीं मिली या DNS जानकारी गायब है</string>
+    <string name="error_network_connection">नेटवर्क कनेक्शन त्रुटि</string>
+    <string name="error_network_generic">नेटवर्क त्रुटि: %1$d %2$s</string>
+    <string name="error_unexpected">अप्रत्याशित त्रुटि: %1$s</string>
+    
+    <!-- मुख्य स्क्रीन अपडेट त्रुटि संदेश -->
+    <string name="error_user_not_exists">कोई उपयोगकर्ता नहीं</string>
+    <string name="error_user_not_selected">उपयोगकर्ता चयनित नहीं</string>
+    <string name="error_user_invalid_credentials">अमान्य उपयोगकर्ता क्रेडेंशियल</string>
+    <string name="error_server_error">सर्वर त्रुटि</string>
+    <string name="error_content_info_failed">सामग्री जानकारी लोड करने में विफल</string>
+    <string name="error_no_internet">कोई इंटरनेट कनेक्शन नहीं</string>
+    <string name="error_timeout">कनेक्शन समय समाप्त हो गया। कृपया पुनः प्रयास करें।</string>
+    <string name="error_timeout_connect">सर्वर से कनेक्ट नहीं हो सका। कनेक्शन समय समाप्त हो गया।</string>
+    <string name="error_timeout_read">सर्वर से डेटा प्राप्त करते समय समय समाप्त हो गया। कृपया पुनः प्रयास करें।</string>
+    <string name="error_offline">कोई इंटरनेट कनेक्शन नहीं। कैश से डेटा दिखाया जा रहा है।</string>
+    <string name="error_retry_failed">पुनः प्रयास विफल रहा। कृपया अपना इंटरनेट कनेक्शन जांचें।</string>
+    <string name="btn_retry">पुनः प्रयास करें</string>
+    <string name="toast_retrying">पुनः प्रयास किया जा रहा है...</string>
+    <string name="toast_retry_success">कनेक्शन सफल</string>
+    <string name="toast_retry_failed">पुनः प्रयास विफल</string>
+    <string name="error_categories_load_failed">श्रेणियां लोड करने में विफल: %1$s</string>
+    <string name="error_movies_load_failed">फिल्में लोड करने में विफल: %1$s</string>
+    <string name="error_series_load_failed">सीरीज़ लोड करने में विफल: %1$s</string>
+    <string name="error_categories_load">श्रेणियां लोड करते समय त्रुटि: %1$s</string>
+    <string name="error_movies_load">फिल्में लोड करते समय त्रुटि: %1$s</string>
+    <string name="error_series_load">सीरीज़ लोड करते समय त्रुटि: %1$s</string>
+    <string name="error_image_preload">छवि प्रीलोड त्रुटि: %1$s</string>
+    
+    <!-- श्रेणी नाम -->
+    <string name="category_all_movies">सभी फिल्में</string>
+    
+    <!-- उपयोगकर्ता स्थिति जानकारी -->
+    <string name="status_label">स्थिति: %1$s</string>
+    <string name="expiry_date_label">समाप्ति तिथि: %1$s</string>
+    <string name="connection_label">कनेक्शन: %1$s/%2$s</string>
+    <string name="trial_label">ट्रायल: %1$s</string>
+    <string name="yes">हाँ</string>
+    <string name="no">नहीं</string>
+    
+    <!-- सामग्री लेबल -->
+    <string name="movie_label">फिल्म: %1$s</string>
+    <string name="series_label">सीरीज़: %1$s</string>
+    <string name="description_not_available">विवरण उपलब्ध नहीं है।</string>
+    <string name="episode_number_format">एपिसोड %1$d</string>
+    
+    <!-- प्लेयर -->
+    <string name="subtitles">उपशीर्षक</string>
+    <string name="audio_language">ऑडियो भाषा</string>
+    
+    <!-- दर्शक प्रबंधन -->
+    <string name="page_viewers">दर्शक</string>
+    <string name="hint_viewer_name">दर्शक नाम</string>
+    <string name="btn_add_viewer">दर्शक जोड़ें</string>
+    <string name="btn_delete_viewer">हटाएं</string>
+    <string name="error_cannot_delete_default_viewer">डिफ़ॉल्ट दर्शक हटाया नहीं जा सकता</string>
+    <string name="toast_viewer_added">दर्शक जोड़ा गया</string>
+    <string name="toast_viewer_deleted">दर्शक हटाया गया</string>
+    <string name="dialog_delete_viewer_title">दर्शक हटाएं</string>
+    <string name="dialog_delete_viewer_message">क्या आप दर्शक %1$s को हटाना चाहते हैं? सभी पसंदीदा भी हटा दिए जाएंगे।</string>
+    <string name="empty_viewers_list">अभी तक कोई दर्शक नहीं जोड़ा गया</string>
+    
+    <!-- पसंदीदा चयन -->
+    <string name="dialog_select_viewer_title">पसंदीदा में जोड़ें</string>
+    <string name="dialog_select_viewer_message">आप किस दर्शक के लिए पसंदीदा में जोड़ना चाहते हैं?</string>
+    <string name="viewer_favorites_category">%1$s पसंदीदा</string>
+    
+    <!-- फिल्म विवरण -->
+    <string name="movie_director">निर्देशक:</string>
+    <string name="movie_genre">शैली:</string>
+    <string name="movie_cast">कलाकार:</string>
+    <string name="movie_overview_label">अवलोकन:</string>
+    <string name="no_overview">कोई अवलोकन नहीं</string>
+    
+    <!-- सीरीज़ विवरण -->
+    <string name="series_creator">निर्माता:</string>
+    <string name="error_movie_not_found">फिल्म नहीं मिली</string>
+    <string name="loading_movie_details">फिल्म विवरण लोड हो रहे हैं...</string>
+    <string name="error_loading_movie">फिल्म लोड करते समय त्रुटि</string>
+    
+    <!-- सेटिंग्स -->
+    <string name="settings_user_status">उपयोगकर्ता स्थिति</string>
+    <string name="settings_app_language">एप भाषा</string>
+    <string name="settings_clear_cache">कैश और सभी डेटा साफ करें</string>
+    <string name="dialog_select_language_title">भाषा चुनें</string>
+    <string name="dialog_clear_cache_title">सभी डेटा साफ करें</string>
+    <string name="dialog_clear_cache_message">सभी डेटा (उपयोगकर्ता, पसंदीदा, देखने का इतिहास, सामग्री, आदि) हटा दिया जाएगा और ऐप नए स्थापित की तरह खुलेगा। यह कार्रवाई पूर्ववत नहीं की जा सकती। क्या आप जारी रखना चाहते हैं?</string>
+    <string name="toast_cache_cleared">सभी डेटा साफ कर दिया गया</string>
+    
+    <!-- प्लेयर -->
+    <string name="player_subtitles_title">उपशीर्षक</string>
+    <string name="player_audio_language_title">ऑडियो भाषा</string>
+    <string name="player_subtitles_off">बंद</string>
+    
+    <!-- एपिसोड और सीज़न -->
+    <string name="episode_format">एपिसोड %1$d</string>
+    <string name="season_format">सीज़न %1$d</string>
+    <string name="season_format_with_episodes">सीज़न %1$d (%2$d)</string>
+    
+    <!-- भाषाएं -->
+    <string name="language_turkish">तुर्की</string>
+    <string name="language_english">अंग्रेजी</string>
+    <string name="language_spanish">स्पेनिश</string>
+    <string name="language_indonesian">इंडोनेशियाई</string>
+    <string name="language_hindi">हिंदी</string>
+    <string name="language_portuguese">पुर्तगाली</string>
+    <string name="language_french">फ्रेंच</string>
+    
+    <!-- अतिरिक्त त्रुटि संदेश -->
+    <string name="error_video_url_not_found">वीडियो URL नहीं मिला</string>
+    <string name="default_viewer_name">डिफ़ॉल्ट</string>
+    
+    <!-- सामान्य प्रतीक और प्लेसहोल्डर -->
+    <string name="data_unavailable">-</string>
+    <string name="bullet_symbol">•</string>
+    <string name="star_symbol">⭐</string>
+    <string name="save">सहेजें</string>
+    
+    <!-- वर्तमान उपयोगकर्ता उपसर्ग -->
+    <string name="current_user_prefix">वर्तमान उपयोगकर्ता:</string>
+    
+    <!-- प्लेयर सामग्री विवरण -->
+    <string name="cd_rewind">रिवाइंड</string>
+    <string name="cd_play">चलाएं</string>
+    <string name="cd_pause">रोकें</string>
+    <string name="cd_fast_forward">फास्ट फॉरवर्ड</string>
+    <string name="cd_subtitle">उपशीर्षक</string>
+    <string name="cd_audio_track">ऑडियो भाषा</string>
+    
+    <!-- उपयोगकर्ता स्थिति संवाद उपसर्ग -->
+    <string name="status_prefix">स्थिति:</string>
+    <string name="expiry_date_prefix">समाप्ति तिथि:</string>
+    <string name="connection_prefix">कनेक्शन:</string>
+    <string name="trial_prefix">ट्रायल:</string>
+    
+    <!-- ट्रैक चयन -->
+    <string name="track_language_turkish">तुर्की</string>
+    
+    <!-- अज्ञात/डिफ़ॉल्ट मान -->
+    <string name="unknown">अज्ञात</string>
+    
+    <!-- श्रेणी नाम (फिल्म/सीरीज़ श्रेणियां) -->
+    <string name="category_action">एक्शन</string>
+    <string name="category_adventure">साहसिक</string>
+    <string name="category_animation">एनिमेशन</string>
+    <string name="category_comedy">कॉमेडी</string>
+    <string name="category_crime">अपराध</string>
+    <string name="category_documentary">डॉक्यूमेंटरी</string>
+    <string name="category_drama">ड्रामा</string>
+    <string name="category_family">पारिवारिक</string>
+    <string name="category_fantasy">फंतासी</string>
+    <string name="category_horror">हॉरर</string>
+    <string name="category_music">संगीत</string>
+    <string name="category_mystery">रहस्य</string>
+    <string name="category_romance">रोमांस</string>
+    <string name="category_science_fiction">विज्ञान कथा</string>
+    <string name="category_thriller">थ्रिलर</string>
+    <string name="category_war">युद्ध</string>
+    <string name="category_western">वेस्टर्न</string>
+    <string name="category_sports">खेल</string>
+    <string name="category_reality">रियलिटी</string>
+    <string name="category_talk_show">टॉक शो</string>
+    <string name="category_news">समाचार</string>
+    <string name="category_kids">बच्चे</string>
+    <string name="category_tv_movie">टीवी मूवी</string>
+    <string name="category_all">सभी</string>
+</resources>
+

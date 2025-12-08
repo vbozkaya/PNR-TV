@@ -1,5 +1,6 @@
 package com.pnr.tv
 
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
@@ -7,6 +8,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.pnr.tv.util.LocaleHelper
 
 /**
  * Projedeki tüm Activity'ler için ortak davranışları ve ayarları içeren temel sınıftır.
@@ -15,10 +17,15 @@ import androidx.appcompat.app.AppCompatActivity
  * Sorumlulukları:
  * - **Tam Ekran Ayarı:** Uygulamanın TV ekranını kaplamasını sağlar.
  * - **Ekran Bilgileri:** Cihazın ekran boyutu gibi bilgilere kolay erişim için yardımcı metodlar sunar.
+ * - **Dil Yönetimi:** LocaleHelper ile dil değiştirme desteği
  *
  * Yeni bir Activity oluşturulduğunda, `AppCompatActivity` yerine bu sınıftan türetilmelidir.
  */
 abstract class BaseActivity : AppCompatActivity() {
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.wrapContext(newBase))
+    }
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setupWindow()

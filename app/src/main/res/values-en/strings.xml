@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PNR TV</string>
+    
+    <!-- Page Titles -->
+    <string name="page_main">Home</string>
+    <string name="page_settings">Settings</string>
+    <string name="page_user_management">User Management</string>
+    <string name="page_users_list">Current Users</string>
+    <string name="page_add_user">Add New User</string>
+    <string name="page_live_streams">Live Streams</string>
+    <string name="page_movies">Movies</string>
+    <string name="page_movie_details">Movie Details</string>
+    <string name="page_series">Series</string>
+    <string name="page_series_details">Series Details</string>
+    <string name="category_favorites">FAVORITES</string>
+    <string name="category_viewer_favorites">%1$s FAVORITES</string>
+    <string name="category_recently_added">RECENTLY ADDED</string>
+    <string name="category_recently_watched">Recently Watched</string>
+    <string name="category_all_series">ALL SERIES</string>
+    <string name="label_seasons">Seasons</string>
+    <string name="empty_favorites">You don\'t have any favorite channels yet.</string>
+    <string name="empty_recently_watched">No recently watched channel found.</string>
+    <string name="toast_favorite_added">Added to favorites</string>
+    <string name="toast_favorite_removed">Removed from favorites</string>
+    <string name="no_episodes_found">No episodes found for this season</string>
+    <string name="error_title">Error</string>
+    <string name="retry">Retry</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    
+    <!-- Content Descriptions (Accessibility) -->
+    <string name="cd_series_poster">Series poster</string>
+    <string name="cd_navbar_back">Go back</string>
+    <string name="cd_navbar_home">Go to home</string>
+    <string name="cd_loading">Loading</string>
+    <string name="cd_episode_watched">Watched</string>
+    <string name="add_to_favorites">Add to favorites</string>
+    
+    <!-- Add User Page -->
+    <string name="hint_account_name">Account Name (any name)</string>
+    <string name="hint_username">Username</string>
+    <string name="hint_password">Password</string>
+    <string name="hint_dns">DNS (URL)</string>
+    <string name="btn_save">Save</string>
+    <string name="error_fill_fields">Please fill all fields</string>
+    <string name="toast_user_saved">User saved</string>
+    <string name="toast_user_updated">User updated</string>
+    <string name="toast_user_deleted">User deleted</string>
+    <string name="toast_select_placeholder">This option will be available soon</string>
+    <string name="toast_user_selected">%1$s selected</string>
+    <string name="label_account_name">Account Name</string>
+    <string name="empty_users_list">No users added yet</string>
+    <string name="cd_edit_user">Edit user</string>
+    <string name="cd_delete_user">Delete user</string>
+    <string name="cd_select_user">Select user</string>
+    <string name="current_user_section_title">Current User</string>
+    <string name="current_user_placeholder">Not selected</string>
+    <string name="dialog_delete_user_title">Delete User</string>
+    <string name="dialog_delete_user_message">Do you want to delete user %1$s?</string>
+    
+    <!-- Buttons and Navigation -->
+    <string name="btn_back">Back</string>
+    <string name="btn_home">Home</string>
+    <string name="btn_filter">Filter</string>
+    <string name="search_hint">Search Content</string>
+    <string name="btn_exit">Exit</string>
+    
+    <!-- Sort Dialog -->
+    <string name="dialog_sort_title">Sort Options</string>
+    <string name="sort_a_to_z">Sort A to Z</string>
+    <string name="sort_z_to_a">Sort Z to A</string>
+    <string name="sort_rating_high_to_low">Sort by Rating High to Low</string>
+    <string name="sort_rating_low_to_high">Sort by Rating Low to High</string>
+    <string name="sort_date_new_to_old">Sort by Date New to Old</string>
+    <string name="sort_date_old_to_new">Sort by Date Old to New</string>
+    <string name="btn_update">Update</string>
+    <string name="btn_play">Play</string>
+    <string name="btn_add_favorite">Add to Favorites</string>
+    
+    <!-- Dialog Messages -->
+    <string name="dialog_exit_title">Exit</string>
+    <string name="dialog_exit_message">Are you sure you want to exit the application?</string>
+    <string name="dialog_yes">Yes</string>
+    <string name="dialog_no">No</string>
+    
+    <!-- User Information -->
+    <string name="current_user_label">Current User: %1$s</string>
+    <string name="current_user_none">Current User: -</string>
+    
+    <!-- Loading Messages -->
+    <string name="loading_content">Content is being updated and processed...</string>
+    <string name="loading_completed">Update Completed</string>
+    
+    <!-- Error Messages -->
+    <string name="error_unknown">Unknown error</string>
+    <string name="error_with_message">Error: %1$s</string>
+    <string name="error_user_not_found">User information not found or DNS information is missing</string>
+    <string name="error_network_connection">Network connection error</string>
+    <string name="error_network_generic">Network error: %1$d %2$s</string>
+    <string name="error_unexpected">Unexpected error: %1$s</string>
+    
+    <!-- Main Screen Update Error Messages -->
+    <string name="error_user_not_exists">No User</string>
+    <string name="error_user_not_selected">User Not Selected</string>
+    <string name="error_user_invalid_credentials">Invalid User Credentials</string>
+    <string name="error_server_error">Server Error</string>
+    <string name="error_content_info_failed">Content Information Failed to Load</string>
+    <string name="error_no_internet">No Internet Connection</string>
+    <string name="error_timeout">Connection timed out. Please try again.</string>
+    <string name="error_timeout_connect">Cannot connect to server. Connection timed out.</string>
+    <string name="error_timeout_read">Timeout occurred while receiving data from server. Please try again.</string>
+    <string name="error_offline">No internet connection. Showing data from cache.</string>
+    <string name="error_retry_failed">Retry failed. Please check your internet connection.</string>
+    <string name="btn_retry">Retry</string>
+    <string name="toast_retrying">Retrying...</string>
+    <string name="toast_retry_success">Connection successful</string>
+    <string name="toast_retry_failed">Retry failed</string>
+    <string name="error_categories_load_failed">Failed to load categories: %1$s</string>
+    <string name="error_movies_load_failed">Failed to load movies: %1$s</string>
+    <string name="error_series_load_failed">Failed to load series: %1$s</string>
+    <string name="error_categories_load">Error loading categories: %1$s</string>
+    <string name="error_movies_load">Error loading movies: %1$s</string>
+    <string name="error_series_load">Error loading series: %1$s</string>
+    <string name="error_image_preload">Image preload error: %1$s</string>
+    
+    <!-- Category Names -->
+    <string name="category_all_movies">ALL MOVIES</string>
+    
+    <!-- User Status Information -->
+    <string name="status_label">Status: %1$s</string>
+    <string name="expiry_date_label">Expiry Date: %1$s</string>
+    <string name="connection_label">Connection: %1$s/%2$s</string>
+    <string name="trial_label">Trial: %1$s</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    
+    <!-- Content Labels -->
+    <string name="movie_label">Movie: %1$s</string>
+    <string name="series_label">Series: %1$s</string>
+    <string name="description_not_available">Description not available.</string>
+    <string name="episode_number_format">Episode %1$d</string>
+    
+    <!-- Player -->
+    <string name="subtitles">Subtitles</string>
+    <string name="audio_language">Audio Language</string>
+    
+    <!-- Viewer Management -->
+    <string name="page_viewers">Viewers</string>
+    <string name="hint_viewer_name">Viewer Name</string>
+    <string name="btn_add_viewer">Add Viewer</string>
+    <string name="btn_delete_viewer">Delete</string>
+    <string name="error_cannot_delete_default_viewer">Default viewer cannot be deleted</string>
+    <string name="toast_viewer_added">Viewer added</string>
+    <string name="toast_viewer_deleted">Viewer deleted</string>
+    <string name="dialog_delete_viewer_title">Delete Viewer</string>
+    <string name="dialog_delete_viewer_message">Do you want to delete viewer %1$s? All favorites will also be deleted.</string>
+    <string name="empty_viewers_list">No viewers added yet</string>
+    
+    <!-- Favorite Selection -->
+    <string name="dialog_select_viewer_title">Add to Favorites</string>
+    <string name="dialog_select_viewer_message">Which viewer do you want to add to favorites for?</string>
+    <string name="viewer_favorites_category">%1$s FAVORITES</string>
+    
+    <!-- Movie Detail -->
+    <string name="movie_director">Director:</string>
+    <string name="movie_genre">Genre:</string>
+    <string name="movie_cast">Cast:</string>
+    <string name="movie_overview_label">Overview:</string>
+    <string name="no_overview">No Overview</string>
+    
+    <!-- Series Detail -->
+    <string name="series_creator">Creator:</string>
+    <string name="error_movie_not_found">Movie not found</string>
+    <string name="loading_movie_details">Loading movie details...</string>
+    <string name="error_loading_movie">Error loading movie</string>
+    
+    <!-- Settings -->
+    <string name="settings_user_status">User Status</string>
+    <string name="settings_app_language">App Language</string>
+    <string name="settings_clear_cache">Clear Cache and All Data</string>
+    <string name="dialog_select_language_title">Select Language</string>
+    <string name="dialog_clear_cache_title">Clear All Data</string>
+    <string name="dialog_clear_cache_message">All data (users, favorites, watch history, content, etc.) will be deleted and the app will open as if newly installed. This action cannot be undone. Do you want to continue?</string>
+    <string name="toast_cache_cleared">All data cleared</string>
+    
+    <!-- Player -->
+    <string name="player_subtitles_title">Subtitles</string>
+    <string name="player_audio_language_title">Audio Language</string>
+    <string name="player_subtitles_off">Off</string>
+    
+    <!-- Episode and Season -->
+    <string name="episode_format">Episode %1$d</string>
+    <string name="season_format">Season %1$d</string>
+    <string name="season_format_with_episodes">Season %1$d (%2$d)</string>
+    
+    <!-- Languages -->
+    <string name="language_turkish">Turkish</string>
+    <string name="language_english">English</string>
+    <string name="language_spanish">Spanish</string>
+    <string name="language_indonesian">Indonesian</string>
+    <string name="language_hindi">Hindi</string>
+    <string name="language_portuguese">Portuguese</string>
+    <string name="language_french">French</string>
+    
+    <!-- Additional Error Messages -->
+    <string name="error_video_url_not_found">Video URL not found</string>
+    <string name="default_viewer_name">Default</string>
+    
+    <!-- General Symbols and Placeholders -->
+    <string name="data_unavailable">-</string>
+    <string name="bullet_symbol">•</string>
+    <string name="star_symbol">⭐</string>
+    <string name="save">Save</string>
+    
+    <!-- Current User Prefix -->
+    <string name="current_user_prefix">Current User:</string>
+    
+    <!-- Player Content Descriptions -->
+    <string name="cd_rewind">Rewind</string>
+    <string name="cd_play">Play</string>
+    <string name="cd_pause">Pause</string>
+    <string name="cd_fast_forward">Fast Forward</string>
+    <string name="cd_subtitle">Subtitle</string>
+    <string name="cd_audio_track">Audio Language</string>
+    
+    <!-- User Status Dialog Prefixes -->
+    <string name="status_prefix">Status:</string>
+    <string name="expiry_date_prefix">Expiry Date:</string>
+    <string name="connection_prefix">Connection:</string>
+    <string name="trial_prefix">Trial:</string>
+    
+    <!-- Track Selection -->
+    <string name="track_language_turkish">Turkish</string>
+    
+    <!-- Unknown/Default Values -->
+    <string name="unknown">Unknown</string>
+    
+    <!-- Category Names (Movie/Series Categories) -->
+    <string name="category_action">Action</string>
+    <string name="category_adventure">Adventure</string>
+    <string name="category_animation">Animation</string>
+    <string name="category_comedy">Comedy</string>
+    <string name="category_crime">Crime</string>
+    <string name="category_documentary">Documentary</string>
+    <string name="category_drama">Drama</string>
+    <string name="category_family">Family</string>
+    <string name="category_fantasy">Fantasy</string>
+    <string name="category_horror">Horror</string>
+    <string name="category_music">Music</string>
+    <string name="category_mystery">Mystery</string>
+    <string name="category_romance">Romance</string>
+    <string name="category_science_fiction">Science Fiction</string>
+    <string name="category_thriller">Thriller</string>
+    <string name="category_war">War</string>
+    <string name="category_western">Western</string>
+    <string name="category_sports">Sports</string>
+    <string name="category_reality">Reality</string>
+    <string name="category_talk_show">Talk Show</string>
+    <string name="category_news">News</string>
+    <string name="category_kids">Kids</string>
+    <string name="category_tv_movie">TV Movie</string>
+    <string name="category_all">All</string>
+</resources>
+

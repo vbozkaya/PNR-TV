@@ -18,6 +18,29 @@ import com.pnr.tv.ui.livestreams.LiveStreamsBrowseFragment
  * @see MainActivity Ana aktivite tarafından barındırılır.
  */
 class MainFragment : Fragment() {
+    // Focus state kaydetme için
+    private var lastFocusedContainerId: Int = R.id.container_live_streams
+    
+    private companion object {
+        const val KEY_LAST_FOCUSED_CONTAINER_ID = "main_fragment_last_focused_container_id"
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
+        // Fragment yeniden yaratıldığında kaydedilen hafızayı geri yükle
+        if (savedInstanceState != null) {
+            lastFocusedContainerId = savedInstanceState.getInt(KEY_LAST_FOCUSED_CONTAINER_ID, R.id.container_live_streams)
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        
+        // Fragment yok edilmeden önce hafızayı kaydet
+        outState.putInt(KEY_LAST_FOCUSED_CONTAINER_ID, lastFocusedContainerId)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -35,13 +58,39 @@ class MainFragment : Fragment() {
         // Container'lara tıklama listener'ları ekle
         setupContainerListeners(view)
 
-        // İlk container'a focus ver
-        view.findViewById<View>(R.id.container_live_streams)?.requestFocus()
+        // Sadece ilk açılışta ve üst menü butonlarına focus yoksa container'a focus ver
+        view.post {
+            if (!isTopMenuButtonFocused()) {
+                val lastFocusedContainer = view.findViewById<View>(lastFocusedContainerId)
+                if (lastFocusedContainer != null) {
+                    lastFocusedContainer.requestFocus()
+                } else {
+                    view.findViewById<View>(R.id.container_live_streams)?.requestFocus()
+                }
+            }
+        }
     }
-
+    
     override fun onResume() {
         super.onResume()
         getToolbarController()?.showTopMenu()
+        
+        // Fragment geri geldiğinde, sadece üst menü butonlarına focus yoksa container'a focus ver
+        view?.post {
+            if (!isTopMenuButtonFocused()) {
+                val lastFocusedContainer = view?.findViewById<View>(lastFocusedContainerId)
+                if (lastFocusedContainer != null) {
+                    lastFocusedContainer.requestFocus()
+                }
+            }
+        }
+    }
+    
+    /**
+     * Üst menü butonlarından birine focus verilmiş mi kontrol eder
+     */
+    private fun isTopMenuButtonFocused(): Boolean {
+        return (activity as? MainActivity)?.isTopMenuButtonFocused() ?: false
     }
 
     override fun onPause() {
@@ -81,8 +130,18 @@ class MainFragment : Fragment() {
         )
 
         containerConfigs.forEach { config ->
-            view.findViewById<View>(config.viewId)?.setOnClickListener {
-                config.navigationAction()
+            view.findViewById<View>(config.viewId)?.apply {
+                setOnClickListener {
+                    // Container'a tıklandığında focus state'i kaydet
+                    lastFocusedContainerId = config.viewId
+                    config.navigationAction()
+                }
+                // Focus değiştiğinde kaydet (D-Pad ile gezinme için)
+                setOnFocusChangeListener { _, hasFocus ->
+                    if (hasFocus) {
+                        lastFocusedContainerId = config.viewId
+                    }
+                }
             }
         }
     }

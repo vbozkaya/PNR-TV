@@ -73,7 +73,7 @@
     <string name="no_overview">Açıklama Yok</string>
     
     <!-- Series Detail -->
-    <string name="series_creator">Yaratıcı:</string>
+    <string name="series_creator">Yönetmen:</string>
     <string name="btn_add_favorite">Favoriye Ekle</string>
     <string name="btn_play">Oynat</string>
     <string name="toast_favorite_added">Favorilere eklendi</string>

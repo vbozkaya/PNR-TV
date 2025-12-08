@@ -151,9 +151,121 @@
     <string name="no_overview">Açıklama Yok</string>
     
     <!-- Series Detail -->
-    <string name="series_creator">Yaratıcı:</string>
+    <string name="series_creator">Yönetmen:</string>
     <string name="error_movie_not_found">Film bulunamadı</string>
     <string name="loading_movie_details">Film detayları yükleniyor...</string>
     <string name="error_loading_movie">Film yüklenirken hata oluştu</string>
+    <string name="season_format_with_episodes">Sezon %1$d (%2$d)</string>
+    <string name="episode_format">Bölüm %1$d</string>
+    
+    <!-- Settings -->
+    <string name="settings_user_status">Kullanıcı Durumu</string>
+    <string name="settings_app_language">Uygulama Dili</string>
+    <string name="settings_clear_cache">Önbelleği Temizle</string>
+    
+    <!-- Content Descriptions for Player -->
+    <string name="cd_rewind">Geri sar</string>
+    <string name="cd_play">Oynat</string>
+    <string name="cd_pause">Duraklat</string>
+    <string name="cd_fast_forward">İleri sar</string>
+    <string name="cd_subtitle">Altyazı</string>
+    <string name="cd_audio_track">Ses parçası</string>
+    
+    <!-- Dialogs -->
+    <string name="dialog_select_language_title">Dil Seçin</string>
+    <string name="save">Kaydet</string>
+    <string name="ok">Tamam</string>
+    
+    <!-- Symbols -->
+    <string name="bullet_symbol">•</string>
+    
+    <!-- Player -->
+    <string name="player_subtitles_title">Altyazılar</string>
+    <string name="player_subtitles_off">Kapalı</string>
+    <string name="player_audio_language_title">Ses Dili</string>
+    
+    <!-- Error Messages -->
+    <string name="error_server_error">Sunucu hatası</string>
+    <string name="error_user_not_exists">Kullanıcı bulunamadı</string>
+    <string name="error_user_not_selected">Kullanıcı seçilmedi</string>
+    <string name="error_video_url_not_found">Video URL bulunamadı</string>
+    <string name="error_retry_failed">Tekrar deneme başarısız</string>
+    <string name="error_timeout_read">Okuma zaman aşımı</string>
+    <string name="error_timeout_connect">Bağlantı zaman aşımı</string>
+    <string name="error_timeout">Zaman aşımı</string>
+    <string name="error_user_invalid_credentials">Geçersiz kullanıcı bilgileri</string>
+    <string name="error_no_internet">İnternet bağlantısı yok</string>
+    <string name="error_offline">Çevrimdışı</string>
+    <string name="error_content_info_failed">İçerik bilgisi alınamadı</string>
+    
+    <!-- Buttons -->
+    <string name="btn_retry">Tekrar Dene</string>
+    
+    <!-- Data -->
+    <string name="data_unavailable">Veri mevcut değil</string>
+    <string name="unknown">Bilinmiyor</string>
+    
+    <!-- Languages -->
+    <string name="language_turkish">Türkçe</string>
+    <string name="language_english">İngilizce</string>
+    <string name="language_spanish">İspanyolca</string>
+    <string name="language_indonesian">Endonezce</string>
+    <string name="language_hindi">Hintçe</string>
+    <string name="language_portuguese">Portekizce</string>
+    <string name="language_french">Fransızca</string>
+    <string name="track_language_turkish">Türkçe</string>
+    
+    <!-- Categories -->
+    <string name="category_action">Aksiyon</string>
+    <string name="category_adventure">Macera</string>
+    <string name="category_animation">Animasyon</string>
+    <string name="category_comedy">Komedi</string>
+    <string name="category_crime">Suç</string>
+    <string name="category_documentary">Belgesel</string>
+    <string name="category_drama">Dram</string>
+    <string name="category_family">Aile</string>
+    <string name="category_fantasy">Fantastik</string>
+    <string name="category_horror">Korku</string>
+    <string name="category_music">Müzik</string>
+    <string name="category_mystery">Gizem</string>
+    <string name="category_romance">Romantik</string>
+    <string name="category_science_fiction">Bilim Kurgu</string>
+    <string name="category_thriller">Gerilim</string>
+    <string name="category_war">Savaş</string>
+    <string name="category_western">Western</string>
+    <string name="category_sports">Spor</string>
+    <string name="category_reality">Reality</string>
+    <string name="category_talk_show">Talk Show</string>
+    <string name="category_news">Haber</string>
+    <string name="category_kids">Çocuk</string>
+    <string name="category_tv_movie">TV Filmi</string>
+    <string name="category_all">Tümü</string>
+    <string name="category_viewer_favorites">İzleyici Favorileri</string>
+    
+    <!-- Prefixes -->
+    <string name="connection_prefix">Bağlantı: </string>
+    <string name="current_user_prefix">Mevcut Kullanıcı: </string>
+    <string name="expiry_date_prefix">Bitiş Tarihi: </string>
+    <string name="trial_prefix">Trial: </string>
+    <string name="status_prefix">Durum: </string>
+    
+    <!-- Viewer -->
+    <string name="default_viewer_name">Varsayılan İzleyici</string>
+    
+    <!-- Dialogs -->
+    <string name="dialog_clear_cache_title">Önbelleği Temizle</string>
+    <string name="dialog_clear_cache_message">Önbellek temizlensin mi?</string>
+    
+    <!-- Toasts -->
+    <string name="toast_cache_cleared">Önbellek temizlendi</string>
+    <string name="toast_retry_failed">Tekrar deneme başarısız</string>
+    <string name="toast_retry_success">Başarıyla yenilendi</string>
+    <string name="toast_retrying">Yeniden deneniyor...</string>
+    
+    <!-- Symbols -->
+    <string name="star_symbol">★</string>
+    
+    <!-- Season -->
+    <string name="season_format">Sezon %1$d</string>
 </resources>
 

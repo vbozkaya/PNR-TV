@@ -102,11 +102,14 @@ class MainActivity : BaseActivity(), ToolbarController {
                         // Hata durumu - overlay'i göster ve hata mesajını göster
                         binding.loadingOverlay.show()
                         val errorMsg = viewModel.errorMessage.value
-                        binding.txtLoadingMessage.text =
-                            getString(
-                                R.string.error_with_message,
-                                errorMsg ?: getString(R.string.error_unknown),
-                            )
+                        // Hata mesajını direkt göster (error_with_message formatı yerine)
+                        binding.txtLoadingMessage.text = errorMsg ?: getString(R.string.error_unknown)
+                        
+                        // 5 saniye sonra otomatik olarak overlay'i kapat
+                        lifecycleScope.launch {
+                            delay(5000) // 5 saniye
+                            viewModel.resetUpdateState()
+                        }
                     }
                     MainViewModel.UpdateState.IDLE -> {
                         // Durum sıfırlandı - overlay'i gizle
@@ -132,11 +135,22 @@ class MainActivity : BaseActivity(), ToolbarController {
         binding.btnUsers.hide()
         binding.btnUpdate.hide()
     }
+    
+    /**
+     * Üst menü butonlarından birine focus verilmiş mi kontrol eder
+     */
+    fun isTopMenuButtonFocused(): Boolean {
+        val focusedView = window?.currentFocus ?: return false
+        return focusedView.id == binding.btnUpdate.id ||
+               focusedView.id == binding.btnUsers.id ||
+               focusedView.id == binding.btnSettings.id ||
+               focusedView.id == binding.btnExit.id
+    }
 
     private fun showExitDialog() {
         try {
             Timber.d("showExitDialog called")
-            AlertDialog.Builder(this)
+            val dialog = AlertDialog.Builder(this)
                 .setTitle(getString(R.string.dialog_exit_title))
                 .setMessage(getString(R.string.dialog_exit_message))
                 .setPositiveButton(getString(R.string.dialog_yes)) { _, _ ->
@@ -149,7 +163,10 @@ class MainActivity : BaseActivity(), ToolbarController {
                 }
                 .setCancelable(false)
                 .create()
-                .show()
+            
+            dialog.show()
+            // Güvenlik için "Hayır" butonuna focus ver
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.requestFocus()
         } catch (e: Exception) {
             Timber.e(e, "Error showing dialog")
         }

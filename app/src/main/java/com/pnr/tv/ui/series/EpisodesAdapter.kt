@@ -1,15 +1,19 @@
 package com.pnr.tv.ui.series
 
+import android.graphics.Outline
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewOutlineProvider
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.flexbox.FlexboxLayoutManager
 import com.pnr.tv.R
 
 class EpisodesAdapter(
@@ -32,6 +36,7 @@ class EpisodesAdapter(
         private val onFocusUpToSeasons: () -> Unit,
     ) : RecyclerView.ViewHolder(itemView) {
         private val episodeTitle: TextView = itemView.findViewById(R.id.txt_episode_title)
+        private val episodeBackground: ImageView = itemView.findViewById(R.id.img_episode_background)
 
         init {
             itemView.setOnKeyListener { _, keyCode, event ->
@@ -43,11 +48,20 @@ class EpisodesAdapter(
                 }
                 false
             }
+            
+            // ImageView'a corner radius ekle (CardView'un corner radius'u ile eşleştir: 8dp)
+            val cornerRadius = 8f * itemView.context.resources.displayMetrics.density
+            episodeBackground.outlineProvider = object : ViewOutlineProvider() {
+                override fun getOutline(view: View, outline: Outline) {
+                    outline.setRoundRect(0, 0, view.width, view.height, cornerRadius)
+                }
+            }
+            episodeBackground.clipToOutline = true
         }
 
         fun bind(episode: ParsedEpisode) {
             // Standart metin göster (tüm kutucuklar aynı boyutta olsun)
-            episodeTitle.text = "Bölüm ${episode.episodeNumber}"
+            episodeTitle.text = itemView.context.getString(R.string.episode_format, episode.episodeNumber)
             
             // İzlenme durumuna göre doğru çerçeveyi seç ve ata
             val borderDrawableRes = when (episode.watchStatus) {
@@ -60,6 +74,25 @@ class EpisodesAdapter(
             itemView.setOnClickListener { onEpisodeClick(episode) }
             itemView.isFocusable = true
             itemView.isFocusableInTouchMode = true
+            
+            // Focus scroll: Focus alındığında item'ı görünür alana getir
+            itemView.setOnFocusChangeListener { focusedView, hasFocus ->
+                if (hasFocus) {
+                    val recyclerView = focusedView.parent as? RecyclerView
+                    if (recyclerView != null) {
+                        val layoutManager = recyclerView.layoutManager
+                        if (layoutManager is FlexboxLayoutManager) {
+                            val focusedPosition = recyclerView.getChildAdapterPosition(focusedView)
+                            if (focusedPosition != RecyclerView.NO_POSITION) {
+                                recyclerView.post {
+                                    // FlexboxLayoutManager için scroll yap
+                                    recyclerView.smoothScrollToPosition(focusedPosition)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 

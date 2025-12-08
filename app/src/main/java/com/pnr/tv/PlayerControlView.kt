@@ -2,6 +2,7 @@ package com.pnr.tv
 
 import android.content.Context
 import android.util.AttributeSet
+import com.pnr.tv.R
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -45,6 +46,7 @@ class PlayerControlView @JvmOverloads constructor(
     private var seekCommitJob: Job? = null
     private var isFirstPanelOpen = true
     private var isInitialFocus = false
+    private var isLiveStream = false // Canlı yayın modu
     
     // Mevcut video pozisyonu (ms cinsinden)
     private var currentVideoPosition = 0L
@@ -128,13 +130,74 @@ class PlayerControlView @JvmOverloads constructor(
         val displayText = buildString {
             append(title ?: "")
             rating?.let {
-                if (title?.isNotBlank() == true) append("  •  ")
+                if (title?.isNotBlank() == true) {
+                    append(" ")
+                    append(context.getString(R.string.bullet_symbol))
+                    append(" ")
+                }
                 append(String.format("%.1f", it))
-                append(" ⭐")
+                append(" ")
+                append(context.getString(R.string.star_symbol))
             }
         }
         binding.txtContentTitle.text = displayText
         timber.log.Timber.d("📝 İçerik bilgisi ayarlandı: $displayText")
+    }
+    
+    /**
+     * Canlı yayın modunu ayarlar - canlı yayında tüm kontrol butonları devre dışı olur
+     */
+    fun setLiveStreamMode(enabled: Boolean) {
+        isLiveStream = enabled
+        updateButtonsState()
+        timber.log.Timber.d("📺 Canlı yayın modu: ${if (enabled) "Aktif (tuşlar devre dışı)" else "Pasif"}")
+    }
+    
+    /**
+     * Canlı yayın moduna göre buton durumlarını günceller
+     */
+    private fun updateButtonsState() {
+        if (isLiveStream) {
+            // Canlı yayında tüm butonları devre dışı bırak - click listener'ları kaldır
+            binding.btnPlay.setOnClickListener(null)
+            binding.btnStop.setOnClickListener(null)
+            binding.btnBackward.setOnClickListener(null)
+            binding.btnForward.setOnClickListener(null)
+            binding.btnSpeak.setOnClickListener(null)
+            binding.btnSubtitle.setOnClickListener(null)
+            binding.seekbarProgress.setOnSeekBarChangeListener(null)
+            binding.seekbarProgress.isEnabled = false
+            binding.seekbarProgress.isFocusable = false
+            binding.seekbarProgress.isFocusableInTouchMode = false
+            
+            // Butonları görünür yap ama tıklanamaz hale getir
+            binding.btnPlay.alpha = 0.5f
+            binding.btnStop.alpha = 0.5f
+            binding.btnBackward.alpha = 0.5f
+            binding.btnForward.alpha = 0.5f
+            binding.btnSpeak.alpha = 0.5f
+            binding.btnSubtitle.alpha = 0.5f
+            binding.seekbarProgress.alpha = 0.5f
+        } else {
+            // Normal modda butonları tekrar aktif et
+            setupSeekBar()
+            setupPlayStopButtons()
+            setupForwardBackwardButtons()
+            setupSubtitleButton()
+            setupSpeakButton()
+            
+            // Alpha değerlerini normale döndür
+            binding.btnPlay.alpha = 1.0f
+            binding.btnStop.alpha = 1.0f
+            binding.btnBackward.alpha = 1.0f
+            binding.btnForward.alpha = 1.0f
+            binding.btnSpeak.alpha = 1.0f
+            binding.btnSubtitle.alpha = 1.0f
+            binding.seekbarProgress.alpha = 1.0f
+            binding.seekbarProgress.isEnabled = true
+            binding.seekbarProgress.isFocusable = true
+            binding.seekbarProgress.isFocusableInTouchMode = true
+        }
     }
 
     fun showControls() {
@@ -176,13 +239,18 @@ class PlayerControlView @JvmOverloads constructor(
         binding.txtCurrentTime.visibility = View.VISIBLE
         binding.txtTotalTime.visibility = View.VISIBLE
         
-        // Butonları da görünür yap
+        // Butonları da görünür yap - canlı yayında bile görünür ama devre dışı
         binding.btnPlay.visibility = if (listener?.isPlayingState() == false) View.VISIBLE else View.GONE
         binding.btnStop.visibility = if (listener?.isPlayingState() == true) View.VISIBLE else View.GONE
         binding.btnBackward.visibility = View.VISIBLE
         binding.btnForward.visibility = View.VISIBLE
         binding.btnSpeak.visibility = View.VISIBLE
         binding.btnSubtitle.visibility = View.VISIBLE
+        
+        // Canlı yayında buton durumlarını güncelle
+        if (isLiveStream) {
+            updateButtonsState()
+        }
         
         // Child view'ların background'larını da şeffaf yap
         binding.panelTopSection.setBackgroundColor(android.graphics.Color.TRANSPARENT)
@@ -317,6 +385,19 @@ class PlayerControlView @JvmOverloads constructor(
 
     override fun dispatchKeyEvent(event: KeyEvent?): Boolean {
         if (event == null) return super.dispatchKeyEvent(event)
+        
+        // Canlı yayında tüm tuş işlemlerini engelle (BACK hariç)
+        if (isLiveStream && event.keyCode != KeyEvent.KEYCODE_BACK) {
+            // Canlı yayında sadece panel'i gösterme/gizleme ve BACK tuşu çalışsın
+            if (event.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_BACK) {
+                if (isVisible()) {
+                    hideControls()
+                    return true
+                }
+            }
+            // Diğer tüm tuşları engelle
+            return false
+        }
 
         val focusedView = findFocus()
         val focusedViewName = when (focusedView) {

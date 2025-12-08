@@ -314,6 +314,46 @@ class ContentAdapter(
                 onContentLongPress(item)
                 true
             }
+            
+            // Focus scroll: Focus alındığında item'ı görünür alana getir
+            itemView.setOnFocusChangeListener { focusedView, hasFocus ->
+                if (hasFocus) {
+                    val recyclerView = focusedView.parent as? RecyclerView
+                    if (recyclerView != null) {
+                        val layoutManager = recyclerView.layoutManager as? androidx.recyclerview.widget.GridLayoutManager
+                        if (layoutManager != null) {
+                            val focusedPosition = recyclerView.getChildAdapterPosition(focusedView)
+                            if (focusedPosition != androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
+                                recyclerView.post {
+                                    val firstVisible = layoutManager.findFirstVisibleItemPosition()
+                                    val lastVisible = layoutManager.findLastVisibleItemPosition()
+                                    
+                                    var needsScroll = false
+                                    if (focusedPosition < firstVisible || focusedPosition > lastVisible) {
+                                        needsScroll = true
+                                    } else {
+                                        val viewHolder = recyclerView.findViewHolderForAdapterPosition(focusedPosition)
+                                        viewHolder?.itemView?.let { view ->
+                                            val top = view.top
+                                            val bottom = view.bottom
+                                            val recyclerTop = recyclerView.paddingTop
+                                            val recyclerBottom = recyclerView.height - recyclerView.paddingBottom
+                                            
+                                            if (top < recyclerTop || bottom > recyclerBottom) {
+                                                needsScroll = true
+                                            }
+                                        }
+                                    }
+                                    
+                                    if (needsScroll || focusedPosition == firstVisible || focusedPosition == lastVisible) {
+                                        layoutManager.scrollToPositionWithOffset(focusedPosition, recyclerView.paddingTop + 20)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

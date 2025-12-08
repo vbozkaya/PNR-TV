@@ -3,6 +3,7 @@ package com.pnr.tv.ui.series
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pnr.tv.R
 import com.pnr.tv.db.dao.WatchedEpisodeDao
 import com.pnr.tv.db.entity.SeriesEntity
 import com.pnr.tv.db.entity.ViewerEntity
@@ -131,7 +132,10 @@ class SeriesDetailViewModel
 
                         val seasonTabs = episodesBySeason.keys.sorted().map { seasonNum ->
                             val episodeCount = episodesBySeason[seasonNum]?.size ?: 0
-                            SeriesSeason(seasonNumber = seasonNum, name = "Sezon $seasonNum ($episodeCount)")
+                            SeriesSeason(
+                                seasonNumber = seasonNum, 
+                                name = context.getString(R.string.season_format_with_episodes, seasonNum, episodeCount)
+                            )
                         }
                         _seasons.value = seasonTabs
 
@@ -177,7 +181,8 @@ class SeriesDetailViewModel
                     val newStatus = when {
                         watchedEntity == null -> WatchStatus.NOT_WATCHED
                         watchedEntity.watchProgress >= 90 -> WatchStatus.FULLY_WATCHED
-                        else -> WatchStatus.IN_PROGRESS // 0 ile 90 arası
+                        watchedEntity.watchProgress > 10 -> WatchStatus.IN_PROGRESS // %10'dan fazla ve %90'dan az
+                        else -> WatchStatus.NOT_WATCHED // %10 veya daha az
                     }
                     episode.copy(watchStatus = newStatus)
                 }

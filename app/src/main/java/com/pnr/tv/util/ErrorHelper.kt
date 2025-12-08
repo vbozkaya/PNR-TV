@@ -6,6 +6,9 @@ import com.pnr.tv.repository.Result
 import retrofit2.HttpException
 import timber.log.Timber
 import java.io.IOException
+import java.net.SocketTimeoutException
+import java.net.ConnectException
+import java.util.concurrent.TimeoutException
 
 /**
  * Hata yönetimi için utility sınıfı.
@@ -28,6 +31,15 @@ object ErrorHelper {
     ): Result.Error {
         val message =
             customMessage ?: when (exception) {
+                is SocketTimeoutException -> {
+                    context.getString(R.string.error_timeout_read)
+                }
+                is ConnectException -> {
+                    context.getString(R.string.error_timeout_connect)
+                }
+                is TimeoutException -> {
+                    context.getString(R.string.error_timeout)
+                }
                 is HttpException -> {
                     context.getString(
                         R.string.error_network_generic,
@@ -52,30 +64,106 @@ object ErrorHelper {
 
     /**
      * HttpException'dan Result.Error oluşturur.
+     * Ana ekran güncelleme için özel hata mesajları kullanır.
      *
      * @param exception HttpException
      * @param context Context
+     * @param forMainScreenUpdate Ana ekran güncelleme için mi? (true ise özel mesajlar kullanılır)
      * @return Result.Error
      */
     fun createHttpError(
         exception: HttpException,
         context: Context,
+        forMainScreenUpdate: Boolean = false,
     ): Result.Error {
+        if (forMainScreenUpdate) {
+            val message = when (exception.code()) {
+                401, 403 -> context.getString(R.string.error_user_invalid_credentials)
+                500, 502, 503, 504 -> context.getString(R.string.error_server_error)
+                else -> context.getString(R.string.error_server_error)
+            }
+            Timber.e(exception, "Error: $message")
+            return Result.Error(message = message, exception = exception)
+        }
         return createError(exception, context)
     }
 
     /**
      * IOException'dan Result.Error oluşturur.
+     * Ana ekran güncelleme için özel hata mesajları kullanır.
      *
      * @param exception IOException
      * @param context Context
+     * @param forMainScreenUpdate Ana ekran güncelleme için mi? (true ise özel mesajlar kullanılır)
      * @return Result.Error
      */
     fun createNetworkError(
         exception: IOException,
         context: Context,
+        forMainScreenUpdate: Boolean = false,
     ): Result.Error {
+        if (forMainScreenUpdate) {
+            val message = when (exception) {
+                is SocketTimeoutException -> context.getString(R.string.error_timeout_read)
+                is ConnectException -> context.getString(R.string.error_timeout_connect)
+                else -> context.getString(R.string.error_no_internet)
+            }
+            Timber.e(exception, "Error: $message")
+            return Result.Error(message = message, exception = exception)
+        }
         return createError(exception, context)
+    }
+    
+    /**
+     * Timeout hatası oluşturur.
+     *
+     * @param exception Timeout exception
+     * @param context Context
+     * @param forMainScreenUpdate Ana ekran güncelleme için mi?
+     * @return Result.Error
+     */
+    fun createTimeoutError(
+        exception: Exception,
+        context: Context,
+        forMainScreenUpdate: Boolean = false,
+    ): Result.Error {
+        val message = when (exception) {
+            is SocketTimeoutException -> {
+                if (forMainScreenUpdate) {
+                    context.getString(R.string.error_timeout_read)
+                } else {
+                    context.getString(R.string.error_timeout_read)
+                }
+            }
+            is ConnectException -> {
+                if (forMainScreenUpdate) {
+                    context.getString(R.string.error_timeout_connect)
+                } else {
+                    context.getString(R.string.error_timeout_connect)
+                }
+            }
+            else -> {
+                if (forMainScreenUpdate) {
+                    context.getString(R.string.error_timeout)
+                } else {
+                    context.getString(R.string.error_timeout)
+                }
+            }
+        }
+        Timber.e(exception, "Timeout error: $message")
+        return Result.Error(message = message, exception = exception)
+    }
+    
+    /**
+     * Offline durumu için hata mesajı oluşturur.
+     *
+     * @param context Context
+     * @return Result.Error
+     */
+    fun createOfflineError(context: Context): Result.Error {
+        val message = context.getString(R.string.error_offline)
+        Timber.w("Offline: $message")
+        return Result.Error(message = message, exception = null)
     }
 
     /**
@@ -109,10 +197,30 @@ object ErrorHelper {
      * Kullanıcı bulunamadı hatası oluşturur.
      *
      * @param context Context
+     * @param forMainScreenUpdate Ana ekran güncelleme için mi? (true ise özel mesajlar kullanılır)
      * @return Result.Error
      */
-    fun createUserNotFoundError(context: Context): Result.Error {
-        val message = context.getString(R.string.error_user_not_found)
+    fun createUserNotFoundError(
+        context: Context,
+        forMainScreenUpdate: Boolean = false,
+    ): Result.Error {
+        val message = if (forMainScreenUpdate) {
+            context.getString(R.string.error_user_not_selected)
+        } else {
+            context.getString(R.string.error_user_not_found)
+        }
+        Timber.e("Error: $message")
+        return Result.Error(message = message)
+    }
+    
+    /**
+     * Kullanıcı yok hatası oluşturur (hiç kullanıcı eklenmemiş).
+     *
+     * @param context Context
+     * @return Result.Error
+     */
+    fun createUserNotExistsError(context: Context): Result.Error {
+        val message = context.getString(R.string.error_user_not_exists)
         Timber.e("Error: $message")
         return Result.Error(message = message)
     }

@@ -23,6 +23,8 @@
         android:focusable="true"
         android:clickable="true"
         android:focusableInTouchMode="true"
+        android:nextFocusRight="@id/btn_navbar_home"
+        android:nextFocusDown="@id/btn_add_to_favorites"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -38,6 +40,8 @@
         android:focusable="true"
         android:clickable="true"
         android:focusableInTouchMode="true"
+        android:nextFocusLeft="@id/btn_navbar_back"
+        android:nextFocusDown="@id/btn_add_to_favorites"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toEndOf="@id/btn_navbar_back" />
 

@@ -2,6 +2,7 @@ package com.pnr.tv.ui.viewers
 
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -43,6 +44,14 @@ class SelectViewerDialog(
         window?.setBackgroundDrawableResource(android.R.color.transparent)
 
         dialog.show()
+        
+        // Dialog açıldığında RecyclerView'ın ilk öğesine focus ver
+        binding.recyclerViewers.post {
+            if (adapter.itemCount > 0) {
+                val firstItem = binding.recyclerViewers.findViewHolderForAdapterPosition(0)
+                firstItem?.itemView?.requestFocus()
+            }
+        }
     }
 }
 
@@ -77,6 +86,46 @@ class SelectViewerAdapter(
             nameTextView.text = viewer.name
             itemView.setOnClickListener {
                 onViewerClick(viewer)
+            }
+            
+            // Focus scroll: Focus alındığında item'ı görünür alana getir
+            itemView.setOnFocusChangeListener { focusedView, hasFocus ->
+                if (hasFocus) {
+                    val recyclerView = focusedView.parent as? RecyclerView
+                    if (recyclerView != null) {
+                        val layoutManager = recyclerView.layoutManager as? LinearLayoutManager
+                        if (layoutManager != null) {
+                            val focusedPosition = recyclerView.getChildAdapterPosition(focusedView)
+                            if (focusedPosition != RecyclerView.NO_POSITION) {
+                                recyclerView.post {
+                                    val firstVisible = layoutManager.findFirstVisibleItemPosition()
+                                    val lastVisible = layoutManager.findLastVisibleItemPosition()
+                                    
+                                    var needsScroll = false
+                                    if (focusedPosition < firstVisible || focusedPosition > lastVisible) {
+                                        needsScroll = true
+                                    } else {
+                                        val viewHolder = recyclerView.findViewHolderForAdapterPosition(focusedPosition)
+                                        viewHolder?.itemView?.let { view ->
+                                            val top = view.top
+                                            val bottom = view.bottom
+                                            val recyclerTop = recyclerView.paddingTop
+                                            val recyclerBottom = recyclerView.height - recyclerView.paddingBottom
+                                            
+                                            if (top < recyclerTop || bottom > recyclerBottom) {
+                                                needsScroll = true
+                                            }
+                                        }
+                                    }
+                                    
+                                    if (needsScroll || focusedPosition == firstVisible || focusedPosition == lastVisible) {
+                                        layoutManager.scrollToPositionWithOffset(focusedPosition, recyclerView.paddingTop + 20)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

@@ -57,9 +57,14 @@ class SeriesRepository
          * TMDB senkronizasyonu WorkManager tarafından arka planda yapılır
          * 
          * @param skipTmdbSync True ise TMDB senkronizasyonu atlanır (WorkManager için)
+         * @param forMainScreenUpdate Ana ekran güncelleme için mi? (true ise özel hata mesajları kullanılır)
          */
-        suspend fun refreshSeries(skipTmdbSync: Boolean = false): Result<Unit> =
-            safeApiCall { api, user, pass ->
+        suspend fun refreshSeries(skipTmdbSync: Boolean = false, forMainScreenUpdate: Boolean = false, maxRetries: Int = 2): Result<Unit> =
+            safeApiCall(
+                forMainScreenUpdate = forMainScreenUpdate,
+                maxRetries = maxRetries,
+                retryDelayMs = 2000L,
+                apiCall = { api, user, pass ->
                 Timber.d("═══════════════════════════════════════")
                 Timber.d("📺 DİZİ VERİLERİ GÜNCELENİYOR...")
                 Timber.d("═══════════════════════════════════════")
@@ -145,10 +150,11 @@ class SeriesRepository
                 Timber.d("   • Açıklama olan: $withPlot / ${entities.size}")
                 Timber.d("   • TMDB ID olan: $withTmdb / ${entities.size}")
                 Timber.d("═══════════════════════════════════════")
-            }
+                }
+            )
 
         suspend fun refreshSeriesCategories(): Result<Unit> =
-            safeApiCall { api, user, pass ->
+            safeApiCall(apiCall = { api, user, pass ->
                 Timber.d("═══════════════════════════════════════")
                 Timber.d("📂 DİZİ KATEGORİLERİ GÜNCELENİYOR...")
                 Timber.d("═══════════════════════════════════════")
@@ -180,14 +186,16 @@ class SeriesRepository
                 Timber.d("💾 ${entities.size} kategori veritabanına kaydedildi")
                 seriesCategoryDao.replaceAll(entities)
                 Timber.d("═══════════════════════════════════════")
-            }
+                }
+            )
 
         /**
          * Belirli bir dizi için detaylı bilgi (sezonlar ve bölümler) getirir.
          */
         suspend fun getSeriesInfo(seriesId: Int): Result<SeriesInfoDto> =
-            safeApiCall { api, user, pass ->
+            safeApiCall(apiCall = { api, user, pass ->
                 api.getSeriesInfo(user, pass, seriesId = seriesId)
-            }
+                }
+            )
     }
 
