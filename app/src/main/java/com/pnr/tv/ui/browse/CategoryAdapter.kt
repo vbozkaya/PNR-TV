@@ -23,9 +23,8 @@ import com.pnr.tv.util.CategoryNameHelper
  */
 class CategoryAdapter(
     private val onCategoryClick: (CategoryItem) -> Unit,
-    private val onCategoryFocused: (CategoryItem) -> Unit,
     private val onNavigateToContent: () -> Unit,
-    private val onNavigateToNavbar: () -> Unit = {},
+    private val onNavigateToNavbar: () -> Unit,
 ) : ListAdapter<CategoryItem, CategoryAdapter.ViewHolder>(CategoryDiff) {
     private var selectedPosition: Int = -1
 
@@ -62,7 +61,7 @@ class CategoryAdapter(
         val view =
             LayoutInflater.from(parent.context)
                 .inflate(R.layout.item_category, parent, false)
-        return ViewHolder(view, onCategoryClick, onCategoryFocused, onNavigateToContent, onNavigateToNavbar)
+        return ViewHolder(view, onCategoryClick, onNavigateToContent, onNavigateToNavbar, parent as RecyclerView)
     }
 
     override fun onBindViewHolder(
@@ -77,9 +76,9 @@ class CategoryAdapter(
     class ViewHolder(
         itemView: View,
         private val onCategoryClick: (CategoryItem) -> Unit,
-        private val onCategoryFocused: (CategoryItem) -> Unit,
         private val onNavigateToContent: () -> Unit,
         private val onNavigateToNavbar: () -> Unit,
+        private val recyclerView: RecyclerView,
     ) : RecyclerView.ViewHolder(itemView) {
         private val categoryNameText: TextView = itemView.findViewById(R.id.text_category_name)
         private val selectedIndicatorView: View = itemView.findViewById(R.id.view_selected_indicator)
@@ -122,90 +121,90 @@ class CategoryAdapter(
                 onCategoryClick(category)
             }
 
-            // Add focus listener
-            categoryNameText.setOnFocusChangeListener { focusedView, hasFocus ->
-                if (hasFocus && currentCategory != null) {
-                    onCategoryFocused(currentCategory!!)
-                    
-                    // Focus scroll: Focus alındığında item'ı görünür alana getir
-                    val recyclerView = focusedView.parent as? RecyclerView
-                    if (recyclerView != null) {
-                        val layoutManager = recyclerView.layoutManager as? androidx.recyclerview.widget.LinearLayoutManager
-                        if (layoutManager != null) {
-                            val focusedPosition = recyclerView.getChildAdapterPosition(focusedView)
-                            if (focusedPosition != androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
-                                recyclerView.post {
-                                    val firstVisible = layoutManager.findFirstVisibleItemPosition()
-                                    val lastVisible = layoutManager.findLastVisibleItemPosition()
-                                    
-                                    var needsScroll = false
-                                    if (focusedPosition < firstVisible || focusedPosition > lastVisible) {
-                                        needsScroll = true
-                                    } else {
-                                        val viewHolder = recyclerView.findViewHolderForAdapterPosition(focusedPosition)
-                                        viewHolder?.itemView?.let { view ->
-                                            val top = view.top
-                                            val bottom = view.bottom
-                                            val recyclerTop = recyclerView.paddingTop
-                                            val recyclerBottom = recyclerView.height - recyclerView.paddingBottom
-                                            
-                                            if (top < recyclerTop || bottom > recyclerBottom) {
-                                                needsScroll = true
-                                            }
-                                        }
-                                    }
-                                    
-                                    if (needsScroll || focusedPosition == firstVisible || focusedPosition == lastVisible) {
-                                        layoutManager.scrollToPositionWithOffset(focusedPosition, recyclerView.paddingTop + 20)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Add key listener - right arrow and center button navigate to content, up arrow navigates to navbar, down arrow blocked on last item
-            categoryNameText.setOnKeyListener { _, keyCode, event ->
-                if (event.action == KeyEvent.ACTION_DOWN) {
-                    when (keyCode) {
-                        KeyEvent.KEYCODE_DPAD_RIGHT,
-                        KeyEvent.KEYCODE_DPAD_CENTER,
-                        -> {
-                            onNavigateToContent()
-                            true
-                        }
-                        KeyEvent.KEYCODE_DPAD_UP -> {
-                            // İlk kategorideyken (position 0) navbar'a git
-                            if (bindingAdapterPosition == 0) {
-                                onNavigateToNavbar()
-                                true
-                            } else {
-                                false
-                            }
-                        }
-                        KeyEvent.KEYCODE_DPAD_DOWN -> {
-                            // Son kategorideyken aşağı yön tuşu ile odak atlamasını engelle
-                            val adapter = bindingAdapter as? CategoryAdapter
-                            if (adapter != null) {
-                                val itemCount = adapter.itemCount
-                                val currentPosition = bindingAdapterPosition
-                                // Eğer bu öğe gerçekten de listenin son öğesi ise, tuş olayını tüket
-                                if (currentPosition != RecyclerView.NO_POSITION && currentPosition == itemCount - 1) {
-                                    return@setOnKeyListener true
-                                }
-                            }
-                            false
-                        }
-                        else -> false
-                    }
-                } else {
-                    false
-                }
-            }
-
             categoryNameText.isFocusable = true
             categoryNameText.isFocusableInTouchMode = true
+
+            // Add comprehensive key listener with manual focus management
+            categoryNameText.setOnKeyListener { _, keyCode, event ->
+                if (event.action != KeyEvent.ACTION_DOWN) return@setOnKeyListener false
+
+                val currentPosition = bindingAdapterPosition
+                if (currentPosition == RecyclerView.NO_POSITION) return@setOnKeyListener false
+
+                when (keyCode) {
+                    KeyEvent.KEYCODE_DPAD_UP -> {
+                        if (currentPosition == 0) {
+                            // En üstteyiz, Navbar'a gitmek için sinyal ver.
+                            onNavigateToNavbar()
+                        } else {
+                            // Önce scroll yap, sonra odak ver
+                            val targetPosition = currentPosition - 1
+                            recyclerView.smoothScrollToPosition(targetPosition)
+                            
+                            // ViewTreeObserver ile ViewHolder'ın hazır olduğundan emin ol
+                            val observer = recyclerView.viewTreeObserver
+                            observer.addOnGlobalLayoutListener(object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
+                                override fun onGlobalLayout() {
+                                    val previousViewHolder = recyclerView.findViewHolderForAdapterPosition(targetPosition)
+                                    if (previousViewHolder != null) {
+                                        previousViewHolder.itemView.requestFocus()
+                                        recyclerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                                    } else {
+                                        // ViewHolder henüz hazır değil, bir kez daha dene
+                                        recyclerView.postDelayed({
+                                            val retryViewHolder = recyclerView.findViewHolderForAdapterPosition(targetPosition)
+                                            retryViewHolder?.itemView?.requestFocus()
+                                            recyclerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                                        }, 50)
+                                    }
+                                }
+                            })
+                        }
+                        // Olayı her durumda tüket, çünkü yönetimi biz yaptık.
+                        return@setOnKeyListener true
+                    }
+
+                    KeyEvent.KEYCODE_DPAD_DOWN -> {
+                        val adapter = bindingAdapter as? CategoryAdapter ?: return@setOnKeyListener true
+                        if (currentPosition == adapter.itemCount - 1) {
+                            // En alttayız, olayı tüket ve hiçbir şey yapma.
+                        } else {
+                            // Önce scroll yap, sonra odak ver
+                            val targetPosition = currentPosition + 1
+                            recyclerView.smoothScrollToPosition(targetPosition)
+                            
+                            // ViewTreeObserver ile ViewHolder'ın hazır olduğundan emin ol
+                            val observer = recyclerView.viewTreeObserver
+                            observer.addOnGlobalLayoutListener(object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
+                                override fun onGlobalLayout() {
+                                    val nextViewHolder = recyclerView.findViewHolderForAdapterPosition(targetPosition)
+                                    if (nextViewHolder != null) {
+                                        nextViewHolder.itemView.requestFocus()
+                                        recyclerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                                    } else {
+                                        // ViewHolder henüz hazır değil, bir kez daha dene
+                                        recyclerView.postDelayed({
+                                            val retryViewHolder = recyclerView.findViewHolderForAdapterPosition(targetPosition)
+                                            retryViewHolder?.itemView?.requestFocus()
+                                            recyclerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                                        }, 50)
+                                    }
+                                }
+                            })
+                        }
+                        // Olayı her durumda tüket, çünkü yönetimi biz yaptık.
+                        return@setOnKeyListener true
+                    }
+
+                    KeyEvent.KEYCODE_DPAD_RIGHT,
+                    KeyEvent.KEYCODE_DPAD_LEFT -> {
+                        // Yatay hareketi tamamen engelle ve olayı tüket.
+                        return@setOnKeyListener true
+                    }
+                }
+                // Bu noktaya asla gelinmemeli, ancak güvenlik için false döndür.
+                return@setOnKeyListener false
+            }
         }
     }
 }

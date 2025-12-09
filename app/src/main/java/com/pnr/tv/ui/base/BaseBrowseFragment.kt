@@ -1,6 +1,7 @@
 package com.pnr.tv.ui.base
 
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
@@ -66,48 +67,12 @@ abstract class BaseBrowseFragment : Fragment() {
     protected lateinit var categoryAdapter: CategoryAdapter
     protected lateinit var contentAdapter: ContentAdapter
 
-    // Focus yönetimi için flag'ler
-    private var shouldFocusFirstCategory = false
-    private var hasFocusedFirstCategory = false
-    private var isFirstTimeOpening = true // İlk kez açılıp açılmadığını takip et
-    private var lastFocusedContentPosition = -1 // Son focus edilen içerik pozisyonu
-    private var lastFocusedCategoryPosition = -1 // Son focus edilen kategori pozisyonu
-
-    // State kaydetme için anahtarlar
-    private companion object {
-        const val KEY_LAST_FOCUSED_CONTENT_POSITION = "base_browse_fragment_last_focused_content_position"
-        const val KEY_LAST_FOCUSED_CATEGORY_POSITION = "base_browse_fragment_last_focused_category_position"
-        const val KEY_IS_FIRST_TIME_OPENING = "base_browse_fragment_is_first_time_opening"
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Fragment yeniden yaratıldığında kaydedilen hafızayı geri yükle
-        if (savedInstanceState != null) {
-            // Son focus edilen içerik pozisyonunu geri yükle
-            lastFocusedContentPosition = savedInstanceState.getInt(KEY_LAST_FOCUSED_CONTENT_POSITION, -1)
-
-            // Son focus edilen kategori pozisyonunu geri yükle
-            lastFocusedCategoryPosition = savedInstanceState.getInt(KEY_LAST_FOCUSED_CATEGORY_POSITION, -1)
-
-            // İlk kez açılıp açılmadığını geri yükle
-            isFirstTimeOpening = savedInstanceState.getBoolean(KEY_IS_FIRST_TIME_OPENING, true)
-        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-
-        // Fragment yok edilmeden önce hafızayı kaydet
-        // Son focus edilen içerik pozisyonunu kaydet
-        outState.putInt(KEY_LAST_FOCUSED_CONTENT_POSITION, lastFocusedContentPosition)
-
-        // Son focus edilen kategori pozisyonunu kaydet
-        outState.putInt(KEY_LAST_FOCUSED_CATEGORY_POSITION, lastFocusedCategoryPosition)
-
-        // İlk kez açılıp açılmadığını kaydet
-        outState.putBoolean(KEY_IS_FIRST_TIME_OPENING, isFirstTimeOpening)
     }
 
     /**
@@ -234,56 +199,6 @@ abstract class BaseBrowseFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         (activity as? ToolbarController)?.hideTopMenu()
-
-        // Fragment geri geldiğinde focus yönetimi
-        if (::categoriesRecyclerView.isInitialized && ::contentRecyclerView.isInitialized) {
-            viewLifecycleOwner.lifecycleScope.launch {
-                // Öncelik sırası: lastFocusedContentPosition > lastFocusedCategoryPosition > ilk kategori (sadece ilk açılışta)
-                when {
-                    // Önce: Son focus edilen içerik pozisyonu geçerliyse, o içerik kartına odak ver
-                    lastFocusedContentPosition >= 0 && lastFocusedContentPosition < contentAdapter.itemCount -> {
-                        contentRecyclerView.post {
-                            val viewHolder = contentRecyclerView.findViewHolderForAdapterPosition(lastFocusedContentPosition)
-                            if (viewHolder != null) {
-                                viewHolder.itemView.requestFocus()
-                            }
-                        }
-                    }
-                    // Değilse: Son focus edilen kategori pozisyonu geçerliyse, o kategoriye odak ver
-                    lastFocusedCategoryPosition >= 0 && lastFocusedCategoryPosition < categoryAdapter.itemCount -> {
-                        categoriesRecyclerView.post {
-                            val viewHolder = categoriesRecyclerView.findViewHolderForAdapterPosition(lastFocusedCategoryPosition)
-                            if (viewHolder != null) {
-                                val categoryView = viewHolder.itemView.findViewById<View>(R.id.text_category_name)
-                                categoryView?.requestFocus()
-                            }
-                        }
-                    }
-                    // Hiçbiri değilse: Ve sayfa ilk kez açılıyorsa, ancak o zaman ilk kategoriye odak ver
-                    isFirstTimeOpening -> {
-                        // Coroutine kullanarak categoriesFlow'dan ilk kategori listesinin gelmesini bekle
-                        val categories = categoriesFlow.firstOrNull()
-                        if (categories != null && categories.isNotEmpty()) {
-                            // Liste geldiği anda, categoriesRecyclerView'a bir post komutu göndererek odağı listenin 0. pozisyonundaki öğeye ver
-                            categoriesRecyclerView.post {
-                                val firstItem = categoriesRecyclerView.findViewHolderForAdapterPosition(0)
-                                if (firstItem != null) {
-                                    val categoryView = firstItem.itemView.findViewById<View>(R.id.text_category_name)
-                                    if (categoryView != null) {
-                                        categoryView.requestFocus()
-                                        // En önemlisi: requestFocus() komutundan hemen sonra flag'leri ayarla
-                                        // Bu, bu kodun bir daha asla çalışmamasını garanti altına alır
-                                        isFirstTimeOpening = false
-                                        hasFocusedFirstCategory = true
-                                        lastFocusedCategoryPosition = 0
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -295,13 +210,6 @@ abstract class BaseBrowseFragment : Fragment() {
         categoriesRecyclerView = view.findViewById(getCategoriesRecyclerViewId())
         contentRecyclerView = view.findViewById(getContentRecyclerViewId())
         emptyStateTextView = view.findViewById(getEmptyStateTextViewId())
-
-        // Focus flag'lerini reset et (sadece ilk açılışta)
-        // Geri dönüldüğünde flag'leri koru, böylece focus son durumda kalır
-        if (isFirstTimeOpening) {
-            shouldFocusFirstCategory = false
-            hasFocusedFirstCategory = false
-        }
 
         // Setup navbar
         setupNavbar(view)
@@ -318,50 +226,6 @@ abstract class BaseBrowseFragment : Fragment() {
         observeContents()
         observeSelectedCategory()
         setupToastObserver()
-
-        // --- Navbar Butonlarının Davranışını Yönet ---
-        val searchEditText = navbarView?.findViewById<View>(R.id.edt_navbar_search)
-        val filterButton = navbarView?.findViewById<View>(R.id.btn_navbar_filter)
-
-        // Arama ve Filtre için ortak aşağı yön davranışı
-        val searchAndFilterDownListener =
-            View.OnKeyListener { v, keyCode, event ->
-                if (event.action == android.view.KeyEvent.ACTION_DOWN) {
-                    when (keyCode) {
-                        android.view.KeyEvent.KEYCODE_DPAD_DOWN -> {
-                            if (contentAdapter.itemCount > 0) {
-                                contentRecyclerView.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
-                            } else {
-                                categoriesRecyclerView.requestFocus()
-                            }
-                            return@OnKeyListener true
-                        }
-                        android.view.KeyEvent.KEYCODE_DPAD_CENTER -> {
-                            if (v.id == R.id.edt_navbar_search) {
-                                v.isFocusableInTouchMode = true
-                                v.requestFocus()
-                                val imm =
-                                    requireContext().getSystemService(
-                                        android.content.Context.INPUT_METHOD_SERVICE,
-                                    ) as android.view.inputmethod.InputMethodManager
-                                imm.showSoftInput(v, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
-                                return@OnKeyListener true
-                            }
-                        }
-                        android.view.KeyEvent.KEYCODE_DPAD_LEFT -> {
-                            // SOL: Eğer odak arama çubuğundaysa, olayı tüket ve hiçbir şey yapma.
-                            // Bu, odağın Home butonuna gitmesini engeller.
-                            if (v.id == R.id.edt_navbar_search) {
-                                return@OnKeyListener true // Olayı tüket.
-                            }
-                            // Eğer odak filtre butonundaysa, bu blok çalışmaz ve varsayılan davranış (arama çubuğuna gitme) korunur.
-                        }
-                    }
-                }
-                return@OnKeyListener false
-            }
-        searchEditText?.setOnKeyListener(searchAndFilterDownListener)
-        filterButton?.setOnKeyListener(searchAndFilterDownListener)
     }
 
     /**
@@ -376,37 +240,54 @@ abstract class BaseBrowseFragment : Fragment() {
         backButton?.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
-        // Navbar'dan aşağı yön tuşuyla ilk kategoriye git
-        backButton?.setOnKeyListener { _, keyCode, event ->
-            if (event.action == android.view.KeyEvent.ACTION_DOWN && keyCode == android.view.KeyEvent.KEYCODE_DPAD_DOWN) {
-                navigateFocusToFirstCategory()
-                true
-            } else {
-                false
-            }
-        }
 
         val homeButton = navbarView?.findViewById<View>(R.id.btn_navbar_home)
         homeButton?.setOnClickListener {
             parentFragmentManager.popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
         }
-        // Home butonundan aşağı ve sağ yön tuşlarını yönet
+
+        // Navbar -> Kategori geçişi için listener (sadece back button için)
+        val navbarDownListener = View.OnKeyListener { _, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                categoriesRecyclerView.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
+                return@OnKeyListener true // Olayı Tüket!
+            }
+            false
+        }
+
+        backButton?.setOnKeyListener(navbarDownListener)
+
+        // Listener for Home Button (manages both DOWN and RIGHT keys)
         homeButton?.setOnKeyListener { _, keyCode, event ->
-            if (event.action == android.view.KeyEvent.ACTION_DOWN) {
+            if (event.action == KeyEvent.ACTION_DOWN) {
                 when (keyCode) {
-                    // AŞAĞI: Odağı her zaman ilk kategoriye gönder.
-                    android.view.KeyEvent.KEYCODE_DPAD_DOWN -> {
-                        navigateFocusToFirstCategory()
-                        return@setOnKeyListener true // Olayı tüket.
+                    KeyEvent.KEYCODE_DPAD_DOWN -> {
+                        // Aşağı tuşu: İlk kategoriye odaklan ve olayı tüket.
+                        categoriesRecyclerView.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
+                        return@setOnKeyListener true
                     }
-                    // SAĞA: Olayı tüket, böylece arama kutusuna atlayamaz.
-                    android.view.KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                        return@setOnKeyListener true // Olayı tüket.
+                    KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                        // Sağ tuşu: Hiçbir şey yapma, sadece olayı tüketerek odağın arama çubuğuna geçmesini engelle.
+                        return@setOnKeyListener true
                     }
                 }
             }
-            // Diğer tüm tuşlar (sol, yukarı, ok) için sisteme izin ver.
-            return@setOnKeyListener false
+            // Diğer tüm tuşlar için varsayılan davranışa izin ver.
+            false
+        }
+
+        // Listener for Search Bar (manages LEFT key)
+        val searchEditText = navbarView?.findViewById<View>(R.id.edt_navbar_search)
+        searchEditText?.setOnKeyListener { _, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN) {
+                when (keyCode) {
+                    KeyEvent.KEYCODE_DPAD_LEFT -> {
+                        // Sol tuşu: Hiçbir şey yapma, sadece olayı tüketerek odağın Home butonuna geçmesini engelle.
+                        return@setOnKeyListener true
+                    }
+                }
+            }
+            false
         }
 
         // Filter butonunu setup et
@@ -434,55 +315,21 @@ abstract class BaseBrowseFragment : Fragment() {
                 onCategoryClick = { category ->
                     onCategoryClicked(category)
                 },
-                onCategoryFocused = { category ->
-                    // Kategori focus aldığında pozisyonu kaydet
-                    if (::categoriesRecyclerView.isInitialized) {
-                        val focusedChild = categoriesRecyclerView.focusedChild
-                        if (focusedChild != null) {
-                            val position = categoriesRecyclerView.getChildAdapterPosition(focusedChild)
-                            if (position != RecyclerView.NO_POSITION) {
-                                lastFocusedCategoryPosition = position
-                            }
-                        }
-                    }
-                    onCategoryFocused(category)
-                },
-                onNavigateToContent = {
-                    onNavigateFromCategoriesToContent()
-                    navigateFocusToContent()
-                },
-                onNavigateToNavbar = {
-                    navigateFocusToNavbar()
-                },
+                onNavigateToContent = ::navigateFocusToContent,
+                onNavigateToNavbar = ::navigateFocusToNavbar,
             )
 
         contentAdapter =
             ContentAdapter(
                 onContentClick = { content ->
-                    // İçerik kartına tıklandığında pozisyonu kaydet
-                    if (::contentRecyclerView.isInitialized) {
-                        val focusedChild = contentRecyclerView.focusedChild
-                        if (focusedChild != null) {
-                            val position = contentRecyclerView.getChildAdapterPosition(focusedChild)
-                            if (position != RecyclerView.NO_POSITION) {
-                                lastFocusedContentPosition = position
-                            }
-                        }
-                    }
                     onContentClicked(content)
                 },
                 onContentLongPress = { content ->
                     onContentLongPressed(content)
                 },
-                onFocusLeftFromGrid = {
-                    onFocusLeftFromContentGrid()
-                    navigateFocusToCategories()
-                },
-                onNavigateUpFromTopRow = {
-                    // Adapter haber verdiğinde, odağı doğrudan arama çubuğuna taşı.
-                    navbarView?.findViewById<View>(R.id.edt_navbar_search)?.requestFocus()
-                },
                 gridColumnCount = getGridColumnCount(),
+                onFocusLeftFromGrid = ::navigateFocusToCategories,
+                onNavigateUpFromTopRow = ::navigateFocusToNavbar,
             )
     }
 
@@ -531,6 +378,46 @@ abstract class BaseBrowseFragment : Fragment() {
                         categoryAdapter.submitList(categories)
                         // Bu metodun tek görevi, gelen listeyi adaptöre göndermek
                         // Odak işine asla karışmamalı
+                        
+                        // Anahtar, fragment'larda tanımlananla aynı olmalı
+                        val isInitialLaunch = arguments?.getBoolean("is_initial_launch", false) ?: false
+
+                        // Bu mantık, sadece ana menüden ilk kez gelindiğinde ve kategoriler hazır olduğunda çalışır.
+                        if (isInitialLaunch && categories.isNotEmpty()) {
+                            val firstCategory = categories.first()
+
+                            // 1. ViewModel'i uyararak ilk kategorinin içeriğini yüklemesini sağla.
+                            //    onCategoryClicked bunu bizim için zaten yapıyor.
+                            onCategoryClicked(firstCategory)
+
+                            // 2. UI'a ilk kategoriye odaklanmasını söyle.
+                            //    RecyclerView'ın tamamen hazır olduğundan emin olmak için ViewTreeObserver kullan
+                            view?.let { fragmentView ->
+                                val observer = categoriesRecyclerView.viewTreeObserver
+                                observer.addOnGlobalLayoutListener(object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
+                                    override fun onGlobalLayout() {
+                                        // ViewHolder'ın hazır olduğundan emin ol
+                                        val viewHolder = categoriesRecyclerView.findViewHolderForAdapterPosition(0)
+                                        if (viewHolder != null) {
+                                            // ViewHolder hazır, odak ver
+                                            viewHolder.itemView.requestFocus()
+                                            // Listener'ı kaldır
+                                            categoriesRecyclerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                                        } else {
+                                            // ViewHolder henüz hazır değil, bir kez daha dene
+                                            fragmentView.postDelayed({
+                                                val retryViewHolder = categoriesRecyclerView.findViewHolderForAdapterPosition(0)
+                                                retryViewHolder?.itemView?.requestFocus()
+                                                categoriesRecyclerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                                            }, 100)
+                                        }
+                                    }
+                                })
+                            }
+
+                            // 3. Bu kurulumun tekrar çalışmasını önlemek için işareti sıfırla.
+                            arguments?.putBoolean("is_initial_launch", false)
+                        }
                     }
             }
         }
@@ -582,66 +469,21 @@ abstract class BaseBrowseFragment : Fragment() {
      * Focus'u kategori listesine taşır.
      */
     private fun navigateFocusToCategories() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            val selectedCategoryId = selectedCategoryIdFlow.firstOrNull()
-            if (selectedCategoryId != null) {
-                val categories = categoriesFlow.firstOrNull() ?: emptyList()
-                val categoryPosition = categories.indexOfFirst { it.categoryId == selectedCategoryId }
-                if (categoryPosition >= 0) {
-                    lastFocusedCategoryPosition = categoryPosition
-                    categoriesRecyclerView.post {
-                        val viewHolder = categoriesRecyclerView.findViewHolderForAdapterPosition(categoryPosition)
-                        val categoryView = viewHolder?.itemView?.findViewById<View>(R.id.text_category_name)
-                        categoryView?.requestFocus()
-                    }
-                }
-            }
-        }
+        categoriesRecyclerView.requestFocus()
     }
 
     /**
-     * Focus'u içerik grid'inin ilk öğesine taşır.
-     * Kategori listesindeki focus'u temizler, böylece seçili kategori sadece görsel olarak işaretli kalır.
+     * Focus'u içerik grid'ine taşır.
      */
     private fun navigateFocusToContent() {
-        // Focus'u içerik grid'ine taşı
-        contentRecyclerView.post {
-            if (contentAdapter.itemCount > 0) {
-                // Eğer son focus edilen pozisyon varsa, ona git, yoksa ilk item'a git
-                val position =
-                    if (lastFocusedContentPosition >= 0 && lastFocusedContentPosition < contentAdapter.itemCount) {
-                        lastFocusedContentPosition
-                    } else {
-                        0
-                    }
-                val viewHolder = contentRecyclerView.findViewHolderForAdapterPosition(position)
-                viewHolder?.itemView?.requestFocus()
-                lastFocusedContentPosition = position
-            }
-        }
+        contentRecyclerView.requestFocus()
     }
 
     /**
-     * Focus'u navbar'daki geri butonuna taşır.
+     * Focus'u navbar'daki home butonuna taşır.
      */
     private fun navigateFocusToNavbar() {
-        navbarView?.post {
-            val backButton = navbarView?.findViewById<View>(R.id.btn_navbar_back)
-            backButton?.requestFocus()
-        }
-    }
-
-    /**
-     * Focus'u ilk kategoriye taşır.
-     */
-    private fun navigateFocusToFirstCategory() {
-        categoriesRecyclerView.post {
-            if (categoryAdapter.itemCount > 0) {
-                val viewHolder = categoriesRecyclerView.findViewHolderForAdapterPosition(0)
-                val categoryView = viewHolder?.itemView?.findViewById<View>(R.id.text_category_name)
-                categoryView?.requestFocus()
-            }
-        }
+        navbarView?.findViewById<View>(R.id.btn_navbar_home)?.requestFocus()
     }
 
     /**

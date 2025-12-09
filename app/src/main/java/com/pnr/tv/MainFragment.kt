@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import com.pnr.tv.model.ContentType
@@ -18,27 +19,12 @@ import com.pnr.tv.ui.livestreams.LiveStreamsBrowseFragment
  * @see MainActivity Ana aktivite tarafından barındırılır.
  */
 class MainFragment : Fragment() {
-    // Focus state kaydetme için
-    private var lastFocusedContainerId: Int = R.id.container_live_streams
-    
-    private companion object {
-        const val KEY_LAST_FOCUSED_CONTAINER_ID = "main_fragment_last_focused_container_id"
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Fragment yeniden yaratıldığında kaydedilen hafızayı geri yükle
-        if (savedInstanceState != null) {
-            lastFocusedContainerId = savedInstanceState.getInt(KEY_LAST_FOCUSED_CONTAINER_ID, R.id.container_live_streams)
-        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        
-        // Fragment yok edilmeden önce hafızayı kaydet
-        outState.putInt(KEY_LAST_FOCUSED_CONTAINER_ID, lastFocusedContainerId)
     }
 
     override fun onCreateView(
@@ -55,42 +41,24 @@ class MainFragment : Fragment() {
     ) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Android'in otomatik odak yönetimini devre dışı bırak
+        // Root view'ı focusable yapma
+        view.isFocusable = false
+        view.isFocusableInTouchMode = false
+        
         // Container'lara tıklama listener'ları ekle
         setupContainerListeners(view)
-
-        // Sadece ilk açılışta ve üst menü butonlarına focus yoksa container'a focus ver
-        view.post {
-            if (!isTopMenuButtonFocused()) {
-                val lastFocusedContainer = view.findViewById<View>(lastFocusedContainerId)
-                if (lastFocusedContainer != null) {
-                    lastFocusedContainer.requestFocus()
-                } else {
-                    view.findViewById<View>(R.id.container_live_streams)?.requestFocus()
-                }
-            }
-        }
+        
+        // Android'in otomatik odak yönetimini engelle ve update button'a odak ver
+        setupInitialFocus()
     }
     
     override fun onResume() {
         super.onResume()
         getToolbarController()?.showTopMenu()
         
-        // Fragment geri geldiğinde, sadece üst menü butonlarına focus yoksa container'a focus ver
-        view?.post {
-            if (!isTopMenuButtonFocused()) {
-                val lastFocusedContainer = view?.findViewById<View>(lastFocusedContainerId)
-                if (lastFocusedContainer != null) {
-                    lastFocusedContainer.requestFocus()
-                }
-            }
-        }
-    }
-    
-    /**
-     * Üst menü butonlarından birine focus verilmiş mi kontrol eder
-     */
-    private fun isTopMenuButtonFocused(): Boolean {
-        return (activity as? MainActivity)?.isTopMenuButtonFocused() ?: false
+        // Android'in otomatik odak yönetimini engelle ve update button'a odak ver
+        setupInitialFocus()
     }
 
     override fun onPause() {
@@ -104,6 +72,52 @@ class MainFragment : Fragment() {
      */
     private fun getToolbarController(): ToolbarController? {
         return activity as? ToolbarController
+    }
+
+    /**
+     * Android'in otomatik odak yönetimini engeller ve update button'a odak verir.
+     * ViewTreeObserver kullanarak view'ların tamamen hazır olduğundan emin olur.
+     */
+    private fun setupInitialFocus() {
+        view?.let { fragmentView ->
+            val containers = listOf(
+                fragmentView.findViewById<View>(R.id.container_live_streams),
+                fragmentView.findViewById<View>(R.id.container_movies),
+                fragmentView.findViewById<View>(R.id.container_series)
+            )
+            
+            // Container'lar zaten XML'de focusable="false" olarak ayarlandı
+            // Bu sayede Android otomatik odak yönetimi onlara odak veremez
+            
+            // ViewTreeObserver ile view'ların tamamen hazır olduğundan emin ol
+            val observer = fragmentView.viewTreeObserver
+            observer.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    // View'lar hazır, artık odak ayarlayabiliriz
+                    fragmentView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    
+                    // Önce update button'a odak ver (birden fazla kez deneyelim)
+                    val activity = activity as? MainActivity
+                    activity?.requestFocusOnUpdateButton()
+                    
+                    // Birkaç kez daha deneyelim (Android'in otomatik odak yönetimi ile yarışmak için)
+                    fragmentView.postDelayed({
+                        activity?.requestFocusOnUpdateButton()
+                        
+                        // Container'ları odaklanabilir yap (artık güvenli)
+                        containers.forEach { container ->
+                            container?.isFocusable = true
+                            container?.isFocusableInTouchMode = true
+                        }
+                        
+                        // Son bir kez daha update button'a odak ver
+                        fragmentView.postDelayed({
+                            activity?.requestFocusOnUpdateButton()
+                        }, 50)
+                    }, 100)
+                }
+            })
+        }
     }
 
     /**
@@ -132,15 +146,7 @@ class MainFragment : Fragment() {
         containerConfigs.forEach { config ->
             view.findViewById<View>(config.viewId)?.apply {
                 setOnClickListener {
-                    // Container'a tıklandığında focus state'i kaydet
-                    lastFocusedContainerId = config.viewId
                     config.navigationAction()
-                }
-                // Focus değiştiğinde kaydet (D-Pad ile gezinme için)
-                setOnFocusChangeListener { _, hasFocus ->
-                    if (hasFocus) {
-                        lastFocusedContainerId = config.viewId
-                    }
                 }
             }
         }
@@ -158,7 +164,7 @@ class MainFragment : Fragment() {
         parentFragmentManager.commit {
             replace(
                 R.id.fragment_container,
-                ContentBrowseFragment.newInstance(contentType),
+                ContentBrowseFragment.newInstance(contentType, true),
             )
             addToBackStack(null)
         }
@@ -168,7 +174,7 @@ class MainFragment : Fragment() {
         parentFragmentManager.commit {
             replace(
                 R.id.fragment_container,
-                LiveStreamsBrowseFragment.newInstance(),
+                LiveStreamsBrowseFragment.newInstance(true),
             )
             addToBackStack(null)
         }

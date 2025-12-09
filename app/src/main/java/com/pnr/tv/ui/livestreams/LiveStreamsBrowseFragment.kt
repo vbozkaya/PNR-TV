@@ -32,24 +32,7 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
     private val viewModel: LiveStreamsViewModel by viewModels()
 
     private val playerActivityLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == android.app.Activity.RESULT_OK) {
-                val channelId = result.data?.getIntExtra(PlayerActivity.RESULT_CHANNEL_ID, -1)
-                if (channelId != null && channelId != -1) {
-                    // channelId'yi bul ve o pozisyona focus ver
-                    viewLifecycleOwner.lifecycleScope.launch {
-                        val contents = contentsFlow.first()
-                        val position = contents.indexOfFirst { it.id == channelId }
-                        if (position >= 0) {
-                            contentRecyclerView.post {
-                                val viewHolder = contentRecyclerView.findViewHolderForAdapterPosition(position)
-                                viewHolder?.itemView?.requestFocus()
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -114,8 +97,7 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
     }
 
     override fun onCategoryFocused(category: CategoryItem) {
-        // Focus aldığında otomatik olarak kategori seç
-        viewModel.selectCategory(category.categoryId)
+        // Odaklanma ile içerik yükleme devre dışı bırakıldı
     }
 
     override fun onContentClicked(item: ContentItem) {
@@ -187,11 +169,19 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
     }
 
     companion object {
+        private const val KEY_IS_INITIAL_LAUNCH = "is_initial_launch"
+
         /**
          * Yeni bir LiveStreamsBrowseFragment örneği oluşturur.
+         *
+         * @param isInitialLaunch Ana menüden ilk kez açılıyor mu
          */
-        fun newInstance(): LiveStreamsBrowseFragment {
-            return LiveStreamsBrowseFragment()
+        fun newInstance(isInitialLaunch: Boolean = false): LiveStreamsBrowseFragment {
+            return LiveStreamsBrowseFragment().apply {
+                arguments = Bundle().apply {
+                    putBoolean(KEY_IS_INITIAL_LAUNCH, isInitialLaunch)
+                }
+            }
         }
     }
 }

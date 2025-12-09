@@ -28,9 +28,9 @@ import com.pnr.tv.model.ContentItem
 class ContentAdapter(
     private val onContentClick: (ContentItem) -> Unit,
     private val onContentLongPress: (ContentItem) -> Unit,
+    private val gridColumnCount: Int,
     private val onFocusLeftFromGrid: () -> Unit,
     private val onNavigateUpFromTopRow: () -> Unit,
-    private val gridColumnCount: Int,
 ) : ListAdapter<ContentItem, ContentAdapter.ViewHolder>(ContentDiff) {
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -39,7 +39,7 @@ class ContentAdapter(
         val view =
             LayoutInflater.from(parent.context)
                 .inflate(R.layout.item_channel, parent, false)
-        return ViewHolder(view, onContentClick, onContentLongPress, onFocusLeftFromGrid, onNavigateUpFromTopRow, this)
+        return ViewHolder(view, onContentClick, onContentLongPress, this, gridColumnCount, onFocusLeftFromGrid, onNavigateUpFromTopRow)
     }
 
     override fun onBindViewHolder(
@@ -53,9 +53,10 @@ class ContentAdapter(
         itemView: View,
         private val onContentClick: (ContentItem) -> Unit,
         private val onContentLongPress: (ContentItem) -> Unit,
+        private val adapter: ContentAdapter,
+        private val gridColumnCount: Int,
         private val onFocusLeftFromGrid: () -> Unit,
         private val onNavigateUpFromTopRow: () -> Unit,
-        private val adapter: ContentAdapter,
     ) : RecyclerView.ViewHolder(itemView) {
         private val contentImage: ImageView = itemView.findViewById(R.id.channel_image)
         private val contentName: TextView = itemView.findViewById(R.id.channel_name)
@@ -63,99 +64,40 @@ class ContentAdapter(
         private val ratingBadge: TextView = itemView.findViewById(R.id.rating_badge)
 
         init {
+            itemView.isFocusable = false
+            itemView.isFocusableInTouchMode = false
             setupKeyListener()
-            setupClickListeners()
         }
 
         /**
-         * Sets up key event listener for DPAD navigation.
-         * Focus'un grid dışına çıkmasını engeller (sadece sol yön tuşu ve back tuşu hariç).
+         * Sets up key event listener for DPAD navigation at boundaries.
          */
         private fun setupKeyListener() {
             itemView.setOnKeyListener { _, keyCode, event ->
+                if (event.action != KeyEvent.ACTION_DOWN) return@setOnKeyListener false
+
+                val currentPosition = bindingAdapterPosition
+                if (currentPosition == RecyclerView.NO_POSITION) return@setOnKeyListener false
+
                 when (keyCode) {
                     KeyEvent.KEYCODE_DPAD_LEFT -> {
-                        // Sol yön tuşu - kategori listesine gitmek için izin ver
-                        val currentPosition = bindingAdapterPosition
-                        if (currentPosition == RecyclerView.NO_POSITION) {
-                            return@setOnKeyListener false
-                        }
-
-                        if (currentPosition % Constants.GRID_COLUMN_COUNT == 0) {
-                            // En sol sütundaysak, kategori listesine git
-                            if (event.action == KeyEvent.ACTION_DOWN) {
-                                onFocusLeftFromGrid()
-                            }
-                            // Key'i consume et
+                        // Eğer ilk kolondaysak, olayı dışarı bildir ve tüket.
+                        if (currentPosition % gridColumnCount == 0) {
+                            onFocusLeftFromGrid()
                             return@setOnKeyListener true
                         }
-                        false
-                    }
-                    KeyEvent.KEYCODE_DPAD_DOWN -> {
-                        // Aşağı yön tuşu - son satırdaysak engelle
-                        val itemCount = adapter.itemCount
-                        val currentPosition = bindingAdapterPosition
-
-                        if (currentPosition == RecyclerView.NO_POSITION) {
-                            return@setOnKeyListener false
-                        }
-
-                        val lastRowStart =
-                            if (itemCount <= Constants.GRID_COLUMN_COUNT) {
-                                0
-                            } else {
-                                itemCount - Constants.GRID_COLUMN_COUNT
-                            }
-                        if (currentPosition >= lastRowStart && currentPosition < itemCount) {
-                            // Son satırdaysak, key'i consume et - focus'un grid dışına çıkmasını engelle
-                            return@setOnKeyListener true
-                        }
-                        false
                     }
                     KeyEvent.KEYCODE_DPAD_UP -> {
-                        // Yukarı yön tuşu - ilk satırdaysak engelle
-                        val currentPosition = bindingAdapterPosition
-                        if (currentPosition == RecyclerView.NO_POSITION) {
-                            return@setOnKeyListener false
-                        }
-
-                        if (currentPosition < Constants.GRID_COLUMN_COUNT) {
-                            // İlk satırdaysak, key'i consume et
+                        // Eğer ilk satırdaysak, olayı dışarı bildir ve tüket.
+                        if (currentPosition < gridColumnCount) {
+                            onNavigateUpFromTopRow()
                             return@setOnKeyListener true
                         }
-                        false
-                    }
-                    KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                        // Sağ yön tuşu - en sağ sütundaysak engelle
-                        val currentPosition = bindingAdapterPosition
-                        if (currentPosition == RecyclerView.NO_POSITION) {
-                            return@setOnKeyListener false
-                        }
-
-                        if (currentPosition % Constants.GRID_COLUMN_COUNT == Constants.GRID_COLUMN_COUNT - 1) {
-                            // En sağ sütundaysak, key'i consume et
-                            return@setOnKeyListener true
-                        }
-                        false
-                    }
-                    KeyEvent.KEYCODE_BACK -> {
-                        // Back tuşu - izin ver
-                        false
-                    }
-                    else -> {
-                        // Diğer tuşlar için default davranış
-                        false
                     }
                 }
+                // Diğer tüm durumlar için sistemin varsayılan davranışına izin ver.
+                return@setOnKeyListener false
             }
-        }
-
-        /**
-         * Sets up click and long press listeners.
-         */
-        private fun setupClickListeners() {
-            itemView.isFocusable = true
-            itemView.isFocusableInTouchMode = true
         }
 
         /**
@@ -166,67 +108,6 @@ class ContentAdapter(
             position: Int,
             gridColumnCount: Int,
         ) {
-            // Yukarı yön tuşu için özel listener - ilk satırdaysa navbar'a git
-            itemView.setOnKeyListener { _, keyCode, event ->
-                if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-                    // Eğer bu kart ilk satırdaysa (pozisyonu sütun sayısından küçükse)
-                    if (position < gridColumnCount) {
-                        // Fragment'a haber ver.
-                        onNavigateUpFromTopRow()
-                        return@setOnKeyListener true // Olayı tüket, sistemin karışmasını engelle.
-                    }
-                }
-
-                // Diğer yönler için mevcut mantığı koru
-                when (keyCode) {
-                    KeyEvent.KEYCODE_DPAD_LEFT -> {
-                        val currentPosition = bindingAdapterPosition
-                        if (currentPosition == RecyclerView.NO_POSITION) {
-                            return@setOnKeyListener false
-                        }
-
-                        if (currentPosition % Constants.GRID_COLUMN_COUNT == 0) {
-                            if (event.action == KeyEvent.ACTION_DOWN) {
-                                onFocusLeftFromGrid()
-                            }
-                            return@setOnKeyListener true
-                        }
-                        false
-                    }
-                    KeyEvent.KEYCODE_DPAD_DOWN -> {
-                        val itemCount = adapter.itemCount
-                        val currentPosition = bindingAdapterPosition
-
-                        if (currentPosition == RecyclerView.NO_POSITION) {
-                            return@setOnKeyListener false
-                        }
-
-                        val lastRowStart =
-                            if (itemCount <= Constants.GRID_COLUMN_COUNT) {
-                                0
-                            } else {
-                                itemCount - Constants.GRID_COLUMN_COUNT
-                            }
-                        if (currentPosition >= lastRowStart && currentPosition < itemCount) {
-                            return@setOnKeyListener true
-                        }
-                        false
-                    }
-                    KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                        val currentPosition = bindingAdapterPosition
-                        if (currentPosition == RecyclerView.NO_POSITION) {
-                            return@setOnKeyListener false
-                        }
-
-                        if ((currentPosition + 1) % Constants.GRID_COLUMN_COUNT == 0) {
-                            return@setOnKeyListener true
-                        }
-                        false
-                    }
-                    else -> false
-                }
-            }
-
             contentName.text = item.title
 
             // Rating badge gösterimi - sadece film ve diziler için
@@ -313,46 +194,6 @@ class ContentAdapter(
             itemView.setOnLongClickListener {
                 onContentLongPress(item)
                 true
-            }
-            
-            // Focus scroll: Focus alındığında item'ı görünür alana getir
-            itemView.setOnFocusChangeListener { focusedView, hasFocus ->
-                if (hasFocus) {
-                    val recyclerView = focusedView.parent as? RecyclerView
-                    if (recyclerView != null) {
-                        val layoutManager = recyclerView.layoutManager as? androidx.recyclerview.widget.GridLayoutManager
-                        if (layoutManager != null) {
-                            val focusedPosition = recyclerView.getChildAdapterPosition(focusedView)
-                            if (focusedPosition != androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
-                                recyclerView.post {
-                                    val firstVisible = layoutManager.findFirstVisibleItemPosition()
-                                    val lastVisible = layoutManager.findLastVisibleItemPosition()
-                                    
-                                    var needsScroll = false
-                                    if (focusedPosition < firstVisible || focusedPosition > lastVisible) {
-                                        needsScroll = true
-                                    } else {
-                                        val viewHolder = recyclerView.findViewHolderForAdapterPosition(focusedPosition)
-                                        viewHolder?.itemView?.let { view ->
-                                            val top = view.top
-                                            val bottom = view.bottom
-                                            val recyclerTop = recyclerView.paddingTop
-                                            val recyclerBottom = recyclerView.height - recyclerView.paddingBottom
-                                            
-                                            if (top < recyclerTop || bottom > recyclerBottom) {
-                                                needsScroll = true
-                                            }
-                                        }
-                                    }
-                                    
-                                    if (needsScroll || focusedPosition == firstVisible || focusedPosition == lastVisible) {
-                                        layoutManager.scrollToPositionWithOffset(focusedPosition, recyclerView.paddingTop + 20)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
             }
         }
     }

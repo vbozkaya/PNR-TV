@@ -120,8 +120,7 @@ class ContentBrowseFragment : BaseBrowseFragment() {
     }
 
     override fun onCategoryFocused(category: CategoryItem) {
-        // Focus aldığında otomatik olarak kategori seç
-        viewModel.selectCategory(category.categoryId)
+        // Odaklanma ile içerik yükleme devre dışı bırakıldı
     }
 
     override fun onContentClicked(item: ContentItem) {
@@ -301,19 +300,22 @@ class ContentBrowseFragment : BaseBrowseFragment() {
 
     companion object {
         private const val ARG_CONTENT_TYPE = "content_type"
+        private const val KEY_IS_INITIAL_LAUNCH = "is_initial_launch"
 
         /**
          * Yeni bir ContentBrowseFragment örneği oluşturur.
          *
          * @param contentType Gösterilecek içerik türü
+         * @param isInitialLaunch Ana menüden ilk kez açılıyor mu
          * @return Yeni ContentBrowseFragment örneği
          */
-        fun newInstance(contentType: ContentType): ContentBrowseFragment {
+        fun newInstance(contentType: ContentType, isInitialLaunch: Boolean = false): ContentBrowseFragment {
             return ContentBrowseFragment().apply {
                 arguments =
                     Bundle().apply {
                         @Suppress("DEPRECATION")
                         putSerializable(ARG_CONTENT_TYPE, contentType)
+                        putBoolean(KEY_IS_INITIAL_LAUNCH, isInitialLaunch)
                     }
             }
         }

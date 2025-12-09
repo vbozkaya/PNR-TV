@@ -111,7 +111,6 @@
             android:maxHeight="4dp"
             android:background="@drawable/seekbar_focus_background"
             android:layout_marginTop="30dp"
-            android:nextFocusDown="@id/btn_play"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

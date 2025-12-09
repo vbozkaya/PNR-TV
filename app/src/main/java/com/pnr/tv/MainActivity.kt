@@ -67,6 +67,33 @@ class MainActivity : BaseActivity(), ToolbarController {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        // Set initial focus to the update button every time the main screen is visible
+        // Use multiple post calls to ensure focus is set even if Android tries to override it
+        binding.root.post {
+            // Check if MainFragment is currently visible
+            val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+            if (currentFragment is MainFragment || currentFragment == null) {
+                binding.btnUpdate.requestFocus()
+                
+                // Birden fazla kez deneyelim (Android'in otomatik odak yönetimi ile yarışmak için)
+                binding.root.postDelayed({
+                    binding.btnUpdate.requestFocus()
+                }, 50)
+                
+                binding.root.postDelayed({
+                    binding.btnUpdate.requestFocus()
+                }, 150)
+                
+                binding.root.postDelayed({
+                    binding.btnUpdate.requestFocus()
+                }, 300)
+            }
+        }
+    }
+
     private fun observeCurrentUser() {
         viewModel.currentUser.observe(this) { user ->
             if (user != null) {
@@ -145,6 +172,13 @@ class MainActivity : BaseActivity(), ToolbarController {
                focusedView.id == binding.btnUsers.id ||
                focusedView.id == binding.btnSettings.id ||
                focusedView.id == binding.btnExit.id
+    }
+
+    /**
+     * Güncelle butonuna odak verir. Fragment'lar tarafından çağrılabilir.
+     */
+    fun requestFocusOnUpdateButton() {
+        binding.btnUpdate.requestFocus()
     }
 
     private fun showExitDialog() {

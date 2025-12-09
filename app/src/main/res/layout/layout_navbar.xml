@@ -24,7 +24,6 @@
         android:clickable="true"
         android:focusableInTouchMode="true"
         android:nextFocusRight="@id/btn_navbar_home"
-        android:nextFocusDown="@id/btn_add_to_favorites"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -41,7 +40,6 @@
         android:clickable="true"
         android:focusableInTouchMode="true"
         android:nextFocusLeft="@id/btn_navbar_back"
-        android:nextFocusDown="@id/btn_add_to_favorites"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toEndOf="@id/btn_navbar_back" />
 
@@ -60,7 +58,7 @@
         android:paddingEnd="12dp"
         android:singleLine="true"
         android:focusable="true"
-        android:focusableInTouchMode="false"
+        android:focusableInTouchMode="true"
         android:visibility="gone"
         android:imeOptions="actionSearch"
         app:layout_constraintTop_toTopOf="parent"
@@ -99,4 +97,3 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-
