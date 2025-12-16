@@ -44,7 +44,7 @@ class SelectViewerDialog(
         window?.setBackgroundDrawableResource(android.R.color.transparent)
 
         dialog.show()
-        
+
         // Dialog açıldığında RecyclerView'ın ilk öğesine focus ver
         binding.recyclerViewers.post {
             if (adapter.itemCount > 0) {
@@ -87,7 +87,7 @@ class SelectViewerAdapter(
             itemView.setOnClickListener {
                 onViewerClick(viewer)
             }
-            
+
             // Focus scroll: Focus alındığında item'ı görünür alana getir
             itemView.setOnFocusChangeListener { focusedView, hasFocus ->
                 if (hasFocus) {
@@ -100,7 +100,7 @@ class SelectViewerAdapter(
                                 recyclerView.post {
                                     val firstVisible = layoutManager.findFirstVisibleItemPosition()
                                     val lastVisible = layoutManager.findLastVisibleItemPosition()
-                                    
+
                                     var needsScroll = false
                                     if (focusedPosition < firstVisible || focusedPosition > lastVisible) {
                                         needsScroll = true
@@ -111,13 +111,13 @@ class SelectViewerAdapter(
                                             val bottom = view.bottom
                                             val recyclerTop = recyclerView.paddingTop
                                             val recyclerBottom = recyclerView.height - recyclerView.paddingBottom
-                                            
+
                                             if (top < recyclerTop || bottom > recyclerBottom) {
                                                 needsScroll = true
                                             }
                                         }
                                     }
-                                    
+
                                     if (needsScroll || focusedPosition == firstVisible || focusedPosition == lastVisible) {
                                         layoutManager.scrollToPositionWithOffset(focusedPosition, recyclerView.paddingTop + 20)
                                     }

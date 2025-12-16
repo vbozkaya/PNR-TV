@@ -112,6 +112,12 @@
     <string name="error_timeout_read">Waktu habis saat menerima data dari server. Silakan coba lagi.</string>
     <string name="error_offline">Tidak ada koneksi Internet. Menampilkan data dari cache.</string>
     <string name="error_retry_failed">Percobaan ulang gagal. Silakan periksa koneksi Internet Anda.</string>
+    
+    <!-- Pesan Kesalahan Pendek -->
+    <string name="error_categories_short">Kategori tidak dapat dimuat</string>
+    <string name="error_movies_short">Film tidak dapat dimuat</string>
+    <string name="error_series_short">Serial tidak dapat dimuat</string>
+    <string name="error_live_streams_short">Siaran langsung tidak dapat dimuat</string>
     <string name="btn_retry">Coba Lagi</string>
     <string name="toast_retrying">Mencoba lagi...</string>
     <string name="toast_retry_success">Koneksi berhasil</string>

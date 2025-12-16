@@ -3,13 +3,14 @@ package com.pnr.tv.di
 import android.content.Context
 import androidx.room.Room
 import com.pnr.tv.BuildConfig
-import com.pnr.tv.db.AppDatabase
 import com.pnr.tv.SessionManager
+import com.pnr.tv.db.AppDatabase
 import com.pnr.tv.db.dao.FavoriteDao
 import com.pnr.tv.db.dao.LiveStreamCategoryDao
 import com.pnr.tv.db.dao.LiveStreamDao
 import com.pnr.tv.db.dao.MovieCategoryDao
 import com.pnr.tv.db.dao.MovieDao
+import com.pnr.tv.db.dao.PlaybackPositionDao
 import com.pnr.tv.db.dao.RecentlyWatchedDao
 import com.pnr.tv.db.dao.SeriesCategoryDao
 import com.pnr.tv.db.dao.SeriesDao
@@ -17,9 +18,8 @@ import com.pnr.tv.db.dao.TmdbCacheDao
 import com.pnr.tv.db.dao.UserDao
 import com.pnr.tv.db.dao.ViewerDao
 import com.pnr.tv.db.dao.WatchedEpisodeDao
-import com.pnr.tv.db.dao.PlaybackPositionDao
-import com.pnr.tv.repository.UserRepository
 import com.pnr.tv.db.migration.DatabaseMigrations
+import com.pnr.tv.repository.UserRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

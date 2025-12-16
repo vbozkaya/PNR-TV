@@ -1,6 +1,5 @@
 package com.pnr.tv.ui.series
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
@@ -13,7 +12,10 @@ import androidx.test.espresso.intent.Intents
 import androidx.test.espresso.intent.Intents.intended
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasExtra
-import androidx.test.espresso.matcher.ViewMatchers.*
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withContentDescription
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import com.pnr.tv.PlayerActivity
@@ -29,7 +31,7 @@ import org.junit.runner.RunWith
 
 /**
  * SeriesDetailFragment için Espresso UI testleri.
- * 
+ *
  * NOT: Bu testler Hilt DI kullanır ve gerçek ViewModel/Repository ile çalışır.
  * Production ortamında API mock'laması yapılması gerekebilir.
  */
@@ -37,7 +39,6 @@ import org.junit.runner.RunWith
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class SeriesDetailFragmentTest {
-
     @get:Rule(order = 0)
     var hiltRule = HiltAndroidRule(this)
 
@@ -66,10 +67,11 @@ class SeriesDetailFragmentTest {
         val args = createFragmentArgs(seriesId = 123)
 
         // When
-        scenario = launchFragmentInContainer<SeriesDetailFragment>(
-            fragmentArgs = args,
-            themeResId = R.style.Theme_Leanback
-        )
+        scenario =
+            launchFragmentInContainer<SeriesDetailFragment>(
+                fragmentArgs = args,
+                themeResId = R.style.Theme_Leanback,
+            )
 
         // Then
         onView(withId(R.id.txt_navbar_title))
@@ -84,10 +86,11 @@ class SeriesDetailFragmentTest {
     fun clickBackButton_shouldCloseFragment() {
         // Given
         val args = createFragmentArgs(seriesId = 123)
-        scenario = launchFragmentInContainer<SeriesDetailFragment>(
-            fragmentArgs = args,
-            themeResId = R.style.Theme_Leanback
-        )
+        scenario =
+            launchFragmentInContainer<SeriesDetailFragment>(
+                fragmentArgs = args,
+                themeResId = R.style.Theme_Leanback,
+            )
 
         // When
         onView(withId(R.id.btn_navbar_back))
@@ -109,10 +112,11 @@ class SeriesDetailFragmentTest {
         val args = createFragmentArgs(seriesId = 123)
 
         // When
-        scenario = launchFragmentInContainer<SeriesDetailFragment>(
-            fragmentArgs = args,
-            themeResId = R.style.Theme_Leanback
-        )
+        scenario =
+            launchFragmentInContainer<SeriesDetailFragment>(
+                fragmentArgs = args,
+                themeResId = R.style.Theme_Leanback,
+            )
 
         // Then - İlk anda loading gösterilmeli (hızlı API'de göremeyebiliriz)
         // Bu test gerçek ortamda flaky olabilir, mock gerekir
@@ -130,10 +134,11 @@ class SeriesDetailFragmentTest {
         val args = createFragmentArgs(seriesId = 123)
 
         // When
-        scenario = launchFragmentInContainer<SeriesDetailFragment>(
-            fragmentArgs = args,
-            themeResId = R.style.Theme_Leanback
-        )
+        scenario =
+            launchFragmentInContainer<SeriesDetailFragment>(
+                fragmentArgs = args,
+                themeResId = R.style.Theme_Leanback,
+            )
 
         // Veri yüklenene kadar bekle (production'da mock kullanılmalı)
         Thread.sleep(2000)
@@ -153,10 +158,11 @@ class SeriesDetailFragmentTest {
         val args = createFragmentArgs(seriesId = 123)
 
         // When
-        scenario = launchFragmentInContainer<SeriesDetailFragment>(
-            fragmentArgs = args,
-            themeResId = R.style.Theme_Leanback
-        )
+        scenario =
+            launchFragmentInContainer<SeriesDetailFragment>(
+                fragmentArgs = args,
+                themeResId = R.style.Theme_Leanback,
+            )
 
         // Veri yüklenene kadar bekle
         Thread.sleep(2000)
@@ -174,10 +180,11 @@ class SeriesDetailFragmentTest {
     fun clickEpisode_shouldLaunchPlayerActivity() {
         // Given
         val args = createFragmentArgs(seriesId = 123)
-        scenario = launchFragmentInContainer<SeriesDetailFragment>(
-            fragmentArgs = args,
-            themeResId = R.style.Theme_Leanback
-        )
+        scenario =
+            launchFragmentInContainer<SeriesDetailFragment>(
+                fragmentArgs = args,
+                themeResId = R.style.Theme_Leanback,
+            )
 
         // Veri yüklenene kadar bekle
         Thread.sleep(2000)
@@ -187,16 +194,16 @@ class SeriesDetailFragmentTest {
             .perform(
                 RecyclerViewActions.actionOnItemAtPosition<EpisodesAdapter.EpisodeViewHolder>(
                     0,
-                    click()
-                )
+                    click(),
+                ),
             )
 
         // Then - PlayerActivity başlatılmalı
         intended(
             allOf(
                 hasComponent(PlayerActivity::class.java.name),
-                hasExtra(PlayerActivity.EXTRA_VIDEO_URL, anyString())
-            )
+                hasExtra(PlayerActivity.EXTRA_VIDEO_URL, anyString()),
+            ),
         )
     }
 
@@ -208,7 +215,7 @@ class SeriesDetailFragmentTest {
     fun fragmentWithNoEpisodes_shouldDisplayEmptyState() {
         // Bu test için API mock'laması yapılmalı
         // Şu anki hali gerçek API'ye bağlı olduğu için implementasyon bekliyor
-        
+
         // Given - API'den empty response dönmeli (mock gerekli)
         // When
         // Then
@@ -224,7 +231,7 @@ class SeriesDetailFragmentTest {
     fun fragmentWithApiError_shouldDisplayErrorDialog() {
         // Bu test için API mock'laması yapılmalı
         // Şu anki hali gerçek API'ye bağlı olduğu için implementasyon bekliyor
-        
+
         // Given - API'den error dönmeli (mock gerekli)
         // When
         // Then
@@ -241,10 +248,11 @@ class SeriesDetailFragmentTest {
         val args = createFragmentArgs(seriesId = 123)
 
         // When
-        scenario = launchFragmentInContainer<SeriesDetailFragment>(
-            fragmentArgs = args,
-            themeResId = R.style.Theme_Leanback
-        )
+        scenario =
+            launchFragmentInContainer<SeriesDetailFragment>(
+                fragmentArgs = args,
+                themeResId = R.style.Theme_Leanback,
+            )
 
         // Then
         onView(withId(R.id.img_series_poster))
@@ -272,6 +280,3 @@ class SeriesDetailFragmentTest {
 
     private fun anyString(): String = ""
 }
-
-
-

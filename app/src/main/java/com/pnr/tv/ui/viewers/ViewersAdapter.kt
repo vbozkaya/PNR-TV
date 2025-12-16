@@ -43,7 +43,7 @@ class ViewersAdapter(
             deleteButton.setOnClickListener {
                 onDeleteClick(viewer)
             }
-            
+
             // Focus scroll: Sil butonu focus alındığında item'ı görünür alana getir
             deleteButton.setOnFocusChangeListener { focusedButton, hasFocus ->
                 if (hasFocus) {
@@ -56,7 +56,7 @@ class ViewersAdapter(
                                 recyclerView.post {
                                     val firstVisible = layoutManager.findFirstVisibleItemPosition()
                                     val lastVisible = layoutManager.findLastVisibleItemPosition()
-                                    
+
                                     var needsScroll = false
                                     if (adapterPosition < firstVisible || adapterPosition > lastVisible) {
                                         needsScroll = true
@@ -67,13 +67,13 @@ class ViewersAdapter(
                                             val bottom = view.bottom
                                             val recyclerTop = recyclerView.paddingTop
                                             val recyclerBottom = recyclerView.height - recyclerView.paddingBottom
-                                            
+
                                             if (top < recyclerTop || bottom > recyclerBottom) {
                                                 needsScroll = true
                                             }
                                         }
                                     }
-                                    
+
                                     if (needsScroll || adapterPosition == firstVisible || adapterPosition == lastVisible) {
                                         layoutManager.scrollToPositionWithOffset(adapterPosition, recyclerView.paddingTop + 20)
                                     }
@@ -102,6 +102,3 @@ class ViewersAdapter(
         }
     }
 }
-
-
-

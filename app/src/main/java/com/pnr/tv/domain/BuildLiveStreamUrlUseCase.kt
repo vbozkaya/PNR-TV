@@ -1,8 +1,8 @@
 package com.pnr.tv.domain
 
-import com.pnr.tv.repository.UserRepository
 import com.pnr.tv.db.entity.LiveStreamEntity
 import com.pnr.tv.extensions.normalizeBaseUrl
+import com.pnr.tv.repository.UserRepository
 import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 
@@ -31,4 +31,3 @@ class BuildLiveStreamUrlUseCase
             return "$baseUrl/live/${user.username}/${user.password}/${channel.streamId}.ts"
         }
     }
-

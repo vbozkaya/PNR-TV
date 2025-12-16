@@ -28,7 +28,7 @@ interface MovieDao {
     /**
      * TMDB ID'si olan tüm filmlerin streamId'lerini döndürür
      * Delta senkronizasyonu için kullanılır
-     * 
+     *
      * @return TMDB verisine sahip film ID'leri
      */
     @Query("SELECT streamId FROM movies WHERE tmdbId IS NOT NULL")

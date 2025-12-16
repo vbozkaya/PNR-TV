@@ -18,6 +18,3 @@ object CategoryDiff : DiffUtil.ItemCallback<CategoryItem>() {
         newItem: CategoryItem,
     ): Boolean = oldItem == newItem
 }
-
-
-

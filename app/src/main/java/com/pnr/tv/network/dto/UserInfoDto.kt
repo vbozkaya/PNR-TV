@@ -72,6 +72,3 @@ data class AuthenticationResponseDto(
         }
     }
 }
-
-
-

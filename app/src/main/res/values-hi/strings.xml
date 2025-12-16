@@ -122,6 +122,12 @@
     <string name="error_categories_load">श्रेणियां लोड करते समय त्रुटि: %1$s</string>
     <string name="error_movies_load">फिल्में लोड करते समय त्रुटि: %1$s</string>
     <string name="error_series_load">सीरीज़ लोड करते समय त्रुटि: %1$s</string>
+    
+    <!-- संक्षिप्त त्रुटि संदेश -->
+    <string name="error_categories_short">श्रेणियां लोड नहीं हो सकीं</string>
+    <string name="error_movies_short">फिल्में लोड नहीं हो सकीं</string>
+    <string name="error_series_short">सीरीज़ लोड नहीं हो सकीं</string>
+    <string name="error_live_streams_short">लाइव स्ट्रीम लोड नहीं हो सके</string>
     <string name="error_image_preload">छवि प्रीलोड त्रुटि: %1$s</string>
     
     <!-- श्रेणी नाम -->

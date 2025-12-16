@@ -2,19 +2,17 @@ package com.pnr.tv.util
 
 import android.content.Context
 import com.pnr.tv.R
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 
 /**
  * CategoryNameHelper için unit testler.
  * Kategori isimlerinin doğru şekilde yerelleştirildiğini doğrular.
  */
 class CategoryNameHelperTest {
-
     private lateinit var mockContext: Context
 
     @Before
@@ -182,18 +180,19 @@ class CategoryNameHelperTest {
     @Test
     fun `getLocalizedCategoryName should handle all common categories`() {
         // Given
-        val categories = mapOf(
-            "Action" to "Aksiyon",
-            "Comedy" to "Komedi",
-            "Drama" to "Drama",
-            "Horror" to "Korku",
-            "Thriller" to "Gerilim",
-            "War" to "Savaş",
-            "Sports" to "Spor",
-            "News" to "Haber",
-            "Kids" to "Çocuk",
-            "All" to "Tümü"
-        )
+        val categories =
+            mapOf(
+                "Action" to "Aksiyon",
+                "Comedy" to "Komedi",
+                "Drama" to "Drama",
+                "Horror" to "Korku",
+                "Thriller" to "Gerilim",
+                "War" to "Savaş",
+                "Sports" to "Spor",
+                "News" to "Haber",
+                "Kids" to "Çocuk",
+                "All" to "Tümü",
+            )
 
         // Setup string resources
         whenever(mockContext.getString(R.string.category_horror)).thenReturn("Korku")
@@ -211,6 +210,3 @@ class CategoryNameHelperTest {
         }
     }
 }
-
-
-

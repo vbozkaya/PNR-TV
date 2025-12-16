@@ -31,6 +31,19 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintDimensionRatio="H,2:3" />
 
+        <!-- Gradient Gölge Overlay - Alt kısımdan yukarıya, kartın yaklaşık %27'sini kaplar -->
+        <View
+            android:id="@+id/gradient_shadow_overlay"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/gradient_card_bottom_shadow"
+            android:elevation="0.5dp"
+            app:layout_constraintStart_toStartOf="@id/channel_image"
+            app:layout_constraintEnd_toEndOf="@id/channel_image"
+            app:layout_constraintBottom_toBottomOf="@id/channel_image"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.267" />
+
         <!-- Beyaz kenarlık container (sadece film ve diziler için kullanılacak) -->
         <FrameLayout
             android:id="@+id/image_container"
@@ -76,6 +89,7 @@
             android:ellipsize="end"
             android:gravity="center"
             android:background="@drawable/channel_name_background"
+            android:elevation="1.5dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />

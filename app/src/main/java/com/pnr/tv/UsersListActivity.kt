@@ -48,7 +48,7 @@ class UsersListActivity : BaseActivity(), UsersListAdapter.OnUserActionListener 
                 usersAdapter.submitList(users)
                 binding.rvUsers.isVisible = users.isNotEmpty()
                 binding.tvEmptyState.isVisible = users.isEmpty()
-                
+
                 // RecyclerView'a veri geldiğinde ilk öğeye focus ver
                 if (users.isNotEmpty()) {
                     binding.rvUsers.post {
@@ -80,17 +80,18 @@ class UsersListActivity : BaseActivity(), UsersListAdapter.OnUserActionListener 
     }
 
     override fun onDelete(user: UserAccountEntity) {
-        val dialog = AlertDialog.Builder(this, R.style.FullscreenDialogTheme)
-            .setTitle(R.string.dialog_delete_user_title)
-            .setMessage(getString(R.string.dialog_delete_user_message, user.accountName))
-            .setPositiveButton(R.string.dialog_yes) { _, _ ->
-                viewModel.deleteUser(user)
-                Toast.makeText(this, getString(R.string.toast_user_deleted), Toast.LENGTH_SHORT).show()
-            }
-            .setNegativeButton(R.string.dialog_no, null)
-            .setCancelable(false)
-            .create()
-        
+        val dialog =
+            AlertDialog.Builder(this, R.style.FullscreenDialogTheme)
+                .setTitle(R.string.dialog_delete_user_title)
+                .setMessage(getString(R.string.dialog_delete_user_message, user.accountName))
+                .setPositiveButton(R.string.dialog_yes) { _, _ ->
+                    viewModel.deleteUser(user)
+                    Toast.makeText(this, getString(R.string.toast_user_deleted), Toast.LENGTH_SHORT).show()
+                }
+                .setNegativeButton(R.string.dialog_no, null)
+                .setCancelable(false)
+                .create()
+
         dialog.show()
         // Güvenlik için "Hayır" butonuna focus ver
         dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.requestFocus()

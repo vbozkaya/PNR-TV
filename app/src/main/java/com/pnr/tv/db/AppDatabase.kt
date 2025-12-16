@@ -7,6 +7,7 @@ import com.pnr.tv.db.dao.LiveStreamCategoryDao
 import com.pnr.tv.db.dao.LiveStreamDao
 import com.pnr.tv.db.dao.MovieCategoryDao
 import com.pnr.tv.db.dao.MovieDao
+import com.pnr.tv.db.dao.PlaybackPositionDao
 import com.pnr.tv.db.dao.RecentlyWatchedDao
 import com.pnr.tv.db.dao.SeriesCategoryDao
 import com.pnr.tv.db.dao.SeriesDao
@@ -14,12 +15,12 @@ import com.pnr.tv.db.dao.TmdbCacheDao
 import com.pnr.tv.db.dao.UserDao
 import com.pnr.tv.db.dao.ViewerDao
 import com.pnr.tv.db.dao.WatchedEpisodeDao
-import com.pnr.tv.db.dao.PlaybackPositionDao
 import com.pnr.tv.db.entity.FavoriteChannelEntity
 import com.pnr.tv.db.entity.LiveStreamCategoryEntity
 import com.pnr.tv.db.entity.LiveStreamEntity
 import com.pnr.tv.db.entity.MovieCategoryEntity
 import com.pnr.tv.db.entity.MovieEntity
+import com.pnr.tv.db.entity.PlaybackPositionEntity
 import com.pnr.tv.db.entity.RecentlyWatchedEntity
 import com.pnr.tv.db.entity.SeriesCategoryEntity
 import com.pnr.tv.db.entity.SeriesEntity
@@ -27,7 +28,6 @@ import com.pnr.tv.db.entity.TmdbCacheEntity
 import com.pnr.tv.db.entity.UserAccountEntity
 import com.pnr.tv.db.entity.ViewerEntity
 import com.pnr.tv.db.entity.WatchedEpisodeEntity
-import com.pnr.tv.db.entity.PlaybackPositionEntity
 
 @Database(
     entities = [

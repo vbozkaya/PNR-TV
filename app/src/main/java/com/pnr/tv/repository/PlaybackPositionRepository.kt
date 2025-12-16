@@ -19,15 +19,20 @@ class PlaybackPositionRepository
          * @param positionMs Milisaniye cinsinden pozisyon
          * @param durationMs Toplam süre
          */
-        suspend fun savePlaybackPosition(contentId: String, positionMs: Long, durationMs: Long) {
-            val position = PlaybackPositionEntity(
-                contentId = contentId,
-                positionMs = positionMs,
-                durationMs = durationMs,
-                lastUpdated = System.currentTimeMillis()
-            )
+        suspend fun savePlaybackPosition(
+            contentId: String,
+            positionMs: Long,
+            durationMs: Long,
+        ) {
+            val position =
+                PlaybackPositionEntity(
+                    contentId = contentId,
+                    positionMs = positionMs,
+                    durationMs = durationMs,
+                    lastUpdated = System.currentTimeMillis(),
+                )
             playbackPositionDao.upsert(position)
-            Timber.d("💾 Pozisyon kaydedildi: $contentId -> ${positionMs/1000}s / ${durationMs/1000}s")
+            Timber.d("💾 Pozisyon kaydedildi: $contentId -> ${positionMs / 1000}s / ${durationMs / 1000}s")
         }
 
         /**
@@ -56,8 +61,3 @@ class PlaybackPositionRepository
             Timber.d("🧹 30 günden eski pozisyonlar temizlendi")
         }
     }
-
-
-
-
-

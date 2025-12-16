@@ -3,10 +3,13 @@ package com.pnr.tv.ui.browse
 import android.view.ViewGroup
 import androidx.leanback.widget.Presenter
 import coil.load
+import coil.request.CachePolicy
 import coil.size.Scale
+import coil.size.Size
 import com.pnr.tv.Constants
 import com.pnr.tv.R
 import com.pnr.tv.model.ContentItem
+import kotlin.math.roundToInt
 
 /**
  * İçerik kartlarının görünümünü tanımlayan Presenter sınıfı.
@@ -14,22 +17,23 @@ import com.pnr.tv.model.ContentItem
  * için ortak bir kart oluşturur.
  */
 class CardPresenter : Presenter() {
+    private var cardWidth: Int = 0
+    private var cardHeight: Int = 0
+
     override fun onCreateViewHolder(parent: ViewGroup): ViewHolder {
         // CustomImageCardView kullan - ImageCardView'ın internal layout sorununu çözmek için
         val cardView = CustomImageCardView(parent.context)
 
-        // Ekran genişliğini al
-        val screenWidth = parent.context.resources.displayMetrics.widthPixels
-        // Her satırda 7 kart gösterilecek şekilde kart genişliğini hesapla
-        // Ekran genişliğinin yaklaşık 1/7'si kadar (padding ve margin'ler için biraz küçük)
-        val cardWidth = (screenWidth / Constants.CARD_WIDTH_DIVISOR).toInt()
+        // Kart boyutunu sadece bir kez hesapla
+        if (cardWidth == 0) {
+            val screenWidth = parent.context.resources.displayMetrics.widthPixels
+            cardWidth = (screenWidth / Constants.CARD_WIDTH_DIVISOR).toInt()
+            // 16:9 en-boy oranı varsayımıyla yüksekliği hesapla
+            cardHeight = (cardWidth * 9.0 / 16.0).roundToInt()
+        }
 
         // Layout parametrelerini ayarla - genişlik dinamik olarak hesaplanmış
-        val layoutParams =
-            ViewGroup.LayoutParams(
-                cardWidth,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            )
+        val layoutParams = ViewGroup.LayoutParams(cardWidth, ViewGroup.LayoutParams.WRAP_CONTENT)
         cardView.layoutParams = layoutParams
 
         return ViewHolder(cardView)
@@ -67,6 +71,16 @@ class CardPresenter : Presenter() {
                 error(R.drawable.placeholder_image)
                 crossfade(true)
                 scale(Scale.FILL)
+                // Dinamik ve verimli boyut kullan - kart boyutuna göre optimize edilmiş
+                size(Size(cardWidth, cardHeight))
+                // Donanım hızlandırmayı etkinleştir - GPU belleği kullanımı için kritik
+                allowHardware(true)
+                // RGB565 formatını kullan - daha az bellek kullanır
+                allowRgb565(true)
+                // Cache policy optimizasyonları - performans için
+                memoryCachePolicy(CachePolicy.ENABLED)
+                diskCachePolicy(CachePolicy.ENABLED)
+                networkCachePolicy(CachePolicy.ENABLED)
             }
         } else {
             // URL yoksa, placeholder göster (orantıyı koru)

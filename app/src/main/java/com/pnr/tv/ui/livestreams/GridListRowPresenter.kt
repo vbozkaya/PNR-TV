@@ -1,6 +1,5 @@
 package com.pnr.tv.ui.livestreams
 
-import android.view.View
 import android.view.ViewGroup
 import androidx.leanback.widget.HorizontalGridView
 import androidx.leanback.widget.ListRowPresenter
@@ -21,36 +20,22 @@ class GridListRowPresenter : ListRowPresenter() {
     override fun createRowViewHolder(parent: ViewGroup): RowPresenter.ViewHolder {
         val viewHolder = super.createRowViewHolder(parent)
 
-        // HorizontalGridView'ı bul ve ayarları yap
-        // View oluşturulduktan sonra ayarla
-        viewHolder.view.post {
-            val gridView = findGridView(viewHolder.view)
-            if (gridView != null) {
-                // HorizontalGridView'ın padding'ini ayarla
-                gridView.setPadding(0, 0, 0, 0)
+        // findViewById direkt olarak burada ve daha güvenli bir şekilde çağrılabilir.
+        // Leanback kütüphanesinin ListRow'u için HorizontalGridView'ın ID'si her zaman
+        // androidx.leanback.R.id.row_content'dir.
+        val gridView = viewHolder.view.findViewById<HorizontalGridView>(androidx.leanback.R.id.row_content)
 
-                // Her öğe için genişlik ayarı CardPresenter'da yapılıyor
-            }
+        // view.post'a gerek kalmadan doğrudan ayarlanabilir, çünkü view holder oluşturuldu.
+        if (gridView != null) {
+            // HorizontalGridView'ın padding'ini ayarla
+            gridView.setPadding(0, 0, 0, 0)
+
+            // View cache ayarları - daha akıcı scroll için
+            // RecycledViewPool kullanarak view'ları yeniden kullan
+            // Bu, scroll sırasında view oluşturma maliyetini azaltır
+            gridView.setItemViewCacheSize(10) // Önceden oluşturulmuş view'ları cache'le
         }
 
         return viewHolder
-    }
-
-    /**
-     * View hiyerarşisinde HorizontalGridView'ı bulur.
-     */
-    private fun findGridView(view: View?): HorizontalGridView? {
-        if (view == null) return null
-        if (view is HorizontalGridView) return view
-
-        if (view is ViewGroup) {
-            for (i in 0 until view.childCount) {
-                val child = view.getChildAt(i)
-                val result = findGridView(child)
-                if (result != null) return result
-            }
-        }
-
-        return null
     }
 }

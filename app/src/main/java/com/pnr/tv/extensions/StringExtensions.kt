@@ -57,6 +57,3 @@ fun String.normalizeBaseUrl(): String {
         }
     }
 }
-
-
-

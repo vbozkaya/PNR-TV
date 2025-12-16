@@ -7,8 +7,8 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 import com.pnr.tv.R
-import com.pnr.tv.repository.UserRepository
 import com.pnr.tv.db.entity.ViewerEntity
+import com.pnr.tv.repository.UserRepository
 import com.pnr.tv.repository.ViewerRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
@@ -58,4 +58,3 @@ class ViewerInitializer
             }
         }
     }
-

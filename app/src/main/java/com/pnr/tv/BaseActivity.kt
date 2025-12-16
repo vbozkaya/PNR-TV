@@ -5,10 +5,15 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import coil.imageLoader
+import com.pnr.tv.util.BackgroundManager
 import com.pnr.tv.util.LocaleHelper
+import kotlinx.coroutines.launch
 
 /**
  * Projedeki tüm Activity'ler için ortak davranışları ve ayarları içeren temel sınıftır.
@@ -25,7 +30,7 @@ abstract class BaseActivity : AppCompatActivity() {
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(LocaleHelper.wrapContext(newBase))
     }
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setupWindow()
@@ -36,6 +41,11 @@ abstract class BaseActivity : AppCompatActivity() {
         // MainActivity hariç tüm activity'lerde navbar'ı setup et
         if (this !is MainActivity) {
             setupNavbar()
+        }
+        // MainActivity hariç tüm activity'lerde arkaplan yükle
+        // MainActivity kendi özel loadMainActivityBackground() metodunu kullanır
+        if (this !is MainActivity) {
+            loadBackground()
         }
     }
 
@@ -136,5 +146,77 @@ abstract class BaseActivity : AppCompatActivity() {
     protected fun getScreenHeightDp(): Int {
         val metrics = resources.displayMetrics
         return (metrics.heightPixels / metrics.density).toInt()
+    }
+
+    /**
+     * Arka plan görselini güvenli bir şekilde yükler.
+     * BackgroundManager kullanarak cache'lenmiş görseli yükler.
+     * Tüm activity'lerde otomatik olarak çağrılır.
+     * Layout root view'ına (setContentView ile set edilen view) arkaplan ekler.
+     */
+    private fun loadBackground() {
+        timber.log.Timber.tag("BACKGROUND").d("🎬 BaseActivity.loadBackground() çağrıldı - Activity: ${this.javaClass.simpleName}")
+        lifecycleScope.launch {
+            // Layout root view'ını bul (setContentView ile set edilen view)
+            // android.R.id.content içindeki ilk child, layout root view'ıdır
+            val contentView = window.decorView.findViewById<ViewGroup>(android.R.id.content)
+            val layoutRootView =
+                contentView?.getChildAt(0) as? ViewGroup
+                    ?: contentView // Eğer child yoksa contentView'ı kullan
+
+            if (layoutRootView == null) {
+                timber.log.Timber.tag("BACKGROUND").w("⚠️ Layout root view bulunamadı, DecorView kullanılıyor")
+                val rootView = window.decorView.rootView
+                applyBackgroundToView(rootView)
+                return@launch
+            }
+
+            timber.log.Timber.tag(
+                "BACKGROUND",
+            ).d(
+                "📐 Layout RootView alındı - View: ${layoutRootView.javaClass.simpleName}, Width: ${layoutRootView.width}, Height: ${layoutRootView.height}",
+            )
+            applyBackgroundToView(layoutRootView)
+        }
+    }
+
+    /**
+     * Arkaplanı belirtilen view'a uygular.
+     */
+    private suspend fun applyBackgroundToView(targetView: View) {
+        // Önce cache'den kontrol et (hızlı)
+        val cached = BackgroundManager.getCachedBackground()
+        if (cached != null) {
+            timber.log.Timber.tag("BACKGROUND").d("✅ Cache'den arkaplan uygulanıyor")
+            targetView.background = cached
+            timber.log.Timber.tag("BACKGROUND").d("✅ Arkaplan uygulandı - View background: ${targetView.background?.javaClass?.simpleName}")
+            return
+        }
+
+        timber.log.Timber.tag("BACKGROUND").d("⏳ Cache'de yok, yükleme başlatılıyor...")
+
+        // Cache'de yoksa yükle
+        BackgroundManager.loadBackground(
+            context = this@BaseActivity,
+            imageLoader = imageLoader,
+            onSuccess = { drawable ->
+                timber.log.Timber.tag("BACKGROUND").d("✅ onSuccess callback çağrıldı - Drawable: ${drawable.javaClass.simpleName}")
+                targetView.background = drawable
+                timber.log.Timber.tag(
+                    "BACKGROUND",
+                ).d("✅ Arkaplan uygulandı - View background: ${targetView.background?.javaClass?.simpleName}")
+            },
+            onError = {
+                timber.log.Timber.tag("BACKGROUND").w("⚠️ onError callback çağrıldı, fallback deneniyor...")
+                // Hata durumunda fallback kullan (theme'de zaten tanımlı)
+                val fallback = BackgroundManager.getFallbackBackground(this@BaseActivity)
+                if (fallback != null) {
+                    targetView.background = fallback
+                    timber.log.Timber.tag("BACKGROUND").d("✅ Fallback arkaplan uygulandı")
+                } else {
+                    timber.log.Timber.tag("BACKGROUND").e("❌ Fallback arkaplan da null!")
+                }
+            },
+        )
     }
 }

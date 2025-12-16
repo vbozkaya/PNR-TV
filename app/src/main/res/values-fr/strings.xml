@@ -112,6 +112,12 @@
     <string name="error_timeout_read">Délai d\'attente lors de la réception des données du serveur. Veuillez réessayer.</string>
     <string name="error_offline">Pas de connexion Internet. Affichage des données du cache.</string>
     <string name="error_retry_failed">La nouvelle tentative a échoué. Veuillez vérifier votre connexion Internet.</string>
+    
+    <!-- Messages d\'Erreur Courts -->
+    <string name="error_categories_short">Impossible de charger les catégories</string>
+    <string name="error_movies_short">Impossible de charger les films</string>
+    <string name="error_series_short">Impossible de charger les séries</string>
+    <string name="error_live_streams_short">Impossible de charger les diffusions en direct</string>
     <string name="btn_retry">Réessayer</string>
     <string name="toast_retrying">Nouvelle tentative...</string>
     <string name="toast_retry_success">Connexion réussie</string>

@@ -17,7 +17,6 @@ import com.pnr.tv.ui.series.model.SeriesSeason
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -32,9 +31,9 @@ import timber.log.Timber
  * İzlenme durumu enum'u
  */
 enum class WatchStatus {
-    NOT_WATCHED,      // İzlenmedi (Beyaz çerçeve)
-    IN_PROGRESS,      // Yarım kaldı (Kırmızı çerçeve)
-    FULLY_WATCHED     // Tamamlandı (Yeşil çerçeve)
+    NOT_WATCHED, // İzlenmedi (Beyaz çerçeve)
+    IN_PROGRESS, // Yarım kaldı (Kırmızı çerçeve)
+    FULLY_WATCHED, // Tamamlandı (Yeşil çerçeve)
 }
 
 /**
@@ -47,7 +46,7 @@ data class ParsedEpisode(
     val title: String, // Orijinal başlık
     val cleanTitle: String?, // Sadece bölüm adı (nullable)
     val watchStatus: WatchStatus = WatchStatus.NOT_WATCHED, // İzlenme durumu
-    val containerExtension: String? = null // Container format (ts, mp4, mkv, etc.)
+    val containerExtension: String? = null, // Container format (ts, mp4, mkv, etc.)
 )
 
 /**
@@ -81,8 +80,8 @@ class SeriesDetailViewModel
         private val _isLoading = MutableStateFlow(false)
         val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-        private val _error = MutableSharedFlow<String>()
-        val error: SharedFlow<String> = _error.asSharedFlow()
+        private val _error = MutableStateFlow<String>("")
+        val error: StateFlow<String> = _error.asStateFlow()
 
         private val _allParsedEpisodesBySeason = MutableStateFlow<Map<Int, List<ParsedEpisode>>>(emptyMap())
 
@@ -94,6 +93,7 @@ class SeriesDetailViewModel
         fun loadSeries(seriesId: Int) {
             viewModelScope.launch {
                 _isLoading.value = true
+                _error.value = "" // Hata durumunu temizle
                 try {
                     val result = contentRepository.getSeriesInfo(seriesId)
 
@@ -103,63 +103,73 @@ class SeriesDetailViewModel
 
                         val allEpisodes = seriesInfo.episodes?.values?.flatten() ?: emptyList()
 
-                        val episodesBySeason = allEpisodes.mapNotNull { dto ->
-                            val matchResult = episodeRegex.find(dto.title ?: "")
-                            if (matchResult != null && matchResult.groupValues.size == 3) {
-                                val season = matchResult.groupValues[1].toIntOrNull()
-                                val episode = matchResult.groupValues[2].toIntOrNull()
-                                val id = dto.id
-                                if (season != null && episode != null && id != null) {
-                                    val rawTitle = dto.title ?: ""
-                                    val cleanTitle = rawTitle.substringAfter(" - ").takeIf { it.isNotBlank() && it != rawTitle } 
-                                        ?: rawTitle.substringAfter(": ").takeIf { it.isNotBlank() && it != rawTitle }
+                        val episodesBySeason =
+                            allEpisodes.mapNotNull { dto ->
+                                val matchResult = episodeRegex.find(dto.title ?: "")
+                                if (matchResult != null && matchResult.groupValues.size == 3) {
+                                    val season = matchResult.groupValues[1].toIntOrNull()
+                                    val episode = matchResult.groupValues[2].toIntOrNull()
+                                    val id = dto.id
+                                    if (season != null && episode != null && id != null) {
+                                        val rawTitle = dto.title ?: ""
+                                        val cleanTitle =
+                                            rawTitle.substringAfter(" - ").takeIf { it.isNotBlank() && it != rawTitle }
+                                                ?: rawTitle.substringAfter(": ").takeIf { it.isNotBlank() && it != rawTitle }
 
-                                    timber.log.Timber.d("📺 API'den bölüm: $rawTitle, containerExtension: ${dto.containerExtension ?: "null (varsayılan ts kullanılacak)"}")
+                                        timber.log.Timber.d(
+                                            "📺 API'den bölüm: $rawTitle, containerExtension: ${dto.containerExtension ?: "null (varsayılan ts kullanılacak)"}",
+                                        )
 
-                                    ParsedEpisode(
-                                        episodeId = id,
-                                        seasonNumber = season,
-                                        episodeNumber = episode,
-                                        title = rawTitle,
-                                        cleanTitle = cleanTitle,
-                                        containerExtension = dto.containerExtension
-                                    )
-                                } else { null }
-                            } else { null }
-                        }.groupBy { it.seasonNumber }
+                                        ParsedEpisode(
+                                            episodeId = id,
+                                            seasonNumber = season,
+                                            episodeNumber = episode,
+                                            title = rawTitle,
+                                            cleanTitle = cleanTitle,
+                                            containerExtension = dto.containerExtension,
+                                        )
+                                    } else {
+                                        null
+                                    }
+                                } else {
+                                    null
+                                }
+                            }.groupBy { it.seasonNumber }
 
                         _allParsedEpisodesBySeason.value = episodesBySeason
 
-                        val seasonTabs = episodesBySeason.keys.sorted().map { seasonNum ->
-                            val episodeCount = episodesBySeason[seasonNum]?.size ?: 0
-                            SeriesSeason(
-                                seasonNumber = seasonNum, 
-                                name = context.getString(R.string.season_format_with_episodes, seasonNum, episodeCount)
-                            )
-                        }
+                        val seasonTabs =
+                            episodesBySeason.keys.sorted().map { seasonNum ->
+                                val episodeCount = episodesBySeason[seasonNum]?.size ?: 0
+                                SeriesSeason(
+                                    seasonNumber = seasonNum,
+                                    name = context.getString(R.string.season_format_with_episodes, seasonNum, episodeCount),
+                                )
+                            }
                         _seasons.value = seasonTabs
 
                         seasonTabs.firstOrNull()?.let { selectSeason(it.seasonNumber) }
 
                         _series.value?.let {
-                            val tmdbDetailsResult = if (it.tmdbId != null) {
-                                tmdbRepository.getTvShowDetailsById(it.tmdbId)
-                            } else {
-                                it.name?.let { title -> tmdbRepository.getTvShowDetailsByTitle(title) }
-                            }
+                            val tmdbDetailsResult =
+                                if (it.tmdbId != null) {
+                                    tmdbRepository.getTvShowDetailsById(it.tmdbId)
+                                } else {
+                                    it.name?.let { title -> tmdbRepository.getTvShowDetailsByTitle(title) }
+                                }
                             _tmdbDetails.value = tmdbDetailsResult
                         }
                     } else {
                         val errorMessage = if (result is com.pnr.tv.repository.Result.Error) result.message else "Bilinmeyen hata"
                         Timber.e("Dizi bilgisi alınamadı: $errorMessage")
-                        _error.emit("Dizi bilgileri yüklenemedi: $errorMessage")
+                        _error.value = "Dizi bilgileri yüklenemedi: $errorMessage"
                         _series.value = null
                         _seasons.value = emptyList()
                         _episodes.value = emptyList()
                     }
                 } catch (e: Exception) {
                     Timber.e(e, "Dizi yüklenirken hata oluştu")
-                    _error.emit("Dizi yüklenirken beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.")
+                    _error.value = "Dizi yüklenirken beklenmeyen bir hata oluştu. Lütfen tekrar deneyin."
                     _series.value = null
                     _seasons.value = emptyList()
                     _episodes.value = emptyList()
@@ -171,68 +181,87 @@ class SeriesDetailViewModel
 
         fun selectSeason(seasonNumber: Int) {
             _selectedSeasonNumber.value = seasonNumber
-            
+
             viewModelScope.launch {
                 val episodesInSeason = _allParsedEpisodesBySeason.value[seasonNumber]?.sortedBy { it.episodeNumber } ?: emptyList()
-                
+
                 // İzlenme durumlarını kontrol et
-                val episodesWithWatchedStatus = episodesInSeason.map { episode ->
-                    val watchedEntity = watchedEpisodeDao.getWatchedEpisode(episode.episodeId)
-                    val newStatus = when {
-                        watchedEntity == null -> WatchStatus.NOT_WATCHED
-                        watchedEntity.watchProgress >= 90 -> WatchStatus.FULLY_WATCHED
-                        watchedEntity.watchProgress > 10 -> WatchStatus.IN_PROGRESS // %10'dan fazla ve %90'dan az
-                        else -> WatchStatus.NOT_WATCHED // %10 veya daha az
+                val episodesWithWatchedStatus =
+                    episodesInSeason.map { episode ->
+                        val watchedEntity = watchedEpisodeDao.getWatchedEpisode(episode.episodeId)
+                        val newStatus =
+                            when {
+                                watchedEntity == null -> WatchStatus.NOT_WATCHED
+                                watchedEntity.watchProgress >= 90 -> WatchStatus.FULLY_WATCHED
+                                watchedEntity.watchProgress > 10 -> WatchStatus.IN_PROGRESS // %10'dan fazla ve %90'dan az
+                                else -> WatchStatus.NOT_WATCHED // %10 veya daha az
+                            }
+                        episode.copy(watchStatus = newStatus)
                     }
-                    episode.copy(watchStatus = newStatus)
-                }
-                
+
                 _episodes.value = episodesWithWatchedStatus
             }
         }
-        
+
         /**
          * Bir bölümü izlendi olarak işaretle.
          */
         fun markEpisodeAsWatched(episode: ParsedEpisode) {
             viewModelScope.launch {
-                val watchedEntity = WatchedEpisodeEntity(
-                    episodeId = episode.episodeId,
-                    seriesId = _series.value?.streamId ?: 0,
-                    seasonNumber = episode.seasonNumber,
-                    episodeNumber = episode.episodeNumber,
-                    watchedTimestamp = System.currentTimeMillis(),
-                    watchProgress = 100
-                )
+                val watchedEntity =
+                    WatchedEpisodeEntity(
+                        episodeId = episode.episodeId,
+                        seriesId = _series.value?.streamId ?: 0,
+                        seasonNumber = episode.seasonNumber,
+                        episodeNumber = episode.episodeNumber,
+                        watchedTimestamp = System.currentTimeMillis(),
+                        watchProgress = 100,
+                    )
                 watchedEpisodeDao.markAsWatched(watchedEntity)
-                
+
                 // UI'yı güncelle
-                _episodes.value = _episodes.value.map {
-                    if (it.episodeId == episode.episodeId) {
-                        it.copy(watchStatus = WatchStatus.FULLY_WATCHED)
-                    } else {
-                        it
+                _episodes.value =
+                    _episodes.value.map {
+                        if (it.episodeId == episode.episodeId) {
+                            it.copy(watchStatus = WatchStatus.FULLY_WATCHED)
+                        } else {
+                            it
+                        }
                     }
-                }
             }
         }
 
-        suspend fun getEpisodeStreamUrl(baseUrl: String, username: String, password: String, episodeId: Int, extension: String?): String {
+        suspend fun getEpisodeStreamUrl(
+            baseUrl: String,
+            username: String,
+            password: String,
+            episodeId: Int,
+            extension: String?,
+        ): String {
             // API'den gelen container extension'ı kullan, yoksa varsayılan ts
             val ext = extension ?: "ts"
             // Diziler için /series/ path'i kullan (filmler /movie/ kullanıyor)
             return "$baseUrl/series/$username/$password/$episodeId.$ext"
         }
 
-        suspend fun getCreator(tmdbId: Int?, tvDetails: TmdbTvShowDetailsDto?): String? {
+        suspend fun getCreator(
+            tmdbId: Int?,
+            tvDetails: TmdbTvShowDetailsDto?,
+        ): String? {
             return tmdbId?.let { tmdbRepository.getCreator(it, tvDetails) }
         }
 
-        suspend fun getCast(tmdbId: Int?, tvDetails: TmdbTvShowDetailsDto?): String? {
+        suspend fun getCast(
+            tmdbId: Int?,
+            tvDetails: TmdbTvShowDetailsDto?,
+        ): String? {
             return tmdbId?.let { tmdbRepository.getCastFromTv(it, tvDetails)?.joinToString(", ") }
         }
 
-        suspend fun getOverview(tmdbId: Int?, tvDetails: TmdbTvShowDetailsDto?): String? {
+        suspend fun getOverview(
+            tmdbId: Int?,
+            tvDetails: TmdbTvShowDetailsDto?,
+        ): String? {
             val tmdbOverview = tmdbId?.let { tmdbRepository.getOverviewFromTv(it, tvDetails) }
             return tmdbOverview ?: _series.value?.plot
         }

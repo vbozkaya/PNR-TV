@@ -42,6 +42,3 @@ fun View.isHidden(): Boolean = visibility == View.GONE
  * View'ın görünmez olup olmadığını kontrol eder.
  */
 fun View.isInvisible(): Boolean = visibility == View.INVISIBLE
-
-
-

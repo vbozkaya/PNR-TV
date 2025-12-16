@@ -6,10 +6,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.pnr.tv.Constants
+import com.pnr.tv.MainViewModel
 import com.pnr.tv.PlayerActivity
 import com.pnr.tv.R
 import com.pnr.tv.db.entity.LiveStreamEntity
@@ -29,7 +31,11 @@ import kotlinx.coroutines.launch
  */
 @AndroidEntryPoint
 class LiveStreamsBrowseFragment : BaseBrowseFragment() {
-    private val viewModel: LiveStreamsViewModel by viewModels()
+    private val mainViewModel: MainViewModel by activityViewModels()
+
+    // BaseBrowseFragment requires BaseViewModel
+    override val viewModel: com.pnr.tv.ui.base.BaseViewModel
+        get() = mainViewModel
 
     private val playerActivityLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
@@ -58,23 +64,51 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
         // BaseBrowseFragment handles all setup via initializeViews
         initializeViews(view)
         setupPlayerNavigation()
+        observeErrorState()
+        observeLoadingState()
+    }
+
+    private fun observeErrorState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                mainViewModel.liveStreamsErrorMessage.collect { errorMsg ->
+                    if (errorMsg != null) {
+                        showErrorState(errorMsg)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun observeLoadingState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                mainViewModel.isLiveStreamsLoading.collect { isLoading ->
+                    if (isLoading) {
+                        showLoadingState()
+                    } else if (mainViewModel.liveStreamsErrorMessage.value == null) {
+                        showContentState()
+                    }
+                }
+            }
+        }
     }
 
     // Abstract properties from BaseBrowseFragment
     override val categoriesFlow: Flow<List<CategoryItem>>
         get() =
-            viewModel.categories.distinctUntilChanged { old, new ->
+            mainViewModel.liveStreamCategories.distinctUntilChanged { old, new ->
                 old.size == new.size && old.map { it.categoryId } == new.map { it.categoryId }
             }
 
     override val contentsFlow: Flow<List<ContentItem>>
-        get() = viewModel.channels.map { it }
+        get() = mainViewModel.liveStreams.map { it }
 
     override val selectedCategoryIdFlow: Flow<String?>
-        get() = viewModel.selectedCategoryId
+        get() = mainViewModel.selectedLiveStreamCategoryId
 
     override val toastEventFlow: Flow<String>
-        get() = viewModel.toastEvent
+        get() = mainViewModel.toastEvent
 
     // Abstract methods from BaseBrowseFragment
     override fun getNavbarTitle(): String = getString(R.string.page_live_streams)
@@ -89,21 +123,37 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
 
     // Override hooks from BaseBrowseFragment
     override fun onInitialLoad() {
-        viewModel.loadContent()
+        mainViewModel.loadLiveStreamsIfNeeded()
     }
 
     override fun onCategoryClicked(category: CategoryItem) {
-        viewModel.selectCategory(category.categoryId)
+        mainViewModel.selectLiveStreamCategory(category.categoryId)
+    }
+
+    override fun selectCategoryById(categoryId: String?) {
+        // Kategori ID'sine göre kategori seç
+        categoryId?.let { id ->
+            mainViewModel.selectLiveStreamCategory(id)
+        }
     }
 
     override fun onCategoryFocused(category: CategoryItem) {
-        // Odaklanma ile içerik yükleme devre dışı bırakıldı
+        // Focus geldiğinde kategoriyi seç ve içerikleri yükle
+        mainViewModel.selectLiveStreamCategory(category.categoryId)
     }
 
     override fun onContentClicked(item: ContentItem) {
         // Cast to LiveStreamEntity and open player
         if (item is LiveStreamEntity) {
-            viewModel.onChannelSelected(item)
+            // Son seçili kategoriyi ve odaklanılan pozisyonu kaydet
+            val position = contentAdapter.currentList.indexOf(item)
+            if (position != -1) {
+                mainViewModel.lastFocusedContentPosition = position
+                // Mevcut seçili kategoriyi kaydet
+                mainViewModel.lastSelectedCategoryId = mainViewModel.selectedLiveStreamCategoryId.value
+            }
+
+            mainViewModel.onChannelSelected(item)
         }
     }
 
@@ -111,11 +161,11 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
         // Long press: toggle favorite
         if (item is LiveStreamEntity) {
             viewLifecycleOwner.lifecycleScope.launch {
-                val isFavorite = viewModel.isFavorite(item.streamId).first()
+                val isFavorite = mainViewModel.isLiveStreamFavorite(item.streamId).first()
                 if (isFavorite) {
-                    viewModel.removeFavorite(item.streamId)
+                    mainViewModel.removeLiveStreamFavorite(item.streamId)
                 } else {
-                    viewModel.addFavorite(item.streamId)
+                    mainViewModel.addLiveStreamFavorite(item.streamId)
                 }
             }
         }
@@ -129,17 +179,17 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
         val categoryIdInt = selectedCategoryId?.toIntOrNull()
         if (categoryIdInt != null &&
             (
-                categoryIdInt == LiveStreamsViewModel.VIRTUAL_CATEGORY_ID_FAVORITES ||
-                    categoryIdInt == LiveStreamsViewModel.VIRTUAL_CATEGORY_ID_RECENTLY_WATCHED
+                categoryIdInt == MainViewModel.VIRTUAL_CATEGORY_ID_FAVORITES ||
+                    categoryIdInt == MainViewModel.VIRTUAL_CATEGORY_ID_RECENTLY_WATCHED
             ) &&
             channels.isEmpty()
         ) {
             val message =
                 when (categoryIdInt) {
-                    LiveStreamsViewModel.VIRTUAL_CATEGORY_ID_FAVORITES -> {
+                    MainViewModel.VIRTUAL_CATEGORY_ID_FAVORITES -> {
                         getString(R.string.empty_favorites)
                     }
-                    LiveStreamsViewModel.VIRTUAL_CATEGORY_ID_RECENTLY_WATCHED -> {
+                    MainViewModel.VIRTUAL_CATEGORY_ID_RECENTLY_WATCHED -> {
                         getString(R.string.empty_recently_watched)
                     }
                     else -> ""
@@ -156,11 +206,15 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
     private fun setupPlayerNavigation() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
-                viewModel.openPlayerEvent.collect { (url, channelId) ->
+                mainViewModel.openPlayerEvent.collect { (url, channelId, categoryId) ->
                     val intent =
                         Intent(requireContext(), PlayerActivity::class.java).apply {
                             putExtra(PlayerActivity.EXTRA_VIDEO_URL, url)
                             putExtra(PlayerActivity.EXTRA_CHANNEL_ID, channelId)
+                            // Kategori ID'sini ekle (kanal değişimi için)
+                            categoryId?.let {
+                                putExtra(PlayerActivity.EXTRA_CATEGORY_ID, it)
+                            }
                         }
                     playerActivityLauncher.launch(intent)
                 }
@@ -178,9 +232,10 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
          */
         fun newInstance(isInitialLaunch: Boolean = false): LiveStreamsBrowseFragment {
             return LiveStreamsBrowseFragment().apply {
-                arguments = Bundle().apply {
-                    putBoolean(KEY_IS_INITIAL_LAUNCH, isInitialLaunch)
-                }
+                arguments =
+                    Bundle().apply {
+                        putBoolean(KEY_IS_INITIAL_LAUNCH, isInitialLaunch)
+                    }
             }
         }
     }

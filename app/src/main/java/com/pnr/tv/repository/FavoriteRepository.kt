@@ -13,15 +13,24 @@ class FavoriteRepository
     constructor(
         private val favoriteDao: FavoriteDao,
     ) {
-        suspend fun addFavorite(channelId: Int, viewerId: Int) {
+        suspend fun addFavorite(
+            channelId: Int,
+            viewerId: Int,
+        ) {
             favoriteDao.addFavorite(FavoriteChannelEntity(channelId, viewerId))
         }
 
-        suspend fun removeFavorite(channelId: Int, viewerId: Int) {
+        suspend fun removeFavorite(
+            channelId: Int,
+            viewerId: Int,
+        ) {
             favoriteDao.removeFavorite(channelId, viewerId)
         }
 
-        fun isFavorite(channelId: Int, viewerId: Int): Flow<Boolean> = favoriteDao.isFavorite(channelId, viewerId)
+        fun isFavorite(
+            channelId: Int,
+            viewerId: Int,
+        ): Flow<Boolean> = favoriteDao.isFavorite(channelId, viewerId)
 
         fun getFavoriteChannelIds(viewerId: Int): Flow<List<Int>> = favoriteDao.getFavoriteChannelIds(viewerId)
 
@@ -29,8 +38,3 @@ class FavoriteRepository
 
         fun getViewerIdsWithFavorites(): Flow<List<Int>> = favoriteDao.getViewerIdsWithFavorites()
     }
-
-
-
-
-

@@ -23,7 +23,7 @@ data class SeriesDto(
 fun SeriesDto.toEntity(): SeriesEntity? {
     // TMDB ID'yi parse et (String'den Int'e)
     val tmdbIdValue = tmdb?.toIntOrNull()
-    
+
     return seriesId?.let {
         SeriesEntity(
             streamId = it,

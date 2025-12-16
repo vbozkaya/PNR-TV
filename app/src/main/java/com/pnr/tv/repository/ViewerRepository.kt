@@ -26,6 +26,3 @@ class ViewerRepository
 
         fun getViewerIdsWithFavorites(): Flow<List<Int>> = viewerDao.getViewerIdsWithFavorites()
     }
-
-
-

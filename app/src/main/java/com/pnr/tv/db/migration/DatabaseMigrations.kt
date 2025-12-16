@@ -351,7 +351,7 @@ object DatabaseMigrations {
                         watchedTimestamp INTEGER NOT NULL,
                         watchProgress INTEGER NOT NULL DEFAULT 100
                     )
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
             }
         }
@@ -384,7 +384,7 @@ object DatabaseMigrations {
                         durationMs INTEGER NOT NULL,
                         lastUpdated INTEGER NOT NULL
                     )
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
             }
         }

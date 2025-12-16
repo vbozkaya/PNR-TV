@@ -148,3 +148,8 @@
 # ============================================
 -keep class com.pnr.tv.Constants { *; }
 -keep class com.pnr.tv.Constants$* { *; }
+
+# ============================================
+# LeakCanary - TAMAMEN KALDIRILDI
+# ============================================
+# LeakCanary dependency kaldırıldı, ProGuard kurallarına gerek yok

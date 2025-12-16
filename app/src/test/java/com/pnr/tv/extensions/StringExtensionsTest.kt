@@ -7,7 +7,6 @@ import org.junit.Test
  * String extension functions için unit testler.
  */
 class StringExtensionsTest {
-
     // ==================== normalizeDnsUrl() Testleri ====================
 
     @Test
@@ -216,4 +215,3 @@ class StringExtensionsTest {
         assertEquals("http://example.com/api", result)
     }
 }
-

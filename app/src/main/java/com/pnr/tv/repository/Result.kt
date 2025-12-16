@@ -48,6 +48,3 @@ sealed class Result<out T> {
             is Error -> defaultValue
         }
 }
-
-
-

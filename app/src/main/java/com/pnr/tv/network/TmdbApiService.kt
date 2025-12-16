@@ -2,8 +2,8 @@ package com.pnr.tv.network
 
 import com.pnr.tv.network.dto.TmdbMovieDetailsDto
 import com.pnr.tv.network.dto.TmdbSearchResultDto
-import com.pnr.tv.network.dto.TmdbTvShowDetailsDto
 import com.pnr.tv.network.dto.TmdbTvSearchResultDto
+import com.pnr.tv.network.dto.TmdbTvShowDetailsDto
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -23,7 +23,7 @@ interface TmdbApiService {
         @Query("language") language: String,
         @Query("region") region: String? = null,
         @Query("year") year: Int? = null,
-        @Query("include_adult") includeAdult: Boolean = false
+        @Query("include_adult") includeAdult: Boolean = false,
     ): TmdbSearchResultDto
 
     /**
@@ -34,7 +34,7 @@ interface TmdbApiService {
         @Path("movie_id") movieId: Int,
         @Query("api_key") apiKey: String,
         @Query("append_to_response") appendToResponse: String = "credits",
-        @Query("language") language: String = "tr-TR"
+        @Query("language") language: String = "tr-TR",
     ): TmdbMovieDetailsDto
 
     // ==================== TV SHOWS (DİZİLER) ====================
@@ -49,7 +49,7 @@ interface TmdbApiService {
         @Query("language") language: String,
         @Query("region") region: String? = null,
         @Query("first_air_date_year") year: Int? = null,
-        @Query("include_adult") includeAdult: Boolean = false
+        @Query("include_adult") includeAdult: Boolean = false,
     ): TmdbTvSearchResultDto
 
     /**
@@ -60,7 +60,6 @@ interface TmdbApiService {
         @Path("tv_id") tvId: Int,
         @Query("api_key") apiKey: String,
         @Query("append_to_response") appendToResponse: String = "credits",
-        @Query("language") language: String = "tr-TR"
+        @Query("language") language: String = "tr-TR",
     ): TmdbTvShowDetailsDto
 }
-

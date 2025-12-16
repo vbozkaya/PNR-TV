@@ -30,6 +30,3 @@ interface ViewerDao {
     @Query("DELETE FROM viewers")
     suspend fun deleteAll()
 }
-
-
-

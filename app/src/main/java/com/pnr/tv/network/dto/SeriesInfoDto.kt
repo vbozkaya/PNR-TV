@@ -78,7 +78,7 @@ data class SeriesDetailInfoDto(
 fun SeriesDetailInfoDto.toEntity(seriesId: Int): SeriesEntity {
     // TMDB ID'yi parse et
     val tmdbIdValue = tmdb?.toIntOrNull()
-    
+
     return SeriesEntity(
         streamId = seriesId,
         name = name,
@@ -91,4 +91,3 @@ fun SeriesDetailInfoDto.toEntity(seriesId: Int): SeriesEntity {
         tmdbId = tmdbIdValue,
     )
 }
-

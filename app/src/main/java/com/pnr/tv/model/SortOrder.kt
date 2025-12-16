@@ -13,6 +13,3 @@ enum class SortOrder : Serializable {
     DATE_NEW_TO_OLD, // Eklenme Tarihi Yeniden Eskiye
     DATE_OLD_TO_NEW, // Eklenme Tarihi Eskiden Yeniye
 }
-
-
-

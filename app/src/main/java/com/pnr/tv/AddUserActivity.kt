@@ -35,12 +35,13 @@ class AddUserActivity : BaseActivity() {
         setupInputFields()
 
         // Parcelable kullanımı - API 33+ için tür güvenli versiyon
-        originalUser = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableExtra(EXTRA_EDIT_USER, UserAccountEntity::class.java)
-        } else {
-            @Suppress("DEPRECATION")
-            intent.getParcelableExtra(EXTRA_EDIT_USER)
-        }
+        originalUser =
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableExtra(EXTRA_EDIT_USER, UserAccountEntity::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                intent.getParcelableExtra(EXTRA_EDIT_USER)
+            }
         originalUser?.let {
             binding.etAccountName.setText(it.accountName)
             binding.etUsername.setText(it.username)
@@ -54,8 +55,6 @@ class AddUserActivity : BaseActivity() {
         binding.btnSaveUser.setOnClickListener {
             saveUser()
         }
-
-        binding.etAccountName.requestFocus()
     }
 
     private fun saveUser() {

@@ -6,17 +6,12 @@ import com.pnr.tv.db.entity.LiveStreamCategoryEntity
 import com.pnr.tv.db.entity.LiveStreamEntity
 import com.pnr.tv.db.entity.MovieCategoryEntity
 import com.pnr.tv.db.entity.MovieEntity
+import com.pnr.tv.db.entity.PlaybackPositionEntity
 import com.pnr.tv.db.entity.SeriesCategoryEntity
 import com.pnr.tv.db.entity.SeriesEntity
-import com.pnr.tv.db.entity.PlaybackPositionEntity
 import com.pnr.tv.di.IptvRetrofit
-import com.pnr.tv.extensions.normalizeDnsUrl
-import com.pnr.tv.network.ApiService
 import com.pnr.tv.network.dto.AuthenticationResponseDto
 import com.pnr.tv.network.dto.SeriesInfoDto
-import com.pnr.tv.repository.Result.Success
-import com.pnr.tv.repository.UserRepository
-import com.pnr.tv.util.ErrorHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
@@ -26,10 +21,10 @@ import javax.inject.Inject
 
 /**
  * ContentRepository - Facade Pattern
- * 
+ *
  * Tüm content repository'lerini tek bir interface altında toplar.
  * Backward compatibility için mevcut API'yi korur.
- * 
+ *
  * NOT: Bu sınıf artık sadece bir facade'dır. Gerçek işlemler
  * alt repository'lerde (MovieRepository, SeriesRepository, vb.) yapılır.
  */
@@ -60,8 +55,10 @@ class ContentRepository
 
         fun getMovieCategories(): Flow<List<MovieCategoryEntity>> = movieRepository.getMovieCategories()
 
-        suspend fun refreshMovies(skipTmdbSync: Boolean = false, forMainScreenUpdate: Boolean = false): Result<Unit> = 
-            movieRepository.refreshMovies(skipTmdbSync, forMainScreenUpdate)
+        suspend fun refreshMovies(
+            skipTmdbSync: Boolean = false,
+            forMainScreenUpdate: Boolean = false,
+        ): Result<Unit> = movieRepository.refreshMovies(skipTmdbSync, forMainScreenUpdate)
 
         suspend fun refreshMovieCategories(): Result<Unit> = movieRepository.refreshMovieCategories()
 
@@ -77,8 +74,10 @@ class ContentRepository
 
         fun getSeriesCategories(): Flow<List<SeriesCategoryEntity>> = seriesRepository.getSeriesCategories()
 
-        suspend fun refreshSeries(skipTmdbSync: Boolean = false, forMainScreenUpdate: Boolean = false): Result<Unit> = 
-            seriesRepository.refreshSeries(skipTmdbSync, forMainScreenUpdate)
+        suspend fun refreshSeries(
+            skipTmdbSync: Boolean = false,
+            forMainScreenUpdate: Boolean = false,
+        ): Result<Unit> = seriesRepository.refreshSeries(skipTmdbSync, forMainScreenUpdate)
 
         suspend fun refreshSeriesCategories(): Result<Unit> = seriesRepository.refreshSeriesCategories()
 
@@ -90,26 +89,42 @@ class ContentRepository
 
         fun getLiveStreams(): Flow<List<LiveStreamEntity>> = liveStreamRepository.getLiveStreams()
 
-        fun getLiveStreamsByCategoryId(categoryId: Int): Flow<List<LiveStreamEntity>> = liveStreamRepository.getLiveStreamsByCategoryId(categoryId)
+        fun getLiveStreamsByCategoryId(categoryId: Int): Flow<List<LiveStreamEntity>> =
+            liveStreamRepository.getLiveStreamsByCategoryId(
+                categoryId,
+            )
+
+        suspend fun getLiveStreamsByCategoryIdSync(categoryId: Int): List<LiveStreamEntity> =
+            liveStreamRepository.getLiveStreamsByCategoryId(categoryId).firstOrNull() ?: emptyList()
 
         fun getLiveStreamCategories(): Flow<List<LiveStreamCategoryEntity>> = liveStreamRepository.getLiveStreamCategories()
 
-        suspend fun refreshLiveStreams(forMainScreenUpdate: Boolean = false): Result<Unit> = 
+        suspend fun refreshLiveStreams(forMainScreenUpdate: Boolean = false): Result<Unit> =
             liveStreamRepository.refreshLiveStreams(forMainScreenUpdate)
 
         suspend fun refreshLiveStreamCategories(): Result<Unit> = liveStreamRepository.refreshLiveStreamCategories()
 
-        suspend fun getLiveStreamsByIds(channelIds: List<Int>): List<LiveStreamEntity> = liveStreamRepository.getLiveStreamsByIds(channelIds)
-
-        suspend fun preloadAllLiveStreamIcons(): Result<Unit> = liveStreamRepository.preloadAllLiveStreamIcons()
+        suspend fun getLiveStreamsByIds(channelIds: List<Int>): List<LiveStreamEntity> =
+            liveStreamRepository.getLiveStreamsByIds(
+                channelIds,
+            )
 
         // ==================== Favorite Operations ====================
 
-        suspend fun addFavorite(channelId: Int, viewerId: Int) = favoriteRepository.addFavorite(channelId, viewerId)
+        suspend fun addFavorite(
+            channelId: Int,
+            viewerId: Int,
+        ) = favoriteRepository.addFavorite(channelId, viewerId)
 
-        suspend fun removeFavorite(channelId: Int, viewerId: Int) = favoriteRepository.removeFavorite(channelId, viewerId)
+        suspend fun removeFavorite(
+            channelId: Int,
+            viewerId: Int,
+        ) = favoriteRepository.removeFavorite(channelId, viewerId)
 
-        fun isFavorite(channelId: Int, viewerId: Int): Flow<Boolean> = favoriteRepository.isFavorite(channelId, viewerId)
+        fun isFavorite(
+            channelId: Int,
+            viewerId: Int,
+        ): Flow<Boolean> = favoriteRepository.isFavorite(channelId, viewerId)
 
         fun getFavoriteChannelIds(viewerId: Int): Flow<List<Int>> = favoriteRepository.getFavoriteChannelIds(viewerId)
 
@@ -126,8 +141,11 @@ class ContentRepository
 
         // ==================== Playback Position Operations ====================
 
-        suspend fun savePlaybackPosition(contentId: String, positionMs: Long, durationMs: Long) =
-            playbackPositionRepository.savePlaybackPosition(contentId, positionMs, durationMs)
+        suspend fun savePlaybackPosition(
+            contentId: String,
+            positionMs: Long,
+            durationMs: Long,
+        ) = playbackPositionRepository.savePlaybackPosition(contentId, positionMs, durationMs)
 
         suspend fun getPlaybackPosition(contentId: String): PlaybackPositionEntity? =
             playbackPositionRepository.getPlaybackPosition(contentId)

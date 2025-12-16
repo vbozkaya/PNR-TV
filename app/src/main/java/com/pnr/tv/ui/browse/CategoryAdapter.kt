@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.pnr.tv.R
 import com.pnr.tv.model.CategoryItem
 import com.pnr.tv.util.CategoryNameHelper
+import timber.log.Timber
 
 /**
  * Generic category adapter that works with CategoryItem interface.
@@ -25,8 +26,14 @@ class CategoryAdapter(
     private val onCategoryClick: (CategoryItem) -> Unit,
     private val onNavigateToContent: () -> Unit,
     private val onNavigateToNavbar: () -> Unit,
+    private val onCategoryFocused: (CategoryItem) -> Unit = {},
 ) : ListAdapter<CategoryItem, CategoryAdapter.ViewHolder>(CategoryDiff) {
     private var selectedPosition: Int = -1
+
+    /**
+     * Returns the currently selected position.
+     */
+    fun getSelectedPosition(): Int = selectedPosition
 
     /**
      * Updates the selected category and redraws the visual state.
@@ -41,6 +48,18 @@ class CategoryAdapter(
             } else {
                 -1
             }
+
+        val categoryName =
+            if (newPosition >= 0 && newPosition < currentList.size) {
+                currentList[newPosition].categoryName
+            } else {
+                "BULUNAMADI"
+            }
+        Timber.tag(
+            "FOCUS_DEBUG",
+        ).d(
+            "🔄 updateSelectedItem() - selectedCategoryId: $selectedCategoryId, Eski pozisyon: $oldPosition, Yeni pozisyon: $newPosition, Kategori: $categoryName",
+        )
 
         // Update old position (mark as not selected)
         if (oldPosition >= 0 && oldPosition < currentList.size) {
@@ -61,7 +80,7 @@ class CategoryAdapter(
         val view =
             LayoutInflater.from(parent.context)
                 .inflate(R.layout.item_category, parent, false)
-        return ViewHolder(view, onCategoryClick, onNavigateToContent, onNavigateToNavbar, parent as RecyclerView)
+        return ViewHolder(view, onCategoryClick, onNavigateToContent, onNavigateToNavbar, onCategoryFocused)
     }
 
     override fun onBindViewHolder(
@@ -78,7 +97,7 @@ class CategoryAdapter(
         private val onCategoryClick: (CategoryItem) -> Unit,
         private val onNavigateToContent: () -> Unit,
         private val onNavigateToNavbar: () -> Unit,
-        private val recyclerView: RecyclerView,
+        private val onCategoryFocused: (CategoryItem) -> Unit,
     ) : RecyclerView.ViewHolder(itemView) {
         private val categoryNameText: TextView = itemView.findViewById(R.id.text_category_name)
         private val selectedIndicatorView: View = itemView.findViewById(R.id.view_selected_indicator)
@@ -90,22 +109,23 @@ class CategoryAdapter(
         ) {
             currentCategory = category
             // Kategori ismini yerelleştir
-            val localizedName = CategoryNameHelper.getLocalizedCategoryName(
-                itemView.context,
-                category.categoryName
-            )
+            val localizedName =
+                CategoryNameHelper.getLocalizedCategoryName(
+                    itemView.context,
+                    category.categoryName,
+                )
             categoryNameText.text = localizedName
 
             // Set selected state
             categoryNameText.isSelected = isSelected
 
-            // Seçili kategori için text size'ı 1.5 kat artır (12sp -> 18sp)
-            val baseTextSize = 12f
+            // Seçili kategori için text size'ı 1.4 kat artır (10sp -> 14sp)
+            val baseTextSize = 10f
             categoryNameText.textSize =
                 if (isSelected) {
-                    baseTextSize * 1.5f // 18sp
+                    baseTextSize * 1.4f // 14sp
                 } else {
-                    baseTextSize // 12sp
+                    baseTextSize // 10sp
                 }
 
             // Seçili kategori için alt çizgiyi göster/gizle
@@ -124,7 +144,22 @@ class CategoryAdapter(
             categoryNameText.isFocusable = true
             categoryNameText.isFocusableInTouchMode = true
 
-            // Add comprehensive key listener with manual focus management
+            // Focus değişikliklerini log'la ve callback çağır
+            categoryNameText.setOnFocusChangeListener { view, hasFocus ->
+                if (hasFocus) {
+                    val position = bindingAdapterPosition
+                    val categoryName = currentCategory?.categoryName ?: "UNKNOWN"
+                    Timber.tag(
+                        "FOCUS_DEBUG",
+                    ).d("✨ FOCUS ALINDI - Pozisyon: $position, Kategori: $categoryName, View: ${view.javaClass.simpleName}")
+                    // Focus geldiğinde kategoriyi seç ve içerikleri yükle
+                    currentCategory?.let { onCategoryFocused(it) }
+                } else {
+                    val position = bindingAdapterPosition
+                    Timber.tag("FOCUS_DEBUG").d("💨 FOCUS KAYBEDİLDİ - Pozisyon: $position")
+                }
+            }
+
             categoryNameText.setOnKeyListener { _, keyCode, event ->
                 if (event.action != KeyEvent.ACTION_DOWN) return@setOnKeyListener false
 
@@ -134,75 +169,32 @@ class CategoryAdapter(
                 when (keyCode) {
                     KeyEvent.KEYCODE_DPAD_UP -> {
                         if (currentPosition == 0) {
-                            // En üstteyiz, Navbar'a gitmek için sinyal ver.
                             onNavigateToNavbar()
-                        } else {
-                            // Önce scroll yap, sonra odak ver
-                            val targetPosition = currentPosition - 1
-                            recyclerView.smoothScrollToPosition(targetPosition)
-                            
-                            // ViewTreeObserver ile ViewHolder'ın hazır olduğundan emin ol
-                            val observer = recyclerView.viewTreeObserver
-                            observer.addOnGlobalLayoutListener(object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
-                                override fun onGlobalLayout() {
-                                    val previousViewHolder = recyclerView.findViewHolderForAdapterPosition(targetPosition)
-                                    if (previousViewHolder != null) {
-                                        previousViewHolder.itemView.requestFocus()
-                                        recyclerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                                    } else {
-                                        // ViewHolder henüz hazır değil, bir kez daha dene
-                                        recyclerView.postDelayed({
-                                            val retryViewHolder = recyclerView.findViewHolderForAdapterPosition(targetPosition)
-                                            retryViewHolder?.itemView?.requestFocus()
-                                            recyclerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                                        }, 50)
-                                    }
-                                }
-                            })
+                            return@setOnKeyListener true // Olayı tüket
                         }
-                        // Olayı her durumda tüket, çünkü yönetimi biz yaptık.
-                        return@setOnKeyListener true
                     }
-
                     KeyEvent.KEYCODE_DPAD_DOWN -> {
-                        val adapter = bindingAdapter as? CategoryAdapter ?: return@setOnKeyListener true
-                        if (currentPosition == adapter.itemCount - 1) {
-                            // En alttayız, olayı tüket ve hiçbir şey yapma.
-                        } else {
-                            // Önce scroll yap, sonra odak ver
-                            val targetPosition = currentPosition + 1
-                            recyclerView.smoothScrollToPosition(targetPosition)
-                            
-                            // ViewTreeObserver ile ViewHolder'ın hazır olduğundan emin ol
-                            val observer = recyclerView.viewTreeObserver
-                            observer.addOnGlobalLayoutListener(object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
-                                override fun onGlobalLayout() {
-                                    val nextViewHolder = recyclerView.findViewHolderForAdapterPosition(targetPosition)
-                                    if (nextViewHolder != null) {
-                                        nextViewHolder.itemView.requestFocus()
-                                        recyclerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                                    } else {
-                                        // ViewHolder henüz hazır değil, bir kez daha dene
-                                        recyclerView.postDelayed({
-                                            val retryViewHolder = recyclerView.findViewHolderForAdapterPosition(targetPosition)
-                                            retryViewHolder?.itemView?.requestFocus()
-                                            recyclerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                                        }, 50)
-                                    }
-                                }
-                            })
+                        val adapter = bindingAdapter as? CategoryAdapter
+                        if (adapter != null && currentPosition == adapter.itemCount - 1) {
+                            return@setOnKeyListener true // En alttaysan olayı tüket, aşağı gitme
                         }
-                        // Olayı her durumda tüket, çünkü yönetimi biz yaptık.
-                        return@setOnKeyListener true
                     }
-
-                    KeyEvent.KEYCODE_DPAD_RIGHT,
+                    KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                        // Sağ yön tuşu: Focus olan kategorideyse içerik grid'ine geç
+                        onNavigateToContent()
+                        return@setOnKeyListener true // Her durumda sağa gitmeyi engelle ve olayı tüket
+                    }
+                    KeyEvent.KEYCODE_DPAD_CENTER -> {
+                        // OK tuşu: Focus olan kategorideyse içerik grid'ine geç
+                        onNavigateToContent()
+                        return@setOnKeyListener true // Olayı tüket
+                    }
                     KeyEvent.KEYCODE_DPAD_LEFT -> {
-                        // Yatay hareketi tamamen engelle ve olayı tüket.
-                        return@setOnKeyListener true
+                        return@setOnKeyListener true // Sola gitmeyi her zaman engelle ve olayı tüket
                     }
                 }
-                // Bu noktaya asla gelinmemeli, ancak güvenlik için false döndür.
+                // Yukarı/aşağı oklar için (sınırda değilse), RecyclerView'ın kendi akıcı
+                // kaydırma davranışına izin vermek için 'false' döndür.
                 return@setOnKeyListener false
             }
         }

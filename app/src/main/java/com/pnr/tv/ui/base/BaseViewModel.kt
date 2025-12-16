@@ -17,6 +17,12 @@ import kotlinx.coroutines.launch
  * - Helper metodlar
  */
 abstract class BaseViewModel : ViewModel() {
+    // Son odaklanılan içeriğin pozisyonunu saklamak için ortak değişken
+    var lastFocusedContentPosition: Int? = null
+
+    // Son seçili kategori ID'sini saklamak için ortak değişken
+    var lastSelectedCategoryId: String? = null
+
     /**
      * Toast mesajları için SharedFlow.
      * Child ViewModel'ler bu flow'u kullanarak toast mesajları gönderebilir.
@@ -41,6 +47,3 @@ abstract class BaseViewModel : ViewModel() {
      */
     protected abstract val context: Context
 }
-
-
-

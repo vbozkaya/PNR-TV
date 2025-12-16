@@ -2,22 +2,21 @@ package com.pnr.tv.util
 
 import android.content.Context
 import android.content.SharedPreferences
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 
 /**
  * LocaleHelper için unit testler.
  * Dil yönetimi mantığının doğru çalıştığını doğrular.
  */
 class LocaleHelperTest {
-
     private lateinit var mockContext: Context
     private lateinit var mockSharedPreferences: SharedPreferences
     private lateinit var mockEditor: SharedPreferences.Editor
@@ -27,7 +26,7 @@ class LocaleHelperTest {
         mockContext = mock()
         mockSharedPreferences = mock()
         mockEditor = mock()
-        
+
         whenever(mockContext.getSharedPreferences("locale_prefs", Context.MODE_PRIVATE))
             .thenReturn(mockSharedPreferences)
         whenever(mockSharedPreferences.edit()).thenReturn(mockEditor)
@@ -191,4 +190,3 @@ class LocaleHelperTest {
         assertEquals("Français", LocaleHelper.SupportedLanguage.FRENCH.displayName)
     }
 }
-

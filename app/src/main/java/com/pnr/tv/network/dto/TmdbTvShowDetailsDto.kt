@@ -1,6 +1,5 @@
 package com.pnr.tv.network.dto
 
-import com.pnr.tv.network.dto.TmdbGenreDto
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
@@ -15,7 +14,7 @@ data class TmdbTvShowDetailsDto(
     @Json(name = "original_language") val originalLanguage: String?,
     @Json(name = "genres") val genres: List<TmdbGenreDto>?,
     @Json(name = "created_by") val createdBy: List<TmdbCreatorDto>?,
-    @Json(name = "credits") val credits: TmdbCreditsDto?
+    @Json(name = "credits") val credits: TmdbCreditsDto?,
 )
 
 /**
@@ -26,7 +25,7 @@ data class TmdbCreatorDto(
     @Json(name = "id") val id: Int?,
     @Json(name = "name") val name: String?,
     @Json(name = "gender") val gender: Int?,
-    @Json(name = "profile_path") val profilePath: String?
+    @Json(name = "profile_path") val profilePath: String?,
 )
 
 /**
@@ -34,7 +33,7 @@ data class TmdbCreatorDto(
  */
 @JsonClass(generateAdapter = true)
 data class TmdbTvSearchResultDto(
-    @Json(name = "results") val results: List<TmdbSearchTvShowDto>?
+    @Json(name = "results") val results: List<TmdbSearchTvShowDto>?,
 )
 
 /**
@@ -44,6 +43,5 @@ data class TmdbTvSearchResultDto(
 data class TmdbSearchTvShowDto(
     @Json(name = "id") val id: Int?,
     @Json(name = "name") val name: String?,
-    @Json(name = "original_name") val originalName: String?
+    @Json(name = "original_name") val originalName: String?,
 )
-

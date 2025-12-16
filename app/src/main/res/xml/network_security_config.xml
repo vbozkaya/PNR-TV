@@ -4,11 +4,13 @@
         Güvenli Ağ Yapılandırması
         
         Strateji:
-        - Varsayılan: HTTP izni (IPTV servisleri için uyumluluk)
+        - Varsayılan: HTTP izni (IPTV servisleri için uyumluluk - çoğu IPTV servisi HTTP kullanır)
         - TMDB API: HTTPS zorunlu (özel domain-config ile güvenli)
         
         Not: Android network security config'de IP adresleri otomatik olarak domain olarak algılanır
         ve varsayılan yapılandırmayı kullanır.
+        
+        ÖNEMLİ: IPTV servisleri genellikle HTTP kullandığı için varsayılan olarak HTTP'ye izin veriyoruz.
     -->
     
     <!-- Varsayılan: HTTP izni (IPTV servisleri için uyumluluk) -->

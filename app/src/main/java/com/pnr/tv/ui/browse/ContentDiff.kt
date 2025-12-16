@@ -18,6 +18,3 @@ object ContentDiff : DiffUtil.ItemCallback<ContentItem>() {
         newItem: ContentItem,
     ): Boolean = oldItem == newItem
 }
-
-
-

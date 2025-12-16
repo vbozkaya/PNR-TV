@@ -3,6 +3,8 @@ package com.pnr.tv.network
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
@@ -10,15 +12,12 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.io.IOException
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 
 /**
  * RateLimiterInterceptor için unit testler.
  * Rate limiting mantığının doğru çalıştığını doğrular.
  */
 class RateLimiterInterceptorTest {
-
     private lateinit var interceptor: RateLimiterInterceptor
     private lateinit var mockChain: Interceptor.Chain
     private lateinit var mockRequest: Request
@@ -26,16 +25,18 @@ class RateLimiterInterceptorTest {
 
     @Before
     fun setup() {
-        mockRequest = Request.Builder()
-            .url("https://example.com/api")
-            .build()
+        mockRequest =
+            Request.Builder()
+                .url("https://example.com/api")
+                .build()
 
-        mockResponse = Response.Builder()
-            .request(mockRequest)
-            .protocol(okhttp3.Protocol.HTTP_1_1)
-            .code(200)
-            .message("OK")
-            .build()
+        mockResponse =
+            Response.Builder()
+                .request(mockRequest)
+                .protocol(okhttp3.Protocol.HTTP_1_1)
+                .code(200)
+                .message("OK")
+                .build()
 
         mockChain = mock()
         whenever(mockChain.request()).thenReturn(mockRequest)
@@ -62,7 +63,7 @@ class RateLimiterInterceptorTest {
         val testChain = mock<Interceptor.Chain>()
         whenever(testChain.request()).thenReturn(mockRequest)
         whenever(testChain.proceed(any())).thenReturn(mockResponse)
-        
+
         // First request - should proceed immediately
         testInterceptor.intercept(testChain)
 
@@ -83,7 +84,7 @@ class RateLimiterInterceptorTest {
         val testChain = mock<Interceptor.Chain>()
         whenever(testChain.request()).thenReturn(mockRequest)
         whenever(testChain.proceed(any())).thenReturn(mockResponse)
-        
+
         // First request
         testInterceptor.intercept(testChain)
 
@@ -211,13 +212,14 @@ class RateLimiterInterceptorTest {
         interceptor.intercept(mockChain) // First request
 
         // When - Interrupt thread during wait
-        val thread = Thread {
-            try {
-                interceptor.intercept(mockChain)
-            } catch (e: InterruptedException) {
-                Thread.currentThread().interrupt()
+        val thread =
+            Thread {
+                try {
+                    interceptor.intercept(mockChain)
+                } catch (e: InterruptedException) {
+                    Thread.currentThread().interrupt()
+                }
             }
-        }
         thread.start()
         Thread.sleep(10L) // Let it start waiting
         thread.interrupt()
@@ -227,4 +229,3 @@ class RateLimiterInterceptorTest {
         assertTrue(!thread.isAlive || thread.isInterrupted)
     }
 }
-

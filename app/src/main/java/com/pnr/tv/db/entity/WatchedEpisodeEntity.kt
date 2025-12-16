@@ -10,13 +10,10 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "watched_episodes")
 data class WatchedEpisodeEntity(
     @PrimaryKey
-    val episodeId: String,           // Bölüm ID'si
-    val seriesId: Int,                // Dizi ID'si
-    val seasonNumber: Int,            // Sezon numarası
-    val episodeNumber: Int,           // Bölüm numarası
-    val watchedTimestamp: Long,       // İzlenme zamanı (milisaniye)
-    val watchProgress: Int = 100      // İzlenme yüzdesi (0-100), varsayılan tam izlendi
+    val episodeId: String, // Bölüm ID'si
+    val seriesId: Int, // Dizi ID'si
+    val seasonNumber: Int, // Sezon numarası
+    val episodeNumber: Int, // Bölüm numarası
+    val watchedTimestamp: Long, // İzlenme zamanı (milisaniye)
+    val watchProgress: Int = 100, // İzlenme yüzdesi (0-100), varsayılan tam izlendi
 )
-
-
-

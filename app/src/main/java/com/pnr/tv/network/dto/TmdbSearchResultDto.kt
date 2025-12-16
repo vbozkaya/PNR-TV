@@ -8,7 +8,7 @@ import com.squareup.moshi.JsonClass
  */
 @JsonClass(generateAdapter = true)
 data class TmdbSearchResultDto(
-    @Json(name = "results") val results: List<TmdbSearchMovieDto>?
+    @Json(name = "results") val results: List<TmdbSearchMovieDto>?,
 )
 
 /**
@@ -18,9 +18,5 @@ data class TmdbSearchResultDto(
 data class TmdbSearchMovieDto(
     @Json(name = "id") val id: Int?,
     @Json(name = "title") val title: String?,
-    @Json(name = "original_title") val originalTitle: String?
+    @Json(name = "original_title") val originalTitle: String?,
 )
-
-
-
-

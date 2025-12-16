@@ -1,7 +1,6 @@
 package com.pnr.tv
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.GridLayoutManager
@@ -44,7 +43,7 @@ class UsersListAdapter(
             binding.btnSelectUser.setOnClickListener { listener.onSelect(userAccount) }
             binding.btnEditUser.setOnClickListener { listener.onEdit(userAccount) }
             binding.btnDeleteUser.setOnClickListener { listener.onDelete(userAccount) }
-            
+
             // Focus scroll: Focus alındığında item'ı görünür alana getir
             binding.root.setOnFocusChangeListener { focusedView, hasFocus ->
                 if (hasFocus) {
@@ -57,7 +56,7 @@ class UsersListAdapter(
                                 recyclerView.post {
                                     val firstVisible = layoutManager.findFirstVisibleItemPosition()
                                     val lastVisible = layoutManager.findLastVisibleItemPosition()
-                                    
+
                                     var needsScroll = false
                                     if (focusedPosition < firstVisible || focusedPosition > lastVisible) {
                                         needsScroll = true
@@ -68,13 +67,13 @@ class UsersListAdapter(
                                             val bottom = view.bottom
                                             val recyclerTop = recyclerView.paddingTop
                                             val recyclerBottom = recyclerView.height - recyclerView.paddingBottom
-                                            
+
                                             if (top < recyclerTop || bottom > recyclerBottom) {
                                                 needsScroll = true
                                             }
                                         }
                                     }
-                                    
+
                                     if (needsScroll || focusedPosition == firstVisible || focusedPosition == lastVisible) {
                                         layoutManager.scrollToPositionWithOffset(focusedPosition, recyclerView.paddingTop + 20)
                                     }

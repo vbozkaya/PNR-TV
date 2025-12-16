@@ -12,10 +12,13 @@ import android.view.WindowManager
 import android.widget.Button
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.commit
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.pnr.tv.Constants
+import com.pnr.tv.MainViewModel
 import com.pnr.tv.R
 import com.pnr.tv.model.CategoryItem
 import com.pnr.tv.model.ContentItem
@@ -27,7 +30,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /**
  * İçerik türüne göre içerikleri gösteren Fragment.
@@ -36,30 +38,19 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class ContentBrowseFragment : BaseBrowseFragment() {
     private var contentType: ContentType? = null
-    private lateinit var viewModel: ContentViewModel
+    private val mainViewModel: MainViewModel by activityViewModels()
 
-    @Inject
-    lateinit var viewModelFactory: ContentViewModel.Factory
+    // BaseBrowseFragment requires BaseViewModel
+    override val viewModel: com.pnr.tv.ui.base.BaseViewModel
+        get() = mainViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         @Suppress("DEPRECATION")
         contentType = arguments?.getSerializable(ARG_CONTENT_TYPE) as? ContentType
-        contentType?.let { type ->
-            viewModel =
-                ViewModelProvider(
-                    this,
-                    object : ViewModelProvider.Factory {
-                        override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-                            @Suppress("UNCHECKED_CAST")
-                            return viewModelFactory.create(type) as T
-                        }
-                    },
-                )[ContentViewModel::class.java]
-            // Sadece ilk oluşturulduğunda yükle, savedInstanceState null ise
-            if (savedInstanceState == null) {
-                onInitialLoad()
-            }
+        // Sadece ilk oluşturulduğunda yükle, savedInstanceState null ise
+        if (savedInstanceState == null) {
+            onInitialLoad()
         }
     }
 
@@ -78,20 +69,84 @@ class ContentBrowseFragment : BaseBrowseFragment() {
         super.onViewCreated(view, savedInstanceState)
         // BaseBrowseFragment handles all setup via initializeViews
         initializeViews(view)
+        observeErrorState()
+        observeLoadingState()
+    }
+
+    private fun observeErrorState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                val errorFlow =
+                    when (contentType) {
+                        ContentType.MOVIES -> mainViewModel.moviesErrorMessage
+                        ContentType.SERIES -> mainViewModel.seriesErrorMessage
+                        else -> kotlinx.coroutines.flow.flowOf(null)
+                    }
+                errorFlow.collect { errorMsg ->
+                    if (errorMsg != null) {
+                        showErrorState(errorMsg)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun observeLoadingState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                val loadingFlow =
+                    when (contentType) {
+                        ContentType.MOVIES -> mainViewModel.isMoviesLoading
+                        ContentType.SERIES -> mainViewModel.isSeriesLoading
+                        else -> kotlinx.coroutines.flow.flowOf(false)
+                    }
+                val errorFlow =
+                    when (contentType) {
+                        ContentType.MOVIES -> mainViewModel.moviesErrorMessage
+                        ContentType.SERIES -> mainViewModel.seriesErrorMessage
+                        else -> kotlinx.coroutines.flow.flowOf(null)
+                    }
+                loadingFlow.collect { isLoading ->
+                    if (isLoading) {
+                        showLoadingState()
+                    } else {
+                        val hasError = errorFlow.firstOrNull() != null
+                        if (!hasError) {
+                            showContentState()
+                        }
+                    }
+                }
+            }
+        }
     }
 
     // Abstract properties from BaseBrowseFragment
     override val categoriesFlow: Flow<List<CategoryItem>>
-        get() = viewModel.categories
+        get() =
+            when (contentType) {
+                ContentType.MOVIES -> mainViewModel.movieCategoriesFlow
+                ContentType.SERIES -> mainViewModel.seriesCategoriesFlow
+                else -> kotlinx.coroutines.flow.flowOf(emptyList())
+            }
 
     override val contentsFlow: Flow<List<ContentItem>>
-        get() = viewModel.contents
+        get() =
+            when (contentType) {
+                ContentType.MOVIES -> mainViewModel.moviesFlow
+                ContentType.SERIES -> mainViewModel.seriesFlow
+                else -> kotlinx.coroutines.flow.flowOf(emptyList())
+            }
 
     override val selectedCategoryIdFlow: Flow<String?>
-        get() = viewModel.selectedCategoryId.map { it as? String }
+        get() =
+            when (contentType) {
+                ContentType.MOVIES -> mainViewModel.selectedMovieCategoryId.map { it as? String }
+                ContentType.SERIES -> mainViewModel.selectedSeriesCategoryId.map { it as? String }
+                else -> kotlinx.coroutines.flow.flowOf(null)
+            }
 
     override val toastEventFlow: Flow<String>
-        get() = viewModel.toastEvent
+        get() = mainViewModel.toastEvent
 
     // Abstract methods from BaseBrowseFragment
     override fun getNavbarTitle(): String =
@@ -112,18 +167,56 @@ class ContentBrowseFragment : BaseBrowseFragment() {
 
     // Override hooks from BaseBrowseFragment
     override fun onInitialLoad() {
-        viewModel.loadContent()
+        when (contentType) {
+            ContentType.MOVIES -> mainViewModel.loadMoviesIfNeeded()
+            ContentType.SERIES -> mainViewModel.loadSeriesIfNeeded()
+            else -> {}
+        }
     }
 
     override fun onCategoryClicked(category: CategoryItem) {
-        viewModel.selectCategory(category.categoryId)
+        when (contentType) {
+            ContentType.MOVIES -> mainViewModel.selectMovieCategory(category.categoryId)
+            ContentType.SERIES -> mainViewModel.selectSeriesCategory(category.categoryId)
+            else -> {}
+        }
+    }
+
+    override fun selectCategoryById(categoryId: String?) {
+        // Kategori ID'sine göre kategori seç
+        categoryId?.let { id ->
+            when (contentType) {
+                ContentType.MOVIES -> mainViewModel.selectMovieCategory(id)
+                ContentType.SERIES -> mainViewModel.selectSeriesCategory(id)
+                else -> {}
+            }
+        }
     }
 
     override fun onCategoryFocused(category: CategoryItem) {
-        // Odaklanma ile içerik yükleme devre dışı bırakıldı
+        // Focus geldiğinde kategoriyi seç ve içerikleri yükle
+        when (contentType) {
+            ContentType.MOVIES -> mainViewModel.selectMovieCategory(category.categoryId)
+            ContentType.SERIES -> mainViewModel.selectSeriesCategory(category.categoryId)
+            else -> {}
+        }
     }
 
     override fun onContentClicked(item: ContentItem) {
+        // Son seçili kategoriyi ve odaklanılan pozisyonu kaydet
+        val position = contentAdapter.currentList.indexOf(item)
+        if (position != -1) {
+            mainViewModel.lastFocusedContentPosition = position
+            // Mevcut seçili kategoriyi kaydet
+            val categoryId =
+                when (contentType) {
+                    ContentType.MOVIES -> mainViewModel.selectedMovieCategoryId.value as? String
+                    ContentType.SERIES -> mainViewModel.selectedSeriesCategoryId.value as? String
+                    else -> null
+                }
+            mainViewModel.lastSelectedCategoryId = categoryId
+        }
+
         // Navigate based on contentType
         when (contentType) {
             ContentType.MOVIES -> {
@@ -158,11 +251,24 @@ class ContentBrowseFragment : BaseBrowseFragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             // For now, use default viewer (id = 1)
             val defaultViewerId = 1
-            val isFavorite = viewModel.isFavorite(item.id, defaultViewerId).firstOrNull() ?: false
+            val isFavorite =
+                when (contentType) {
+                    ContentType.MOVIES -> mainViewModel.isMovieFavorite(item.id, defaultViewerId).firstOrNull() ?: false
+                    ContentType.SERIES -> mainViewModel.isSeriesFavorite(item.id, defaultViewerId).firstOrNull() ?: false
+                    else -> false
+                }
             if (isFavorite) {
-                viewModel.removeFavorite(item.id, defaultViewerId)
+                when (contentType) {
+                    ContentType.MOVIES -> mainViewModel.removeMovieFavorite(item.id, defaultViewerId)
+                    ContentType.SERIES -> mainViewModel.removeSeriesFavorite(item.id, defaultViewerId)
+                    else -> {}
+                }
             } else {
-                viewModel.addFavorite(item.id, defaultViewerId)
+                when (contentType) {
+                    ContentType.MOVIES -> mainViewModel.addMovieFavorite(item.id, defaultViewerId)
+                    ContentType.SERIES -> mainViewModel.addSeriesFavorite(item.id, defaultViewerId)
+                    else -> {}
+                }
             }
         }
     }
@@ -200,7 +306,11 @@ class ContentBrowseFragment : BaseBrowseFragment() {
                             before: Int,
                             count: Int,
                         ) {
-                            viewModel.onSearchQueryChanged(s?.toString() ?: "")
+                            when (contentType) {
+                                ContentType.MOVIES -> mainViewModel.onMovieSearchQueryChanged(s?.toString() ?: "")
+                                ContentType.SERIES -> mainViewModel.onSeriesSearchQueryChanged(s?.toString() ?: "")
+                                else -> {}
+                            }
                         }
 
                         override fun afterTextChanged(s: Editable?) {}
@@ -221,8 +331,13 @@ class ContentBrowseFragment : BaseBrowseFragment() {
         dialog.setContentView(view)
 
         val window = dialog.window
+        // Ekran genişliğinin yarısını hesapla
+        val displayMetrics = resources.displayMetrics
+        val screenWidth = displayMetrics.widthPixels
+        val dialogWidth = screenWidth / 2
+
         window?.setLayout(
-            WindowManager.LayoutParams.MATCH_PARENT,
+            dialogWidth,
             WindowManager.LayoutParams.WRAP_CONTENT,
         )
         window?.setBackgroundDrawableResource(android.R.color.transparent)
@@ -238,7 +353,13 @@ class ContentBrowseFragment : BaseBrowseFragment() {
 
         // Mevcut sıralama tercihini yükle ve seçili yap
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.getCurrentSortOrder().firstOrNull()?.let { sortOrder ->
+            val sortOrderFlow =
+                when (contentType) {
+                    ContentType.MOVIES -> mainViewModel.getCurrentMovieSortOrder()
+                    ContentType.SERIES -> mainViewModel.getCurrentSeriesSortOrder()
+                    else -> kotlinx.coroutines.flow.flowOf(null)
+                }
+            sortOrderFlow.firstOrNull()?.let { sortOrder ->
                 when (sortOrder) {
                     SortOrder.A_TO_Z -> radioAtoZ.isChecked = true
                     SortOrder.Z_TO_A -> radioZtoA.isChecked = true
@@ -266,7 +387,11 @@ class ContentBrowseFragment : BaseBrowseFragment() {
                     else -> SortOrder.A_TO_Z
                 }
 
-            viewModel.saveSortOrder(sortOrder)
+            when (contentType) {
+                ContentType.MOVIES -> mainViewModel.saveMovieSortOrder(sortOrder)
+                ContentType.SERIES -> mainViewModel.saveSeriesSortOrder(sortOrder)
+                else -> {}
+            }
             dialog.dismiss()
         }
 
@@ -283,10 +408,10 @@ class ContentBrowseFragment : BaseBrowseFragment() {
         val isFavoritesEmpty =
             when (contentType) {
                 ContentType.MOVIES -> {
-                    selectedCategoryId == ContentViewModel.VIRTUAL_CATEGORY_ID_FAVORITES_MOVIES && contents.isEmpty()
+                    selectedCategoryId == MainViewModel.VIRTUAL_CATEGORY_ID_FAVORITES_MOVIES && contents.isEmpty()
                 }
                 ContentType.SERIES -> {
-                    selectedCategoryId == ContentViewModel.VIRTUAL_CATEGORY_ID_FAVORITES_SERIES && contents.isEmpty()
+                    selectedCategoryId == MainViewModel.VIRTUAL_CATEGORY_ID_FAVORITES_SERIES && contents.isEmpty()
                 }
                 else -> false
             }
@@ -309,7 +434,10 @@ class ContentBrowseFragment : BaseBrowseFragment() {
          * @param isInitialLaunch Ana menüden ilk kez açılıyor mu
          * @return Yeni ContentBrowseFragment örneği
          */
-        fun newInstance(contentType: ContentType, isInitialLaunch: Boolean = false): ContentBrowseFragment {
+        fun newInstance(
+            contentType: ContentType,
+            isInitialLaunch: Boolean = false,
+        ): ContentBrowseFragment {
             return ContentBrowseFragment().apply {
                 arguments =
                     Bundle().apply {

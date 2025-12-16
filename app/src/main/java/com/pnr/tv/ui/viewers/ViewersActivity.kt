@@ -65,16 +65,16 @@ class ViewersActivity : BaseActivity() {
     }
 
     private var previousViewerCount = 0
-    
+
     private fun observeViewers() {
         lifecycleScope.launch {
             viewModel.getAllViewers().collectLatest { viewers ->
                 val wasViewerAdded = viewers.size > previousViewerCount
                 previousViewerCount = viewers.size
-                
+
                 adapter.submitList(viewers)
                 binding.emptyView.visibility = if (viewers.isEmpty()) View.VISIBLE else View.GONE
-                
+
                 binding.recyclerViewers.post {
                     if (wasViewerAdded && viewers.isNotEmpty()) {
                         // Yeni izleyici eklendiğinde son item'ın sil butonuna focus ver
@@ -118,20 +118,18 @@ class ViewersActivity : BaseActivity() {
     }
 
     private fun showDeleteDialog(viewer: ViewerEntity) {
-        val dialog = AlertDialog.Builder(this)
-            .setTitle(R.string.dialog_delete_viewer_title)
-            .setMessage(getString(R.string.dialog_delete_viewer_message, viewer.name))
-            .setPositiveButton(R.string.dialog_yes) { _, _ ->
-                viewModel.deleteViewer(viewer)
-            }
-            .setNegativeButton(R.string.dialog_no, null)
-            .create()
-        
+        val dialog =
+            AlertDialog.Builder(this)
+                .setTitle(R.string.dialog_delete_viewer_title)
+                .setMessage(getString(R.string.dialog_delete_viewer_message, viewer.name))
+                .setPositiveButton(R.string.dialog_yes) { _, _ ->
+                    viewModel.deleteViewer(viewer)
+                }
+                .setNegativeButton(R.string.dialog_no, null)
+                .create()
+
         dialog.show()
         // Güvenlik için "Hayır" butonuna focus ver
         dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.requestFocus()
     }
 }
-
-
-

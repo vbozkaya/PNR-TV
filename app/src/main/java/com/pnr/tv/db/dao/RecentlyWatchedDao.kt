@@ -26,6 +26,3 @@ interface RecentlyWatchedDao {
     @Query("DELETE FROM recently_watched_channels")
     suspend fun deleteAll()
 }
-
-
-

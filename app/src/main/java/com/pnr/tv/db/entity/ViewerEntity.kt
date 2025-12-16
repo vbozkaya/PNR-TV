@@ -10,6 +10,3 @@ data class ViewerEntity(
     val name: String,
     val isDeletable: Boolean = true,
 )
-
-
-

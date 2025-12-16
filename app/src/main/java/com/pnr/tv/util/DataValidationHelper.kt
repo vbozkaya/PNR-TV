@@ -10,23 +10,22 @@ import timber.log.Timber
  * Hangi field'ların eksik geldiğini tespit eder ve loglar.
  */
 object DataValidationHelper {
-
     /**
      * Film verilerinin eksikliklerini kontrol eder ve raporlar.
      */
     fun validateMovies(movies: List<MovieDto>): DataValidationReport {
         val report = DataValidationReport("Movies", movies.size)
-        
+
         if (movies.isEmpty()) {
             Timber.w("⚠️  Film listesi boş!")
             return report
         }
-        
+
         movies.forEachIndexed { index, movie ->
             val missingFields = mutableListOf<String>()
             val criticalFields = mutableListOf<String>()
             val importantFields = mutableListOf<String>()
-            
+
             // Kritik field'ları kontrol et (bunlar mutlaka olmalı)
             if (movie.streamId == null && movie.num == null) {
                 missingFields.add("streamId/num")
@@ -36,7 +35,7 @@ object DataValidationHelper {
                 missingFields.add("name")
                 criticalFields.add("name")
             }
-            
+
             // Opsiyonel ama önemli field'lar (bunlar eksik olabilir)
             if (movie.streamIconUrl.isNullOrBlank()) {
                 missingFields.add("streamIconUrl")
@@ -62,23 +61,23 @@ object DataValidationHelper {
                 missingFields.add("containerExtension")
                 importantFields.add("containerExtension")
             }
-            
+
             // Sadece kritik field'lar eksikse veya önemli field'lardan en az biri eksikse raporla
             val hasCriticalMissing = criticalFields.isNotEmpty()
             val hasImportantMissing = importantFields.isNotEmpty()
-            
+
             // Raporla: Kritik field eksikse VEYA önemli field'lardan en az biri eksikse
             if (hasCriticalMissing || hasImportantMissing) {
                 report.addMissingFields(
-                    index, 
-                    movie.name ?: "Unknown (ID: ${movie.streamId ?: movie.num})", 
+                    index,
+                    movie.name ?: "Unknown (ID: ${movie.streamId ?: movie.num})",
                     missingFields,
                     criticalFields,
-                    importantFields
+                    importantFields,
                 )
             }
         }
-        
+
         return report
     }
 
@@ -87,17 +86,17 @@ object DataValidationHelper {
      */
     fun validateSeries(series: List<SeriesDto>): DataValidationReport {
         val report = DataValidationReport("Series", series.size)
-        
+
         if (series.isEmpty()) {
             Timber.w("⚠️  Dizi listesi boş!")
             return report
         }
-        
+
         series.forEachIndexed { index, serie ->
             val missingFields = mutableListOf<String>()
             val criticalFields = mutableListOf<String>()
             val importantFields = mutableListOf<String>()
-            
+
             // Kritik field'ları kontrol et (bunlar mutlaka olmalı)
             if (serie.seriesId == null) {
                 missingFields.add("seriesId")
@@ -107,7 +106,7 @@ object DataValidationHelper {
                 missingFields.add("name")
                 criticalFields.add("name")
             }
-            
+
             // Opsiyonel ama önemli field'lar (bunlar eksik olabilir)
             if (serie.coverUrl.isNullOrBlank()) {
                 missingFields.add("coverUrl")
@@ -133,22 +132,22 @@ object DataValidationHelper {
                 missingFields.add("releaseDate")
                 importantFields.add("releaseDate")
             }
-            
+
             // Sadece kritik field'lar eksikse veya önemli field'lardan en az biri eksikse raporla
             val hasCriticalMissing = criticalFields.isNotEmpty()
             val hasImportantMissing = importantFields.isNotEmpty()
-            
+
             if (hasCriticalMissing || hasImportantMissing) {
                 report.addMissingFields(
-                    index, 
-                    serie.name ?: "Unknown (ID: ${serie.seriesId})", 
+                    index,
+                    serie.name ?: "Unknown (ID: ${serie.seriesId})",
                     missingFields,
                     criticalFields,
-                    importantFields
+                    importantFields,
                 )
             }
         }
-        
+
         return report
     }
 
@@ -157,17 +156,17 @@ object DataValidationHelper {
      */
     fun validateLiveStreams(streams: List<LiveStreamDto>): DataValidationReport {
         val report = DataValidationReport("LiveStreams", streams.size)
-        
+
         if (streams.isEmpty()) {
             Timber.w("⚠️  Canlı yayın listesi boş!")
             return report
         }
-        
+
         streams.forEachIndexed { index, stream ->
             val missingFields = mutableListOf<String>()
             val criticalFields = mutableListOf<String>()
             val importantFields = mutableListOf<String>()
-            
+
             // Kritik field'ları kontrol et (bunlar mutlaka olmalı)
             if (stream.streamId == null) {
                 missingFields.add("streamId")
@@ -177,7 +176,7 @@ object DataValidationHelper {
                 missingFields.add("name")
                 criticalFields.add("name")
             }
-            
+
             // Opsiyonel ama önemli field'lar (bunlar eksik olabilir)
             if (stream.streamIconUrl.isNullOrBlank()) {
                 missingFields.add("streamIconUrl")
@@ -187,22 +186,22 @@ object DataValidationHelper {
                 missingFields.add("categoryId")
                 importantFields.add("categoryId")
             }
-            
+
             // Sadece kritik field'lar eksikse veya önemli field'lardan en az biri eksikse raporla
             val hasCriticalMissing = criticalFields.isNotEmpty()
             val hasImportantMissing = importantFields.isNotEmpty()
-            
+
             if (hasCriticalMissing || hasImportantMissing) {
                 report.addMissingFields(
-                    index, 
-                    stream.name ?: "Unknown (ID: ${stream.streamId})", 
+                    index,
+                    stream.name ?: "Unknown (ID: ${stream.streamId})",
                     missingFields,
                     criticalFields,
-                    importantFields
+                    importantFields,
                 )
             }
         }
-        
+
         return report
     }
 
@@ -212,21 +211,21 @@ object DataValidationHelper {
     data class DataValidationReport(
         val dataType: String,
         val totalCount: Int,
-        private val itemsWithMissingFields: MutableMap<Int, MissingFieldData> = mutableMapOf()
+        private val itemsWithMissingFields: MutableMap<Int, MissingFieldData> = mutableMapOf(),
     ) {
         data class MissingFieldData(
             val name: String,
             val allMissing: List<String>,
             val criticalMissing: List<String>,
-            val importantMissing: List<String>
+            val importantMissing: List<String>,
         )
-        
+
         fun addMissingFields(
-            index: Int, 
-            name: String, 
+            index: Int,
+            name: String,
             allFields: List<String>,
             criticalFields: List<String>,
-            importantFields: List<String>
+            importantFields: List<String>,
         ) {
             itemsWithMissingFields[index] = MissingFieldData(name, allFields, criticalFields, importantFields)
         }
@@ -237,17 +236,17 @@ object DataValidationHelper {
             Timber.d("═══════════════════════════════════════")
             Timber.d("📦 Toplam kayıt: $totalCount")
             Timber.d("⚠️  Eksik field'ı olan kayıt: ${itemsWithMissingFields.size}")
-            
+
             // Kritik field eksik olan kayıtları say (bunlar gerçekten eksik)
             val itemsWithCriticalMissing = itemsWithMissingFields.values.count { it.criticalMissing.isNotEmpty() }
             val itemsWithOnlyImportantMissing = itemsWithMissingFields.size - itemsWithCriticalMissing
-            
+
             if (itemsWithCriticalMissing == 0 && itemsWithOnlyImportantMissing == 0) {
                 Timber.d("✅ Tüm kayıtlar eksiksiz!")
                 Timber.d("═══════════════════════════════════════")
                 return
             }
-            
+
             // Field bazında istatistik (sadece önemli field'lar için)
             val fieldStats = mutableMapOf<String, Int>()
             itemsWithMissingFields.values.forEach { data ->
@@ -255,13 +254,13 @@ object DataValidationHelper {
                     fieldStats[field] = (fieldStats[field] ?: 0) + 1
                 }
             }
-            
+
             Timber.d("")
             if (itemsWithCriticalMissing > 0) {
                 Timber.d("🚨 KRİTİK SORUN: $itemsWithCriticalMissing kayıt kritik field eksik!")
                 Timber.d("   (streamId/num veya name eksik - bu kayıtlar kullanılamaz)")
             }
-            
+
             if (fieldStats.isNotEmpty()) {
                 Timber.d("")
                 Timber.d("📈 ÖNEMLİ FIELD BAZINDA EKSİKLİK İSTATİSTİKLERİ:")
@@ -270,27 +269,29 @@ object DataValidationHelper {
                     Timber.d("   • $field: $count / $totalCount (%$percentage)")
                 }
             }
-            
+
             Timber.d("")
             Timber.d("📋 İLK 5 EKSİK KAYIT ÖRNEĞİ:")
             itemsWithMissingFields.toList().take(5).forEach { (index, data) ->
-                val criticalInfo = if (data.criticalMissing.isNotEmpty()) {
-                    " [KRİTİK: ${data.criticalMissing.joinToString(", ")}]"
-                } else {
-                    ""
-                }
-                val importantInfo = if (data.importantMissing.isNotEmpty()) {
-                    " Önemli: ${data.importantMissing.joinToString(", ")}"
-                } else {
-                    ""
-                }
+                val criticalInfo =
+                    if (data.criticalMissing.isNotEmpty()) {
+                        " [KRİTİK: ${data.criticalMissing.joinToString(", ")}]"
+                    } else {
+                        ""
+                    }
+                val importantInfo =
+                    if (data.importantMissing.isNotEmpty()) {
+                        " Önemli: ${data.importantMissing.joinToString(", ")}"
+                    } else {
+                        ""
+                    }
                 Timber.d("   ${index + 1}. ${data.name}$criticalInfo$importantInfo")
             }
-            
+
             if (itemsWithMissingFields.size > 5) {
                 Timber.d("   ... ve ${itemsWithMissingFields.size - 5} kayıt daha")
             }
-            
+
             // Özet istatistik - Sadece kritik field'ları dikkate al
             // Kritik field'ları olan kayıtlar "tam veri" sayılır
             val completenessPercentage = ((totalCount - itemsWithCriticalMissing) * 100.0 / totalCount).toInt()
@@ -324,4 +325,3 @@ object DataValidationHelper {
         }
     }
 }
-

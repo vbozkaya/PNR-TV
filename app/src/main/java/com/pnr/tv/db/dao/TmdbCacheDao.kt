@@ -67,4 +67,3 @@ interface TmdbCacheDao {
     @Query("DELETE FROM tmdb_cache WHERE tmdbId = :tmdbId")
     suspend fun deleteCacheById(tmdbId: Int): Int
 }
-

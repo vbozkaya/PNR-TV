@@ -28,7 +28,7 @@ interface SeriesDao {
     /**
      * TMDB ID'si olan tüm dizilerin streamId'lerini döndürür
      * Delta senkronizasyonu için kullanılır
-     * 
+     *
      * @return TMDB verisine sahip dizi ID'leri
      */
     @Query("SELECT streamId FROM series WHERE tmdbId IS NOT NULL")

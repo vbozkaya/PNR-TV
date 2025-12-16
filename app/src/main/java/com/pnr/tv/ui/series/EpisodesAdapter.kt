@@ -20,13 +20,18 @@ class EpisodesAdapter(
     private val onEpisodeClick: (ParsedEpisode) -> Unit,
     private val onFocusUpToSeasons: () -> Unit,
 ) : ListAdapter<ParsedEpisode, EpisodesAdapter.EpisodeViewHolder>(EpisodeDiffCallback()) {
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EpisodeViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): EpisodeViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_episode_chip, parent, false)
         return EpisodeViewHolder(view, onEpisodeClick, onFocusUpToSeasons)
     }
 
-    override fun onBindViewHolder(holder: EpisodeViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: EpisodeViewHolder,
+        position: Int,
+    ) {
         holder.bind(getItem(position))
     }
 
@@ -48,33 +53,38 @@ class EpisodesAdapter(
                 }
                 false
             }
-            
+
             // ImageView'a corner radius ekle (CardView'un corner radius'u ile eşleştir: 8dp)
             val cornerRadius = 8f * itemView.context.resources.displayMetrics.density
-            episodeBackground.outlineProvider = object : ViewOutlineProvider() {
-                override fun getOutline(view: View, outline: Outline) {
-                    outline.setRoundRect(0, 0, view.width, view.height, cornerRadius)
+            episodeBackground.outlineProvider =
+                object : ViewOutlineProvider() {
+                    override fun getOutline(
+                        view: View,
+                        outline: Outline,
+                    ) {
+                        outline.setRoundRect(0, 0, view.width, view.height, cornerRadius)
+                    }
                 }
-            }
             episodeBackground.clipToOutline = true
         }
 
         fun bind(episode: ParsedEpisode) {
             // Standart metin göster (tüm kutucuklar aynı boyutta olsun)
             episodeTitle.text = itemView.context.getString(R.string.episode_format, episode.episodeNumber)
-            
+
             // İzlenme durumuna göre doğru çerçeveyi seç ve ata
-            val borderDrawableRes = when (episode.watchStatus) {
-                WatchStatus.NOT_WATCHED -> R.drawable.border_status_white
-                WatchStatus.IN_PROGRESS -> R.drawable.border_status_red
-                WatchStatus.FULLY_WATCHED -> R.drawable.border_status_green
-            }
+            val borderDrawableRes =
+                when (episode.watchStatus) {
+                    WatchStatus.NOT_WATCHED -> R.drawable.border_status_white
+                    WatchStatus.IN_PROGRESS -> R.drawable.border_status_red
+                    WatchStatus.FULLY_WATCHED -> R.drawable.border_status_green
+                }
             (itemView as FrameLayout).foreground = ContextCompat.getDrawable(itemView.context, borderDrawableRes)
 
             itemView.setOnClickListener { onEpisodeClick(episode) }
             itemView.isFocusable = true
             itemView.isFocusableInTouchMode = true
-            
+
             // Focus scroll: Focus alındığında item'ı görünür alana getir
             itemView.setOnFocusChangeListener { focusedView, hasFocus ->
                 if (hasFocus) {
@@ -97,11 +107,17 @@ class EpisodesAdapter(
     }
 
     private class EpisodeDiffCallback : DiffUtil.ItemCallback<ParsedEpisode>() {
-        override fun areItemsTheSame(oldItem: ParsedEpisode, newItem: ParsedEpisode): Boolean {
+        override fun areItemsTheSame(
+            oldItem: ParsedEpisode,
+            newItem: ParsedEpisode,
+        ): Boolean {
             return oldItem.episodeId == newItem.episodeId
         }
 
-        override fun areContentsTheSame(oldItem: ParsedEpisode, newItem: ParsedEpisode): Boolean {
+        override fun areContentsTheSame(
+            oldItem: ParsedEpisode,
+            newItem: ParsedEpisode,
+        ): Boolean {
             return oldItem == newItem
         }
     }

@@ -2,6 +2,7 @@ package com.pnr.tv.di
 
 import com.pnr.tv.BuildConfig
 import com.pnr.tv.Constants
+import com.pnr.tv.network.RateLimiterInterceptor
 import com.pnr.tv.network.TmdbApiService
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -9,7 +10,6 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import com.pnr.tv.network.RateLimiterInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -60,7 +60,7 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(
         loggingInterceptor: HttpLoggingInterceptor,
-        rateLimiterInterceptor: RateLimiterInterceptor
+        rateLimiterInterceptor: RateLimiterInterceptor,
     ): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(rateLimiterInterceptor) // Rate limiter önce eklenir
@@ -120,7 +120,9 @@ object NetworkModule {
      */
     @Provides
     @Singleton
-    fun provideTmdbApiService(@TmdbRetrofit retrofit: Retrofit): TmdbApiService {
+    fun provideTmdbApiService(
+        @TmdbRetrofit retrofit: Retrofit,
+    ): TmdbApiService {
         return retrofit.create(TmdbApiService::class.java)
     }
 }

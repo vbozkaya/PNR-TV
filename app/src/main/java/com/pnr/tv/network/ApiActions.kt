@@ -25,7 +25,3 @@ object ApiActions {
     const val GET_LIVE_STREAMS = "get_live_streams"
     const val GET_LIVE_CATEGORIES = "get_live_categories"
 }
-
-
-
-

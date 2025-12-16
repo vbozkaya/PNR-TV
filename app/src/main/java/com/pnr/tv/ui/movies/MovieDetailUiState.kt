@@ -5,8 +5,8 @@ import com.pnr.tv.network.dto.TmdbMovieDetailsDto
 
 /**
  * Film detay sayfası için UI durumlarını temsil eden sealed class
- * 
- * Bu yapı, ekranın tüm olası durumlarını (yükleme, başarı, hata) 
+ *
+ * Bu yapı, ekranın tüm olası durumlarını (yükleme, başarı, hata)
  * tek bir tip altında toplar ve Fragment'te kolay yönetim sağlar.
  */
 sealed class MovieDetailUiState {
@@ -22,7 +22,7 @@ sealed class MovieDetailUiState {
 
     /**
      * Başarı durumu - Veriler başarıyla yüklendi
-     * 
+     *
      * @param movie IPTV'den gelen film bilgileri
      * @param tmdbDetails TMDB'den gelen detaylar (nullable - yoksa null)
      * @param director Yönetmen adı (TMDB veya cache'den)
@@ -36,18 +36,17 @@ sealed class MovieDetailUiState {
         val director: String?,
         val genre: String?,
         val cast: String?,
-        val overview: String?
+        val overview: String?,
     ) : MovieDetailUiState()
 
     /**
      * Hata durumu - Veri yüklenirken hata oluştu
-     * 
+     *
      * @param message Hata mesajı
      * @param exception İstisna nesnesi (debug için)
      */
     data class Error(
         val message: String,
-        val exception: Throwable? = null
+        val exception: Throwable? = null,
     ) : MovieDetailUiState()
 }
-

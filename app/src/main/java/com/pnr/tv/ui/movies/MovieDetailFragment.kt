@@ -17,14 +17,18 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.viewmodel.CreationExtras
+import coil.imageLoader
 import coil.load
 import coil.size.Scale
+import coil.size.Size
 import com.pnr.tv.MainActivity
 import com.pnr.tv.PlayerActivity
 import com.pnr.tv.R
-import com.pnr.tv.repository.UserRepository
 import com.pnr.tv.extensions.normalizeBaseUrl
+import com.pnr.tv.repository.UserRepository
 import com.pnr.tv.ui.viewers.SelectViewerDialog
+import com.pnr.tv.util.BackgroundManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
@@ -49,7 +53,7 @@ class MovieDetailFragment : Fragment() {
     private lateinit var directorLayout: View
     private lateinit var genreLayout: View
     private lateinit var castLayout: View
-    
+
     // UI State views
     private lateinit var loadingContainer: View
     private lateinit var errorContainer: View
@@ -90,16 +94,26 @@ class MovieDetailFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         // Fragment yeniden yaratıldığında kaydedilen hafızayı geri yükle
         if (savedInstanceState != null) {
             lastFocusedViewId = savedInstanceState.getInt(KEY_LAST_FOCUSED_VIEW_ID, R.id.btn_play)
         }
-        
+
         viewModel =
             ViewModelProvider(
                 this,
                 object : ViewModelProvider.Factory {
+                    @Suppress("UNCHECKED_CAST")
+                    override fun <T : androidx.lifecycle.ViewModel> create(
+                        modelClass: Class<T>,
+                        extras: androidx.lifecycle.viewmodel.CreationExtras,
+                    ): T {
+                        return viewModelFactory.create() as T
+                    }
+
+                    // Eski API desteği (deprecated ama bazı cihazlarda hala çağrılıyor)
+                    @Deprecated("Use create(modelClass, extras) instead", ReplaceWith("create(modelClass, extras)"))
                     override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
                         @Suppress("UNCHECKED_CAST")
                         return viewModelFactory.create() as T
@@ -112,10 +126,10 @@ class MovieDetailFragment : Fragment() {
             viewModel.loadMovie(movieId)
         }
     }
-    
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        
+
         // Fragment yok edilmeden önce hafızayı kaydet
         outState.putInt(KEY_LAST_FOCUSED_VIEW_ID, lastFocusedViewId)
     }
@@ -133,6 +147,8 @@ class MovieDetailFragment : Fragment() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        // Arka plan görselini yükle
+        loadBackground(view)
         setupNavbar(view)
         setupViews(view)
         setupPlayButton()
@@ -144,7 +160,7 @@ class MovieDetailFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         (activity as? MainActivity)?.hideTopMenu()
-        
+
         // Fragment geri geldiğinde son focus edilen view'a focus ver
         view?.post {
             val lastFocusedView = view?.findViewById<View>(lastFocusedViewId)
@@ -182,62 +198,65 @@ class MovieDetailFragment : Fragment() {
         directorLayout = view.findViewById(R.id.layout_director)
         genreLayout = view.findViewById(R.id.layout_genre)
         castLayout = view.findViewById(R.id.layout_cast)
-        
+
         // State views
         loadingContainer = view.findViewById(R.id.loading_container)
         errorContainer = view.findViewById(R.id.error_container)
         errorMessage = view.findViewById(R.id.txt_error_message)
         retryButton = view.findViewById(R.id.btn_retry)
         contentGroup = view.findViewById(R.id.content_group)
-        
+
         // Retry button
         retryButton.setOnClickListener {
             arguments?.getInt(ARG_MOVIE_ID)?.let { movieId ->
                 viewModel.loadMovie(movieId)
             }
         }
-        
+
         // Oynat butonuna modern cursor animasyonları ekle
         setupPlayButtonAnimations()
     }
-    
+
     /**
      * Oynat butonu için akıcı focus animasyonlarını ayarlar
      * Google TV/Apple tvOS tarzı pürüzsüz geçişler
      */
     private fun setupPlayButtonAnimations() {
         var breathingAnimator: AnimatorSet? = null
-        
-        playButton.onFocusChangeListener = View.OnFocusChangeListener { view, hasFocus ->
-            if (hasFocus) {
-                // Odaklanma animasyonu: Hafif büyütme + Breathing başlat
-                val scaleUpAnim = AnimatorInflater.loadAnimator(
-                    requireContext(), 
-                    R.animator.btn_focus_scale_up
-                ) as AnimatorSet
-                scaleUpAnim.setTarget(view)
-                scaleUpAnim.start()
-                
-                // Breathing animasyonunu başlat (sürekli tekrarlayan)
-                breathingAnimator = AnimatorInflater.loadAnimator(
-                    requireContext(),
-                    R.animator.btn_focus_breathing
-                ) as AnimatorSet
-                breathingAnimator?.setTarget(view)
-                breathingAnimator?.start()
-                
-            } else {
-                // Odak kaybı animasyonu: Normal boyuta dön
-                breathingAnimator?.cancel()
-                
-                val scaleDownAnim = AnimatorInflater.loadAnimator(
-                    requireContext(),
-                    R.animator.btn_focus_scale_down
-                ) as AnimatorSet
-                scaleDownAnim.setTarget(view)
-                scaleDownAnim.start()
+
+        playButton.onFocusChangeListener =
+            View.OnFocusChangeListener { view, hasFocus ->
+                if (hasFocus) {
+                    // Odaklanma animasyonu: Hafif büyütme + Breathing başlat
+                    val scaleUpAnim =
+                        AnimatorInflater.loadAnimator(
+                            requireContext(),
+                            R.animator.btn_focus_scale_up,
+                        ) as AnimatorSet
+                    scaleUpAnim.setTarget(view)
+                    scaleUpAnim.start()
+
+                    // Breathing animasyonunu başlat (sürekli tekrarlayan)
+                    breathingAnimator =
+                        AnimatorInflater.loadAnimator(
+                            requireContext(),
+                            R.animator.btn_focus_breathing,
+                        ) as AnimatorSet
+                    breathingAnimator?.setTarget(view)
+                    breathingAnimator?.start()
+                } else {
+                    // Odak kaybı animasyonu: Normal boyuta dön
+                    breathingAnimator?.cancel()
+
+                    val scaleDownAnim =
+                        AnimatorInflater.loadAnimator(
+                            requireContext(),
+                            R.animator.btn_focus_scale_down,
+                        ) as AnimatorSet
+                    scaleDownAnim.setTarget(view)
+                    scaleDownAnim.start()
+                }
             }
-        }
     }
 
     /**
@@ -320,6 +339,12 @@ class MovieDetailFragment : Fragment() {
                 error(R.drawable.live)
                 crossfade(true)
                 scale(Scale.FILL)
+                // Maksimum boyut sınırı - çok büyük görselleri önlemek için (1280x720 daha güvenli)
+                size(Size(1280, 720))
+                // Hardware bitmap'leri devre dışı bırak
+                allowHardware(false)
+                // RGB565 formatını kullan - daha az bellek kullanır
+                allowRgb565(true)
             }
         } else {
             moviePoster.load(R.drawable.live) {
@@ -373,7 +398,7 @@ class MovieDetailFragment : Fragment() {
                 lastFocusedViewId = R.id.btn_play
             }
         }
-        
+
         playButton.setOnClickListener {
             // Filmi oynat
             viewLifecycleOwner.lifecycleScope.launch {
@@ -386,10 +411,10 @@ class MovieDetailFragment : Fragment() {
                     if (streamUrl != null) {
                         val movie = viewModel.movie.value
                         timber.log.Timber.d("🎬 FİLM URL: $streamUrl (extension: ${movie?.containerExtension ?: "ts (default)"})")
-                        
+
                         // Kaldığı yerden devam için film ID'sini gönder
                         val contentId = "movie_${movie?.streamId}"
-                        
+
                         val intent =
                             Intent(requireContext(), PlayerActivity::class.java).apply {
                                 putExtra(PlayerActivity.EXTRA_VIDEO_URL, streamUrl)
@@ -413,10 +438,61 @@ class MovieDetailFragment : Fragment() {
                 lastFocusedViewId = R.id.btn_add_favorite
             }
         }
-        
+
         addFavoriteButton.setOnClickListener {
             // Favoriye ekle - izleyici seçim dialog'unu göster
             viewModel.addToFavorites()
+        }
+    }
+
+    /**
+     * Arka plan görselini güvenli bir şekilde yükler.
+     * BackgroundManager kullanarak cache'lenmiş görseli yükler.
+     */
+    private fun loadBackground(view: View) {
+        timber.log.Timber.tag("BACKGROUND").d("🎬 MovieDetailFragment.loadBackground() çağrıldı")
+        viewLifecycleOwner.lifecycleScope.launch {
+            // Fragment'ın kendi root view'ına arkaplan ekle (view.rootView yerine view)
+            timber.log.Timber.tag(
+                "BACKGROUND",
+            ).d("📐 Fragment View - View: ${view.javaClass.simpleName}, Width: ${view.width}, Height: ${view.height}")
+
+            // Önce cache'den kontrol et (hızlı)
+            val cached = BackgroundManager.getCachedBackground()
+            if (cached != null) {
+                timber.log.Timber.tag("BACKGROUND").d("✅ Cache'den arkaplan uygulanıyor (Fragment view)")
+                view.background = cached
+                timber.log.Timber.tag(
+                    "BACKGROUND",
+                ).d("✅ Arkaplan uygulandı - Fragment view background: ${view.background?.javaClass?.simpleName}")
+                return@launch
+            }
+
+            timber.log.Timber.tag("BACKGROUND").d("⏳ Cache'de yok, yükleme başlatılıyor...")
+
+            // Cache'de yoksa yükle
+            BackgroundManager.loadBackground(
+                context = requireContext(),
+                imageLoader = requireContext().imageLoader,
+                onSuccess = { drawable ->
+                    timber.log.Timber.tag("BACKGROUND").d("✅ onSuccess callback çağrıldı - Drawable: ${drawable.javaClass.simpleName}")
+                    view.background = drawable
+                    timber.log.Timber.tag(
+                        "BACKGROUND",
+                    ).d("✅ Arkaplan uygulandı - Fragment view background: ${view.background?.javaClass?.simpleName}")
+                },
+                onError = {
+                    timber.log.Timber.tag("BACKGROUND").w("⚠️ onError callback çağrıldı, fallback deneniyor...")
+                    // Hata durumunda fallback kullan (theme'de zaten tanımlı)
+                    val fallback = BackgroundManager.getFallbackBackground(requireContext())
+                    if (fallback != null) {
+                        view.background = fallback
+                        timber.log.Timber.tag("BACKGROUND").d("✅ Fallback arkaplan uygulandı")
+                    } else {
+                        timber.log.Timber.tag("BACKGROUND").e("❌ Fallback arkaplan da null!")
+                    }
+                },
+            )
         }
     }
 

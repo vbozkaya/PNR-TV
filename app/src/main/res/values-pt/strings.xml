@@ -112,6 +112,12 @@
     <string name="error_timeout_read">Tempo limite ocorreu ao receber dados do servidor. Por favor, tente novamente.</string>
     <string name="error_offline">Sem conexão à Internet. Mostrando dados do cache.</string>
     <string name="error_retry_failed">Tentativa falhou. Por favor, verifique sua conexão à Internet.</string>
+    
+    <!-- Mensagens de Erro Curtas -->
+    <string name="error_categories_short">Não foi possível carregar as categorias</string>
+    <string name="error_movies_short">Não foi possível carregar os filmes</string>
+    <string name="error_series_short">Não foi possível carregar as séries</string>
+    <string name="error_live_streams_short">Não foi possível carregar as transmissões ao vivo</string>
     <string name="btn_retry">Tentar Novamente</string>
     <string name="toast_retrying">Tentando novamente...</string>
     <string name="toast_retry_success">Conexão bem-sucedida</string>

@@ -25,6 +25,3 @@ interface SeriesCategoryDao {
         insertAll(categories)
     }
 }
-
-
-

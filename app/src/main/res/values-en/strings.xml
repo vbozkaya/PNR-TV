@@ -110,6 +110,12 @@
     <string name="error_timeout">Connection timed out. Please try again.</string>
     <string name="error_timeout_connect">Cannot connect to server. Connection timed out.</string>
     <string name="error_timeout_read">Timeout occurred while receiving data from server. Please try again.</string>
+    
+    <!-- Short Error Messages -->
+    <string name="error_categories_short">Categories could not be loaded</string>
+    <string name="error_movies_short">Movies could not be loaded</string>
+    <string name="error_series_short">Series could not be loaded</string>
+    <string name="error_live_streams_short">Live streams could not be loaded</string>
     <string name="error_offline">No internet connection. Showing data from cache.</string>
     <string name="error_retry_failed">Retry failed. Please check your internet connection.</string>
     <string name="btn_retry">Retry</string>

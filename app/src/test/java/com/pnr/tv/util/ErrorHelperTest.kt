@@ -3,23 +3,21 @@ package com.pnr.tv.util
 import android.content.Context
 import com.pnr.tv.R
 import com.pnr.tv.repository.Result
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import retrofit2.HttpException
-import retrofit2.Response
 import java.io.IOException
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
 
 /**
  * ErrorHelper için unit testler.
  * Hata yönetimi mantığının doğru çalıştığını doğrular.
  */
 class ErrorHelperTest {
-
     private lateinit var mockContext: Context
 
     @Before
@@ -405,6 +403,4 @@ class ErrorHelperTest {
         assertEquals(customMessage, result.message)
         assertEquals(exception, result.exception)
     }
-
 }
-

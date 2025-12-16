@@ -29,9 +29,9 @@ fun MovieDto.toEntity(): MovieEntity? {
     val finalCategoryId = categoryId ?: categoryIds?.firstOrNull()?.toString()
     // TMDB ID'yi parse et (String'den Int'e)
     val tmdbIdValue = tmdb?.toIntOrNull()
-    
+
     timber.log.Timber.d("🎬 API'den film: $name, containerExtension: ${containerExtension ?: "null (varsayılan ts kullanılacak)"}")
-    
+
     return id?.let {
         MovieEntity(
             streamId = it,

@@ -25,6 +25,3 @@ interface MovieCategoryDao {
         insertAll(categories)
     }
 }
-
-
-

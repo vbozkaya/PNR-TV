@@ -103,6 +103,12 @@
     <string name="error_categories_load">Kategoriler yüklenirken hata: %1$s</string>
     <string name="error_movies_load">Filmler yüklenirken hata: %1$s</string>
     <string name="error_series_load">Diziler yüklenirken hata: %1$s</string>
+    
+    <!-- Kısa Hata Mesajları -->
+    <string name="error_categories_short">Kategoriler yüklenemedi</string>
+    <string name="error_movies_short">Filmler yüklenemedi</string>
+    <string name="error_series_short">Diziler yüklenemedi</string>
+    <string name="error_live_streams_short">Canlı yayınlar yüklenemedi</string>
     <string name="error_image_preload">Resim ön yükleme hatası: %1$s</string>
     
     <!-- Kategori İsimleri -->

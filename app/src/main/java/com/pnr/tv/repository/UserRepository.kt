@@ -67,39 +67,39 @@ class UserRepository
          * - Oynatma pozisyonları
          * - İzlenen bölümler
          * - Viewer'lar (ve viewer'lara bağlı favoriler CASCADE ile silinir)
-         * 
+         *
          * Eğer silinen kullanıcı seçili kullanıcıysa, seçili kullanıcıyı da temizler.
          */
         suspend fun deleteUser(user: UserAccountEntity) {
             val currentUserId = sessionManager.getCurrentUserId().firstOrNull()
-            
+
             // Kullanıcıya ait tüm verileri sil
             Timber.d("🗑️ Kullanıcı siliniyor: ${user.accountName} (ID: ${user.id})")
             Timber.d("   • Favoriler siliniyor...")
             favoriteDao.deleteAll()
-            
+
             Timber.d("   • Son izlenenler siliniyor...")
             recentlyWatchedDao.deleteAll()
-            
+
             Timber.d("   • Oynatma pozisyonları siliniyor...")
             playbackPositionDao.deleteAll()
-            
+
             Timber.d("   • İzlenen bölümler siliniyor...")
             watchedEpisodeDao.clearAll()
-            
+
             Timber.d("   • Viewer'lar siliniyor...")
             viewerDao.deleteAll()
-            
+
             // Kullanıcıyı sil
             Timber.d("   • Kullanıcı hesabı siliniyor...")
             userDao.deleteUser(user)
-            
+
             // Eğer silinen kullanıcı seçili kullanıcıysa, seçili kullanıcıyı temizle
             if (currentUserId == user.id) {
                 Timber.d("   • Seçili kullanıcı temizleniyor (silinen kullanıcı seçiliydi)...")
                 sessionManager.clearCurrentUser()
             }
-            
+
             Timber.d("✅ Kullanıcı ve tüm verileri başarıyla silindi")
         }
 
@@ -110,7 +110,7 @@ class UserRepository
         /**
          * Tüm verileri temizler (cache ve tüm içerikler dahil).
          * Uygulama yeni kurulmuş gibi açılır.
-         * 
+         *
          * Silinen veriler:
          * - Tüm kullanıcılar
          * - Tüm favoriler
@@ -127,60 +127,56 @@ class UserRepository
          */
         suspend fun clearAllData() {
             Timber.d("🗑️ TÜM VERİLER TEMİZLENİYOR...")
-            
+
             // Kullanıcı verileri
             Timber.d("   • Kullanıcılar siliniyor...")
             val allUsers = userDao.getAllUsers().firstOrNull() ?: emptyList()
             allUsers.forEach { userDao.deleteUser(it) }
-            
+
             // Kullanıcı tercihleri
             Timber.d("   • Favoriler siliniyor...")
             favoriteDao.deleteAll()
-            
+
             Timber.d("   • Son izlenenler siliniyor...")
             recentlyWatchedDao.deleteAll()
-            
+
             Timber.d("   • Oynatma pozisyonları siliniyor...")
             playbackPositionDao.deleteAll()
-            
+
             Timber.d("   • İzlenen bölümler siliniyor...")
             watchedEpisodeDao.clearAll()
-            
+
             Timber.d("   • Viewer'lar siliniyor...")
             viewerDao.deleteAll()
-            
+
             // İçerik verileri
             Timber.d("   • Filmler siliniyor...")
             movieDao.clearAll()
-            
+
             Timber.d("   • Diziler siliniyor...")
             seriesDao.clearAll()
-            
+
             Timber.d("   • Canlı yayınlar siliniyor...")
             liveStreamDao.clearAll()
-            
+
             // Kategoriler
             Timber.d("   • Film kategorileri siliniyor...")
             movieCategoryDao.clearAll()
-            
+
             Timber.d("   • Dizi kategorileri siliniyor...")
             seriesCategoryDao.clearAll()
-            
+
             Timber.d("   • Canlı yayın kategorileri siliniyor...")
             liveStreamCategoryDao.clearAll()
-            
+
             // Cache
             Timber.d("   • TMDB cache siliniyor...")
             tmdbCacheDao.clearAllCache()
-            
+
             // Session
             Timber.d("   • Seçili kullanıcı temizleniyor...")
             sessionManager.clearCurrentUser()
-            
+
             Timber.d("✅ TÜM VERİLER BAŞARIYLA TEMİZLENDİ")
         }
     }
-
-
-
-

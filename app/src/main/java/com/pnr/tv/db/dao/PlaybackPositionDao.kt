@@ -41,4 +41,3 @@ interface PlaybackPositionDao {
     @Query("DELETE FROM playback_positions WHERE lastUpdated < :timestamp")
     suspend fun deleteOlderThan(timestamp: Long)
 }
-

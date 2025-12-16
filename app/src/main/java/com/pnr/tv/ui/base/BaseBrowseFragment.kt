@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import coil.imageLoader
 import com.pnr.tv.R
 import com.pnr.tv.extensions.hide
 import com.pnr.tv.extensions.show
@@ -18,11 +19,13 @@ import com.pnr.tv.model.CategoryItem
 import com.pnr.tv.model.ContentItem
 import com.pnr.tv.ui.browse.CategoryAdapter
 import com.pnr.tv.ui.browse.ContentAdapter
+import com.pnr.tv.util.BackgroundManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 /**
  * Toolbar kontrolü için arayüz.
@@ -30,6 +33,7 @@ import kotlinx.coroutines.launch
  */
 interface ToolbarController {
     fun hideTopMenu()
+
     fun showTopMenu()
 }
 
@@ -55,10 +59,20 @@ interface ToolbarController {
  * - Optional: onCategoryFocused, onNavigateFromCategoriesToContent, onFocusLeftFromContentGrid
  */
 abstract class BaseBrowseFragment : Fragment() {
+    companion object {
+        private const val KEY_LAST_FOCUSED_CONTENT_POSITION = "last_focused_content_position"
+    }
+
     // RecyclerView'lar - child fragment'larda initialize edilmeli
     protected lateinit var categoriesRecyclerView: RecyclerView
     protected lateinit var contentRecyclerView: RecyclerView
     protected lateinit var emptyStateTextView: TextView
+
+    // Error and Loading containers
+    protected var errorContainer: View? = null
+    protected var errorMessage: TextView? = null
+    protected var retryButton: android.widget.Button? = null
+    protected var loadingContainer: View? = null
 
     // Navbar view - focus yönetimi için
     protected var navbarView: View? = null
@@ -67,12 +81,61 @@ abstract class BaseBrowseFragment : Fragment() {
     protected lateinit var categoryAdapter: CategoryAdapter
     protected lateinit var contentAdapter: ContentAdapter
 
+    /**
+     * Alt fragment'ların kendi ViewModel'ını bu base sınıfa tanıtmasını sağlayan soyut değişken.
+     */
+    protected abstract val viewModel: BaseViewModel
+
+    // Seçili kategori ID'sini saklamak için (navigateFocusToCategories için)
+    private var currentSelectedCategoryId: String? = null
+
+    // Fragment replace edildiğinde geri yüklenecek pozisyon ve kategori
+    // onPause() içinde kaydedilir, kategoriler yüklendikten sonra geri yüklenir
+    private var savedLastFocusedPosition: Int? = null
+    private var savedLastSelectedCategoryId: String? = null
+
+    // Bundle'dan okunan pozisyon (sistem tarafından destroy edildiyse)
+    private var bundleSavedPosition: Int? = null
+
+    // Kategoriler yüklendikten sonra restore edilecek kategori ID
+    private var pendingCategoryIdToRestore: String? = null
+
+    // Kategoriler yüklendikten sonra restore edilecek pozisyon
+    private var pendingPositionToRestore: Int? = null
+
+    // OK veya sağ yön tuşuna basıldığında içerik grid'ine geçiş yapılacak mı?
+    private var pendingNavigationToContent: Boolean = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Bundle'dan kaydedilmiş pozisyonu oku (sistem tarafından destroy edildiyse)
+        bundleSavedPosition = savedInstanceState?.getInt(KEY_LAST_FOCUSED_CONTENT_POSITION, -1)?.takeIf { it != -1 }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Fragment replace edilmeden önce hem kategoriyi hem de pozisyonu kaydet
+        // onPause() çağrıldığında ViewModel hala mevcut olduğu için
+        // değerleri kaydedebiliriz
+        viewModel.lastFocusedContentPosition?.let { position ->
+            savedLastFocusedPosition = position
+        }
+        viewModel.lastSelectedCategoryId?.let { categoryId ->
+            savedLastSelectedCategoryId = categoryId
+        }
+        // Ayrıca currentSelectedCategoryId'yi de kaydet (eğer ViewModel'de yoksa)
+        if (savedLastSelectedCategoryId == null && currentSelectedCategoryId != null) {
+            savedLastSelectedCategoryId = currentSelectedCategoryId
+            viewModel.lastSelectedCategoryId = currentSelectedCategoryId
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
+        // Sistem tarafından destroy edildiğinde de kaydet (configuration change vb.)
+        viewModel.lastFocusedContentPosition?.let { position ->
+            outState.putInt(KEY_LAST_FOCUSED_CONTENT_POSITION, position)
+        }
     }
 
     /**
@@ -134,6 +197,14 @@ abstract class BaseBrowseFragment : Fragment() {
     }
 
     /**
+     * Kategori ID'sine göre kategori seçer.
+     * Child fragments should override this to handle category selection by ID.
+     */
+    protected open fun selectCategoryById(categoryId: String?) {
+        // Default: no-op, child should override
+    }
+
+    /**
      * Called when a category receives focus.
      * Child fragments can override this for custom behavior.
      */
@@ -174,6 +245,58 @@ abstract class BaseBrowseFragment : Fragment() {
     }
 
     /**
+     * Arka plan görselini güvenli bir şekilde yükler.
+     * BackgroundManager kullanarak cache'lenmiş görseli yükler.
+     * Tüm browse fragment'larında otomatik olarak çağrılır.
+     */
+    private fun loadBackground(view: View) {
+        timber.log.Timber.tag("BACKGROUND").d("🎬 BaseBrowseFragment.loadBackground() çağrıldı - Fragment: ${this.javaClass.simpleName}")
+        viewLifecycleOwner.lifecycleScope.launch {
+            // Fragment'ın kendi root view'ına arkaplan ekle (view.rootView yerine view)
+            timber.log.Timber.tag(
+                "BACKGROUND",
+            ).d("📐 Fragment View - View: ${view.javaClass.simpleName}, Width: ${view.width}, Height: ${view.height}")
+
+            // Önce cache'den kontrol et (hızlı)
+            val cached = BackgroundManager.getCachedBackground()
+            if (cached != null) {
+                timber.log.Timber.tag("BACKGROUND").d("✅ Cache'den arkaplan uygulanıyor (Fragment view)")
+                view.background = cached
+                timber.log.Timber.tag(
+                    "BACKGROUND",
+                ).d("✅ Arkaplan uygulandı - Fragment view background: ${view.background?.javaClass?.simpleName}")
+                return@launch
+            }
+
+            timber.log.Timber.tag("BACKGROUND").d("⏳ Cache'de yok, yükleme başlatılıyor...")
+
+            // Cache'de yoksa yükle
+            BackgroundManager.loadBackground(
+                context = requireContext(),
+                imageLoader = requireContext().imageLoader,
+                onSuccess = { drawable ->
+                    timber.log.Timber.tag("BACKGROUND").d("✅ onSuccess callback çağrıldı - Drawable: ${drawable.javaClass.simpleName}")
+                    view.background = drawable
+                    timber.log.Timber.tag(
+                        "BACKGROUND",
+                    ).d("✅ Arkaplan uygulandı - Fragment view background: ${view.background?.javaClass?.simpleName}")
+                },
+                onError = {
+                    timber.log.Timber.tag("BACKGROUND").w("⚠️ onError callback çağrıldı, fallback deneniyor...")
+                    // Hata durumunda fallback kullan (theme'de zaten tanımlı)
+                    val fallback = BackgroundManager.getFallbackBackground(requireContext())
+                    if (fallback != null) {
+                        view.background = fallback
+                        timber.log.Timber.tag("BACKGROUND").d("✅ Fallback arkaplan uygulandı")
+                    } else {
+                        timber.log.Timber.tag("BACKGROUND").e("❌ Fallback arkaplan da null!")
+                    }
+                },
+            )
+        }
+    }
+
+    /**
      * Called when content should be loaded initially.
      * Child fragments should override this to trigger initial data loading.
      */
@@ -199,6 +322,42 @@ abstract class BaseBrowseFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         (activity as? ToolbarController)?.hideTopMenu()
+
+        // Önce onPause()'da kaydedilmiş kategoriyi kontrol et (fragment replace edildiyse)
+        // Sonra ViewModel'den kontrol et (normal durum - fragment destroy edilmediyse)
+        val categoryIdToRestore =
+            savedLastSelectedCategoryId
+                ?: viewModel.lastSelectedCategoryId
+
+        // Kategoriyi pending olarak işaretle (observeCategories() içinde restore yapılacak)
+        // Bu şekilde kategoriler kesinlikle yüklendikten sonra restore yapılır
+        if (categoryIdToRestore != null) {
+            // onPause()'da kaydedilmiş kategoriyi ViewModel'e set et (eğer varsa)
+            if (savedLastSelectedCategoryId != null) {
+                viewModel.lastSelectedCategoryId = savedLastSelectedCategoryId
+            }
+            // Her zaman pending olarak işaretle, observeCategories() içinde restore yapılacak
+            pendingCategoryIdToRestore = categoryIdToRestore
+        }
+
+        // Önce onPause()'da kaydedilmiş pozisyonu kontrol et (fragment replace edildiyse)
+        // Sonra ViewModel'den kontrol et (normal durum - fragment destroy edilmediyse)
+        // Son olarak Bundle'dan kontrol et (sistem tarafından destroy edildiyse)
+        val positionToRestore =
+            savedLastFocusedPosition
+                ?: viewModel.lastFocusedContentPosition
+                ?: bundleSavedPosition
+
+        // Pozisyonu pending olarak işaretle (observeContents() içinde restore yapılacak)
+        // Bu şekilde içerikler kesinlikle yüklendikten sonra restore yapılır
+        if (positionToRestore != null) {
+            // onPause()'da kaydedilmiş pozisyonu ViewModel'e set et (eğer varsa)
+            if (savedLastFocusedPosition != null) {
+                viewModel.lastFocusedContentPosition = savedLastFocusedPosition
+            }
+            // Her zaman pending olarak işaretle, observeContents() içinde restore yapılacak
+            pendingPositionToRestore = positionToRestore
+        }
     }
 
     /**
@@ -206,10 +365,24 @@ abstract class BaseBrowseFragment : Fragment() {
      * Child fragments should call this in onViewCreated.
      */
     protected fun initializeViews(view: View) {
+        // Background'u yükle (tüm browse fragment'larında)
+        loadBackground(view)
+
         // Initialize RecyclerViews and TextView
         categoriesRecyclerView = view.findViewById(getCategoriesRecyclerViewId())
         contentRecyclerView = view.findViewById(getContentRecyclerViewId())
         emptyStateTextView = view.findViewById(getEmptyStateTextViewId())
+
+        // Initialize error and loading containers (optional - may not exist in all layouts)
+        errorContainer = view.findViewById(R.id.error_container)
+        errorMessage = view.findViewById(R.id.txt_error_message)
+        retryButton = view.findViewById(R.id.btn_retry)
+        loadingContainer = view.findViewById(R.id.loading_container)
+
+        // Setup retry button click listener
+        retryButton?.setOnClickListener {
+            onRetryClicked()
+        }
 
         // Setup navbar
         setupNavbar(view)
@@ -226,6 +399,7 @@ abstract class BaseBrowseFragment : Fragment() {
         observeContents()
         observeSelectedCategory()
         setupToastObserver()
+        setupBackPressListener()
     }
 
     /**
@@ -247,13 +421,14 @@ abstract class BaseBrowseFragment : Fragment() {
         }
 
         // Navbar -> Kategori geçişi için listener (sadece back button için)
-        val navbarDownListener = View.OnKeyListener { _, keyCode, event ->
-            if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-                categoriesRecyclerView.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
-                return@OnKeyListener true // Olayı Tüket!
+        val navbarDownListener =
+            View.OnKeyListener { _, keyCode, event ->
+                if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                    categoriesRecyclerView.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
+                    return@OnKeyListener true // Olayı Tüket!
+                }
+                false
             }
-            false
-        }
 
         backButton?.setOnKeyListener(navbarDownListener)
 
@@ -317,6 +492,9 @@ abstract class BaseBrowseFragment : Fragment() {
                 },
                 onNavigateToContent = ::navigateFocusToContent,
                 onNavigateToNavbar = ::navigateFocusToNavbar,
+                onCategoryFocused = { category ->
+                    onCategoryFocused(category)
+                },
             )
 
         contentAdapter =
@@ -328,8 +506,6 @@ abstract class BaseBrowseFragment : Fragment() {
                     onContentLongPressed(content)
                 },
                 gridColumnCount = getGridColumnCount(),
-                onFocusLeftFromGrid = ::navigateFocusToCategories,
-                onNavigateUpFromTopRow = ::navigateFocusToNavbar,
             )
     }
 
@@ -348,17 +524,20 @@ abstract class BaseBrowseFragment : Fragment() {
      * İçerik RecyclerView'ı setup eder.
      */
     private fun setupContentRecyclerView() {
-        // Custom GridLayoutManager kullan - son satır kontrolü için
+        // Custom GridLayoutManager kullan
         contentRecyclerView.layoutManager =
             CustomGridLayoutManager(
                 requireContext(),
                 getGridColumnCount(),
-                contentAdapter,
             )
         contentRecyclerView.adapter = contentAdapter
         contentRecyclerView.setHasFixedSize(true)
         contentRecyclerView.isDrawingCacheEnabled = true
         contentRecyclerView.itemAnimator = null
+
+        // View cache ayarları - performans için
+        contentRecyclerView.setItemViewCacheSize(20) // Önceden oluşturulmuş view'ları cache'le
+        contentRecyclerView.recycledViewPool.setMaxRecycledViews(0, 15) // View pool boyutu
 
         // Odak sınırlarını kontrol etme işini artık sadece CustomGridLayoutManager yapacak
         // Gereksiz ve hatalı key listener ve focus change listener blokları kaldırıldı
@@ -376,14 +555,32 @@ abstract class BaseBrowseFragment : Fragment() {
                     }
                     .collectLatest { categories ->
                         categoryAdapter.submitList(categories)
-                        // Bu metodun tek görevi, gelen listeyi adaptöre göndermek
-                        // Odak işine asla karışmamalı
-                        
+
+                        // Eğer restore edilecek bir kategori varsa, önce onu seç
+                        // Kategoriler yüklendikten sonra hemen restore yap
+                        if (pendingCategoryIdToRestore != null && categories.isNotEmpty()) {
+                            val categoryIdToRestore = pendingCategoryIdToRestore
+                            pendingCategoryIdToRestore = null
+
+                            Timber.tag("FOCUS_DEBUG").d("🔄 observeCategories() - Kategori restore ediliyor: $categoryIdToRestore")
+
+                            // Kategoriyi seç (child fragment'lar bu metodu override ederek ViewModel'e bildirecek)
+                            selectCategoryById(categoryIdToRestore)
+
+                            // ViewModel'deki kategoriyi temizle
+                            viewModel.lastSelectedCategoryId = null
+                            savedLastSelectedCategoryId = null
+
+                            // Kategori seçildikten sonra içerikler yüklenecek,
+                            // içerikler yüklendikten sonra pozisyon restore edilecek
+                            // (observeContents içinde yapılacak)
+                        }
+
                         // Anahtar, fragment'larda tanımlananla aynı olmalı
                         val isInitialLaunch = arguments?.getBoolean("is_initial_launch", false) ?: false
 
                         // Bu mantık, sadece ana menüden ilk kez gelindiğinde ve kategoriler hazır olduğunda çalışır.
-                        if (isInitialLaunch && categories.isNotEmpty()) {
+                        if (isInitialLaunch && categories.isNotEmpty() && pendingCategoryIdToRestore == null) {
                             val firstCategory = categories.first()
 
                             // 1. ViewModel'i uyararak ilk kategorinin içeriğini yüklemesini sağla.
@@ -394,25 +591,27 @@ abstract class BaseBrowseFragment : Fragment() {
                             //    RecyclerView'ın tamamen hazır olduğundan emin olmak için ViewTreeObserver kullan
                             view?.let { fragmentView ->
                                 val observer = categoriesRecyclerView.viewTreeObserver
-                                observer.addOnGlobalLayoutListener(object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
-                                    override fun onGlobalLayout() {
-                                        // ViewHolder'ın hazır olduğundan emin ol
-                                        val viewHolder = categoriesRecyclerView.findViewHolderForAdapterPosition(0)
-                                        if (viewHolder != null) {
-                                            // ViewHolder hazır, odak ver
-                                            viewHolder.itemView.requestFocus()
-                                            // Listener'ı kaldır
-                                            categoriesRecyclerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                                        } else {
-                                            // ViewHolder henüz hazır değil, bir kez daha dene
-                                            fragmentView.postDelayed({
-                                                val retryViewHolder = categoriesRecyclerView.findViewHolderForAdapterPosition(0)
-                                                retryViewHolder?.itemView?.requestFocus()
+                                observer.addOnGlobalLayoutListener(
+                                    object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
+                                        override fun onGlobalLayout() {
+                                            // ViewHolder'ın hazır olduğundan emin ol
+                                            val viewHolder = categoriesRecyclerView.findViewHolderForAdapterPosition(0)
+                                            if (viewHolder != null) {
+                                                // ViewHolder hazır, odak ver
+                                                viewHolder.itemView.requestFocus()
+                                                // Listener'ı kaldır
                                                 categoriesRecyclerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                                            }, 100)
+                                            } else {
+                                                // ViewHolder henüz hazır değil, bir kez daha dene
+                                                fragmentView.postDelayed({
+                                                    val retryViewHolder = categoriesRecyclerView.findViewHolderForAdapterPosition(0)
+                                                    retryViewHolder?.itemView?.requestFocus()
+                                                    categoriesRecyclerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                                                }, 100)
+                                            }
                                         }
-                                    }
-                                })
+                                    },
+                                )
                             }
 
                             // 3. Bu kurulumun tekrar çalışmasını önlemek için işareti sıfırla.
@@ -434,6 +633,65 @@ abstract class BaseBrowseFragment : Fragment() {
                     // Get current selected category for empty state
                     val selectedCategoryId = selectedCategoryIdFlow.firstOrNull()
                     updateEmptyState(contents, selectedCategoryId)
+
+                    // Eğer OK veya sağ yön tuşuna basıldıysa ve içerikler yüklendiyse, focus'u içerik grid'ine ver
+                    if (pendingNavigationToContent && contents.isNotEmpty()) {
+                        pendingNavigationToContent = false
+                        // RecyclerView'ın ilk elemanı için ViewHolder'ı bul
+                        contentRecyclerView.post {
+                            val firstViewHolder = contentRecyclerView.findViewHolderForAdapterPosition(0)
+                            if (firstViewHolder != null) {
+                                firstViewHolder.itemView.requestFocus()
+                            } else {
+                                // ViewHolder hemen bulunamadıysa, kısa bir gecikme ile tekrar dene
+                                contentRecyclerView.post {
+                                    contentRecyclerView.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
+                                }
+                            }
+                        }
+                    }
+
+                    // Eğer restore edilecek bir pozisyon varsa ve içerikler yüklendiyse, onu restore et
+                    pendingPositionToRestore?.let { positionToRestore ->
+                        if (contents.isNotEmpty()) {
+                            pendingPositionToRestore = null
+
+                            Timber.tag(
+                                "FOCUS_DEBUG",
+                            ).d("🔄 observeContents() - Pozisyon restore ediliyor: $positionToRestore, İçerik sayısı: ${contents.size}")
+
+                            // ViewModel'deki pozisyonu temizle
+                            viewModel.lastFocusedContentPosition = null
+                            savedLastFocusedPosition = null
+                            bundleSavedPosition = null
+
+                            // Pozisyonu geçerli aralıkta kontrol et
+                            if (positionToRestore >= 0 && positionToRestore < contents.size) {
+                                Timber.tag("FOCUS_DEBUG").d("✅ observeContents() - Pozisyon geçerli, scroll ve focus yapılıyor")
+                                // Grid'i hedef pozisyona kaydır ve odaklan.
+                                // post içinde post kullanarak, scroll işleminin bitmesini bekleyip
+                                // sonra odaklanmayı garantiliyoruz.
+                                contentRecyclerView.post {
+                                    contentRecyclerView.scrollToPosition(positionToRestore)
+                                    contentRecyclerView.post {
+                                        val viewHolder = contentRecyclerView.findViewHolderForAdapterPosition(positionToRestore)
+                                        if (viewHolder != null) {
+                                            viewHolder.itemView.requestFocus()
+                                            Timber.tag("FOCUS_DEBUG").d("✅ observeContents() - Focus verildi, pozisyon: $positionToRestore")
+                                        } else {
+                                            Timber.tag(
+                                                "FOCUS_DEBUG",
+                                            ).w("⚠️ observeContents() - ViewHolder bulunamadı, pozisyon: $positionToRestore")
+                                        }
+                                    }
+                                }
+                            } else {
+                                Timber.tag(
+                                    "FOCUS_DEBUG",
+                                ).w("⚠️ observeContents() - Pozisyon geçersiz: $positionToRestore, İçerik sayısı: ${contents.size}")
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -446,6 +704,9 @@ abstract class BaseBrowseFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 selectedCategoryIdFlow.collectLatest { selectedCategoryId ->
+                    // Seçili kategori ID'sini sakla (navigateFocusToCategories için)
+                    Timber.tag("FOCUS_DEBUG").d("📥 observeSelectedCategory() - Yeni selectedCategoryId: $selectedCategoryId")
+                    currentSelectedCategoryId = selectedCategoryId
                     categoryAdapter.updateSelectedItem(selectedCategoryId)
                 }
             }
@@ -465,18 +726,36 @@ abstract class BaseBrowseFragment : Fragment() {
         }
     }
 
-    /**
-     * Focus'u kategori listesine taşır.
-     */
     private fun navigateFocusToCategories() {
+        // Bu metot artık sadece grid'den çıkıldığında çağrılacak ve görevi
+        // odağı basitçe RecyclerView'a geri vermektir. Geri kalanını Adapter halleder.
         categoriesRecyclerView.requestFocus()
     }
 
     /**
      * Focus'u içerik grid'ine taşır.
+     * Grid'de eleman varsa ilk elemana odaklanır.
+     * İçerikler henüz yüklenmemişse, yüklendikten sonra otomatik olarak focus'u içerik grid'ine verir.
      */
     private fun navigateFocusToContent() {
-        contentRecyclerView.requestFocus()
+        if (contentAdapter.itemCount > 0) {
+            // İçerikler yüklendi, focus'u içerik grid'ine ver
+            pendingNavigationToContent = false
+            // RecyclerView'ın ilk elemanı için ViewHolder'ı bul
+            val firstViewHolder = contentRecyclerView.findViewHolderForAdapterPosition(0)
+            if (firstViewHolder != null) {
+                // ViewHolder bulunduysa, onun itemView'ına odaklan
+                firstViewHolder.itemView.requestFocus()
+            } else {
+                // ViewHolder hemen bulunamadıysa (çizim bekleniyorsa), kısa bir gecikme ile tekrar dene
+                contentRecyclerView.post {
+                    contentRecyclerView.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
+                }
+            }
+        } else {
+            // İçerikler henüz yüklenmemiş, yüklendikten sonra otomatik olarak focus'u içerik grid'ine ver
+            pendingNavigationToContent = true
+        }
     }
 
     /**
@@ -484,6 +763,30 @@ abstract class BaseBrowseFragment : Fragment() {
      */
     private fun navigateFocusToNavbar() {
         navbarView?.findViewById<View>(R.id.btn_navbar_home)?.requestFocus()
+    }
+
+    /**
+     * Geri tuşu basıldığındaki davranışı yönetir.
+     * Odak content grid'de ise kategorilere döner, değilse varsayılan davranışı uygular.
+     */
+    private fun setupBackPressListener() {
+        val onBackPressedCallback =
+            object : androidx.activity.OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    // Odak content grid'in içindeyse...
+                    if (contentRecyclerView.hasFocus()) {
+                        // ...odağı kategorilere geri taşı.
+                        navigateFocusToCategories()
+                    } else {
+                        // Değilse, varsayılan geri tuşu davranışını uygula (fragment'ı kapat).
+                        // Callback'i geçici olarak devre dışı bırakıp geri tuşunu tekrar tetikliyoruz.
+                        isEnabled = false
+                        requireActivity().onBackPressedDispatcher.onBackPressed()
+                        isEnabled = true
+                    }
+                }
+            }
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, onBackPressedCallback)
     }
 
     /**
@@ -501,5 +804,38 @@ abstract class BaseBrowseFragment : Fragment() {
     protected fun showContentState() {
         emptyStateTextView.hide()
         contentRecyclerView.show()
+        errorContainer?.hide()
+        loadingContainer?.hide()
+    }
+
+    /**
+     * Loading state'i gösterir.
+     */
+    protected fun showLoadingState() {
+        loadingContainer?.show()
+        errorContainer?.hide()
+        contentRecyclerView.hide()
+        emptyStateTextView.hide()
+    }
+
+    /**
+     * Error state'i gösterir.
+     * @param message Hata mesajı
+     */
+    protected fun showErrorState(message: String) {
+        errorContainer?.show()
+        errorMessage?.text = message
+        loadingContainer?.hide()
+        contentRecyclerView.hide()
+        emptyStateTextView.hide()
+        retryButton?.requestFocus()
+    }
+
+    /**
+     * Retry butonuna tıklandığında çağrılır.
+     * Child fragment'lar override edebilir.
+     */
+    protected open fun onRetryClicked() {
+        onInitialLoad()
     }
 }

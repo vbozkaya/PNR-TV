@@ -112,6 +112,12 @@
     <string name="error_timeout_read">Se produjo un tiempo de espera al recibir datos del servidor. Por favor, inténtelo de nuevo.</string>
     <string name="error_offline">Sin conexión a Internet. Mostrando datos de la caché.</string>
     <string name="error_retry_failed">El reintento falló. Por favor, verifique su conexión a Internet.</string>
+    
+    <!-- Mensajes de Error Cortos -->
+    <string name="error_categories_short">No se pudieron cargar las categorías</string>
+    <string name="error_movies_short">No se pudieron cargar las películas</string>
+    <string name="error_series_short">No se pudieron cargar las series</string>
+    <string name="error_live_streams_short">No se pudieron cargar las transmisiones en vivo</string>
     <string name="btn_retry">Reintentar</string>
     <string name="toast_retrying">Reintentando...</string>
     <string name="toast_retry_success">Conexión exitosa</string>
