@@ -45,7 +45,7 @@ import com.pnr.tv.db.entity.WatchedEpisodeEntity
         WatchedEpisodeEntity::class,
         PlaybackPositionEntity::class,
     ],
-    version = 18, // Incremented version from 17 to 18 - Added PlaybackPositionEntity for resume playback
+    version = 19, // Incremented version from 18 to 19 - Added userId to all user-specific tables for data isolation
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {

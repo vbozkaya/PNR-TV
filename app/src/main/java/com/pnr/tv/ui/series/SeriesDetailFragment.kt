@@ -30,6 +30,7 @@ import com.pnr.tv.PlayerActivity
 import com.pnr.tv.R
 import com.pnr.tv.extensions.normalizeBaseUrl
 import com.pnr.tv.repository.UserRepository
+import com.pnr.tv.security.DataEncryption
 import com.pnr.tv.ui.series.model.SeriesSeason
 import com.pnr.tv.util.BackgroundManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -58,6 +59,7 @@ class SeriesDetailFragment : Fragment() {
     private lateinit var episodesRecyclerView: RecyclerView
     private lateinit var episodesAdapter: EpisodesAdapter
     private lateinit var loadingIndicator: View
+    private lateinit var emptyStateContainer: View
     private lateinit var emptyStateText: TextView
     private lateinit var addFavoriteButton: android.widget.ImageButton
     private lateinit var errorContainer: View
@@ -196,6 +198,7 @@ class SeriesDetailFragment : Fragment() {
         genreLayout = view.findViewById(R.id.layout_genre)
         castLayout = view.findViewById(R.id.layout_cast)
         loadingIndicator = view.findViewById(R.id.loading_indicator)
+        emptyStateContainer = view.findViewById(R.id.empty_state_container)
         emptyStateText = view.findViewById(R.id.txt_empty_state)
         addFavoriteButton = view.findViewById(R.id.btn_add_to_favorites)
 
@@ -385,11 +388,11 @@ class SeriesDetailFragment : Fragment() {
                     // Empty state yönetimi
                     if (episodes.isEmpty() && viewModel.seasons.value.isNotEmpty()) {
                         episodesRecyclerView.visibility = View.GONE
-                        emptyStateText.visibility = View.VISIBLE
+                        emptyStateContainer.visibility = View.VISIBLE
                         emptyStateText.text = getString(R.string.no_episodes_found)
                     } else {
                         episodesRecyclerView.visibility = View.VISIBLE
-                        emptyStateText.visibility = View.GONE
+                        emptyStateContainer.visibility = View.GONE
 
                         // İzlenip geri dönülen bölüme odaklanma
                         if (lastFocusedEpisodePosition >= 0 && lastFocusedEpisodePosition < episodes.size) {
@@ -442,7 +445,7 @@ class SeriesDetailFragment : Fragment() {
                     // Loading sırasında diğer bileşenleri gizle
                     if (isLoading) {
                         episodesRecyclerView.visibility = View.GONE
-                        emptyStateText.visibility = View.GONE
+                        emptyStateContainer.visibility = View.GONE
                         // İlk yükleme sırasında loading container göster
                         if (viewModel.series.value == null) {
                             showLoading()
@@ -602,14 +605,19 @@ class SeriesDetailFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.showViewerSelectionDialog.collect { viewers ->
-                    com.pnr.tv.ui.viewers.SelectViewerDialog(requireContext(), viewers) { viewer ->
-                        viewModel.saveFavoriteForViewer(viewer)
-                        android.widget.Toast.makeText(
-                            requireContext(),
-                            getString(R.string.toast_favorite_added),
-                            android.widget.Toast.LENGTH_SHORT,
-                        ).show()
-                    }.show()
+                    com.pnr.tv.ui.viewers.SelectViewerDialog(
+                        context = requireContext(),
+                        viewers = viewers,
+                        onViewerSelected = { viewer ->
+                            viewModel.saveFavoriteForViewer(viewer)
+                            android.widget.Toast.makeText(
+                                requireContext(),
+                                getString(R.string.toast_favorite_added),
+                                android.widget.Toast.LENGTH_SHORT,
+                            ).show()
+                        },
+                        lifecycleScope = viewLifecycleOwner.lifecycleScope,
+                    ).show()
                 }
             }
         }
@@ -670,14 +678,18 @@ class SeriesDetailFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             val user = userRepository.currentUser.firstOrNull()
             if (user != null) {
-                val baseUrl = user.dns.normalizeBaseUrl()
+                // DNS ve password'ü şifre çöz
+                val decryptedDns = DataEncryption.decryptSensitiveData(user.dns, requireContext())
+                val decryptedPassword = DataEncryption.decryptSensitiveData(user.password, requireContext())
+
+                val baseUrl = decryptedDns.normalizeBaseUrl()
                 val episodeIdInt = episode.episodeId.toIntOrNull()
                 if (episodeIdInt != null) {
                     val streamUrl =
                         viewModel.getEpisodeStreamUrl(
                             baseUrl,
                             user.username,
-                            user.password,
+                            decryptedPassword,
                             episodeIdInt,
                             episode.containerExtension,
                         )

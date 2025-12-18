@@ -26,7 +26,8 @@ class ViewerViewModel
             isDeletable: Boolean = true,
         ) {
             viewModelScope.launch {
-                val viewer = ViewerEntity(name = name, isDeletable = isDeletable)
+                // userId will be set by repository
+                val viewer = ViewerEntity(name = name, userId = 0, isDeletable = isDeletable)
                 viewerRepository.addViewer(viewer)
             }
         }

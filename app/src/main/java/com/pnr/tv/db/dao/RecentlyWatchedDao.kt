@@ -12,16 +12,28 @@ interface RecentlyWatchedDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(recent: RecentlyWatchedEntity)
 
-    @Query("SELECT channelId FROM recently_watched_channels ORDER BY watchedAt DESC LIMIT :limit")
-    fun getRecentlyWatchedChannelIds(limit: Int): Flow<List<Int>>
+    @Query("SELECT channelId FROM recently_watched_channels WHERE userId = :userId ORDER BY watchedAt DESC LIMIT :limit")
+    fun getRecentlyWatchedChannelIds(
+        userId: Int,
+        limit: Int,
+    ): Flow<List<Int>>
 
     @Query(
-        "DELETE FROM recently_watched_channels WHERE channelId NOT IN (SELECT channelId FROM recently_watched_channels ORDER BY watchedAt DESC LIMIT :limit)",
+        "DELETE FROM recently_watched_channels WHERE userId = :userId AND channelId NOT IN (SELECT channelId FROM recently_watched_channels WHERE userId = :userId ORDER BY watchedAt DESC LIMIT :limit)",
     )
-    suspend fun trim(limit: Int)
+    suspend fun trim(
+        userId: Int,
+        limit: Int,
+    )
 
     /**
-     * Tüm son izlenenleri siler (kullanıcı silindiğinde kullanılır).
+     * Belirli bir kullanıcıya ait tüm son izlenenleri siler (kullanıcı silindiğinde kullanılır).
+     */
+    @Query("DELETE FROM recently_watched_channels WHERE userId = :userId")
+    suspend fun deleteByUserId(userId: Int)
+
+    /**
+     * Tüm son izlenenleri siler (tüm kullanıcılar için - sadece clearAllData için).
      */
     @Query("DELETE FROM recently_watched_channels")
     suspend fun deleteAll()

@@ -1,7 +1,7 @@
 package com.pnr.tv.repository
 
 import android.content.Context
-import com.pnr.tv.Constants
+import com.pnr.tv.DatabaseConstants
 import com.pnr.tv.db.entity.LiveStreamCategoryEntity
 import com.pnr.tv.db.entity.LiveStreamEntity
 import com.pnr.tv.db.entity.MovieCategoryEntity
@@ -64,6 +64,10 @@ class ContentRepository
 
         suspend fun getMoviesByIds(movieIds: List<Int>): List<MovieEntity> = movieRepository.getMoviesByIds(movieIds)
 
+        suspend fun hasMovies(): Boolean = movieRepository.hasMovies()
+
+        suspend fun hasMovieCategories(): Boolean = movieRepository.hasMovieCategories()
+
         // ==================== Series Operations ====================
 
         fun getSeries(): Flow<List<SeriesEntity>> = seriesRepository.getSeries()
@@ -84,6 +88,10 @@ class ContentRepository
         suspend fun getSeriesInfo(seriesId: Int): Result<SeriesInfoDto> = seriesRepository.getSeriesInfo(seriesId)
 
         suspend fun getSeriesByIds(seriesIds: List<Int>): List<SeriesEntity> = seriesRepository.getSeriesByIds(seriesIds)
+
+        suspend fun hasSeries(): Boolean = seriesRepository.hasSeries()
+
+        suspend fun hasSeriesCategories(): Boolean = seriesRepository.hasSeriesCategories()
 
         // ==================== LiveStream Operations ====================
 
@@ -108,6 +116,10 @@ class ContentRepository
             liveStreamRepository.getLiveStreamsByIds(
                 channelIds,
             )
+
+        suspend fun hasLiveStreams(): Boolean = liveStreamRepository.hasLiveStreams()
+
+        suspend fun hasLiveStreamCategories(): Boolean = liveStreamRepository.hasLiveStreamCategories()
 
         // ==================== Favorite Operations ====================
 
@@ -136,7 +148,7 @@ class ContentRepository
 
         suspend fun saveRecentlyWatched(channelId: Int) = recentlyWatchedRepository.saveRecentlyWatched(channelId)
 
-        fun getRecentlyWatchedChannelIds(limit: Int = Constants.RECENTLY_WATCHED_DEFAULT_LIMIT): Flow<List<Int>> =
+        fun getRecentlyWatchedChannelIds(limit: Int = DatabaseConstants.RECENTLY_WATCHED_DEFAULT_LIMIT): Flow<List<Int>> =
             recentlyWatchedRepository.getRecentlyWatchedChannelIds(limit)
 
         // ==================== Playback Position Operations ====================

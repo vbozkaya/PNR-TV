@@ -13,8 +13,10 @@
     <View
         android:id="@+id/panel_divider"
         android:layout_width="0dp"
-        android:layout_height="2dp"
+        android:layout_height="4dp"
         android:background="@drawable/panel_divider_line"
+        android:layout_marginStart="0dp"
+        android:layout_marginEnd="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -100,16 +102,16 @@
         <SeekBar
             android:id="@+id/seekbar_progress"
             android:layout_width="0dp"
-            android:layout_height="4dp"
+            android:layout_height="9dp"
             android:progressDrawable="@drawable/seekbar_progress"
             android:thumb="@drawable/seekbar_thumb_selector"
             android:max="100"
             android:progress="0"
             android:focusable="true"
             android:focusableInTouchMode="true"
-            android:minHeight="4dp"
-            android:maxHeight="4dp"
-            android:background="@drawable/seekbar_focus_background"
+            android:minHeight="9dp"
+            android:maxHeight="9dp"
+            android:background="@android:color/transparent"
             android:layout_marginTop="30dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -147,38 +149,44 @@
             android:id="@+id/btn_play"
             android:layout_width="48dp"
             android:layout_height="48dp"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
             android:src="@drawable/ic_play"
             android:background="@drawable/button_focus_background"
-            android:contentDescription="Oynat"
+            android:contentDescription="@string/cd_play"
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:visibility="gone"
             android:padding="0dp"
             android:layout_marginBottom="16dp"
+            android:nextFocusLeft="@id/btn_subtitle"
             android:nextFocusRight="@id/btn_backward"
             android:nextFocusUp="@id/seekbar_progress"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="@id/guideline_btn1"
-            app:layout_constraintEnd_toStartOf="@id/guideline_btn1" />
+            app:layout_constraintEnd_toEndOf="@id/guideline_btn1" />
         
         <!-- Stop Butonu - Video oynatılıyorsa görünür (Play ile aynı constraint'ler) -->
         <ImageButton
             android:id="@+id/btn_stop"
             android:layout_width="48dp"
             android:layout_height="48dp"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
             android:src="@drawable/ic_stop"
             android:background="@drawable/button_focus_background"
-            android:contentDescription="Durdur"
+            android:contentDescription="@string/cd_stop"
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:visibility="gone"
             android:padding="0dp"
             android:layout_marginBottom="16dp"
+            android:nextFocusLeft="@id/btn_subtitle"
             android:nextFocusRight="@id/btn_backward"
             android:nextFocusUp="@id/seekbar_progress"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="@id/guideline_btn1"
-            app:layout_constraintEnd_toStartOf="@id/guideline_btn1" />
+            app:layout_constraintEnd_toEndOf="@id/guideline_btn1" />
         
         <!-- Backward Butonu -->
         <ImageButton
@@ -187,16 +195,17 @@
             android:layout_height="48dp"
             android:src="@drawable/ic_backward"
             android:background="@drawable/button_focus_background"
-            android:contentDescription="Geri Sar"
+            android:contentDescription="@string/cd_rewind"
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:padding="0dp"
             android:layout_marginBottom="16dp"
+            android:nextFocusLeft="@id/btn_play"
             android:nextFocusRight="@id/btn_forward"
             android:nextFocusUp="@id/seekbar_progress"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="@id/guideline_btn2"
-            app:layout_constraintEnd_toStartOf="@id/guideline_btn2" />
+            app:layout_constraintEnd_toEndOf="@id/guideline_btn2" />
         
         <!-- Forward Butonu -->
         <ImageButton
@@ -205,7 +214,7 @@
             android:layout_height="48dp"
             android:src="@drawable/ic_forward"
             android:background="@drawable/button_focus_background"
-            android:contentDescription="İleri Sar"
+            android:contentDescription="@string/cd_fast_forward"
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:padding="0dp"
@@ -215,7 +224,7 @@
             android:nextFocusUp="@id/seekbar_progress"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="@id/guideline_btn3"
-            app:layout_constraintEnd_toStartOf="@id/guideline_btn3" />
+            app:layout_constraintEnd_toEndOf="@id/guideline_btn3" />
         
         <!-- Ses Butonu -->
         <ImageButton
@@ -224,7 +233,7 @@
             android:layout_height="48dp"
             android:src="@drawable/speak"
             android:background="@drawable/button_focus_background"
-            android:contentDescription="Ses"
+            android:contentDescription="@string/cd_audio_track"
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:padding="0dp"
@@ -234,7 +243,7 @@
             android:nextFocusUp="@id/seekbar_progress"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="@id/guideline_btn4"
-            app:layout_constraintEnd_toStartOf="@id/guideline_btn4" />
+            app:layout_constraintEnd_toEndOf="@id/guideline_btn4" />
         
         <!-- Alt Yazı Butonu - En sonda -->
         <ImageButton
@@ -243,16 +252,17 @@
             android:layout_height="48dp"
             android:src="@drawable/subtitle"
             android:background="@drawable/button_focus_background"
-            android:contentDescription="Alt Yazı"
+            android:contentDescription="@string/cd_subtitle"
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:padding="0dp"
             android:layout_marginBottom="16dp"
+            android:nextFocusRight="@id/btn_play"
             android:nextFocusLeft="@id/btn_speak"
             android:nextFocusUp="@id/seekbar_progress"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="@id/guideline_btn5"
-            app:layout_constraintEnd_toStartOf="@id/guideline_btn5" />
+            app:layout_constraintEnd_toEndOf="@id/guideline_btn5" />
         
     </androidx.constraintlayout.widget.ConstraintLayout>
     

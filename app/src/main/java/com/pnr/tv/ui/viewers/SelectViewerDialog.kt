@@ -5,35 +5,55 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleCoroutineScope
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import coil.imageLoader
 import com.pnr.tv.R
 import com.pnr.tv.databinding.DialogSelectViewerBinding
 import com.pnr.tv.db.entity.ViewerEntity
+import com.pnr.tv.util.BackgroundManager
+import kotlinx.coroutines.launch
 
 class SelectViewerDialog(
     private val context: Context,
     private val viewers: List<ViewerEntity>,
     private val onViewerSelected: (ViewerEntity) -> Unit,
+    private val lifecycleScope: LifecycleCoroutineScope? = null, // Optional: for background loading
 ) {
     fun show() {
         val binding = DialogSelectViewerBinding.inflate(LayoutInflater.from(context))
         var dialog: AlertDialog? = null
+        var selectedViewer: ViewerEntity? = null
 
-        val adapter =
-            SelectViewerAdapter(viewers) { viewer ->
-                onViewerSelected(viewer)
-                dialog?.dismiss()
+        lateinit var adapter: SelectViewerAdapter
+        adapter =
+            SelectViewerAdapter(viewers, null) { viewer ->
+                selectedViewer = viewer
+                adapter.updateSelectedViewer(viewer)
             }
 
         binding.recyclerViewers.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         binding.recyclerViewers.adapter = adapter
 
+        // Arka plan görselini yükle
+        loadDialogBackground(binding.dialogBackgroundImage)
+
         dialog =
             AlertDialog.Builder(context)
                 .setTitle(R.string.dialog_select_viewer_title)
                 .setView(binding.root)
-                .setNegativeButton(R.string.dialog_no, null)
+                .setNegativeButton(R.string.dialog_cancel) { _, _ ->
+                    dialog?.dismiss()
+                }
+                .setPositiveButton(R.string.dialog_ok) { _, _ ->
+                    selectedViewer?.let { viewer ->
+                        onViewerSelected(viewer)
+                    }
+                    dialog?.dismiss()
+                }
                 .create()
 
         val window = dialog.window
@@ -41,7 +61,8 @@ class SelectViewerDialog(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
         )
-        window?.setBackgroundDrawableResource(android.R.color.transparent)
+        // Arka plan şeffaf olmasın, çerçeve gösterilsin
+        window?.setBackgroundDrawableResource(R.drawable.navbar_background)
 
         dialog.show()
 
@@ -53,12 +74,54 @@ class SelectViewerDialog(
             }
         }
     }
+
+    /**
+     * Dialog arka plan görselini yükler (ana sayfada kullanılan görsel).
+     */
+    private fun loadDialogBackground(imageView: android.widget.ImageView) {
+        val scope = lifecycleScope ?: return // Eğer lifecycle scope yoksa, görsel yüklenmez
+
+        scope.launch {
+            // Önce cache'den kontrol et
+            val cached = BackgroundManager.getCachedBackground()
+            if (cached != null) {
+                imageView.setImageDrawable(cached)
+                return@launch
+            }
+
+            // Cache'de yoksa yükle
+            BackgroundManager.loadBackground(
+                context = context,
+                imageLoader = context.imageLoader,
+                onSuccess = { drawable ->
+                    imageView.setImageDrawable(drawable)
+                },
+                onError = {
+                    // Hata durumunda fallback kullan
+                    val fallback = BackgroundManager.getFallbackBackground(context)
+                    if (fallback != null) {
+                        imageView.setImageDrawable(fallback)
+                    }
+                },
+            )
+        }
+    }
 }
 
 class SelectViewerAdapter(
     private val viewers: List<ViewerEntity>,
+    private var selectedViewer: ViewerEntity?,
     private val onViewerClick: (ViewerEntity) -> Unit,
 ) : RecyclerView.Adapter<SelectViewerAdapter.ViewHolder>() {
+    fun updateSelectedViewer(viewer: ViewerEntity?) {
+        val oldPosition = selectedViewer?.let { viewers.indexOf(it) }?.takeIf { it >= 0 }
+        selectedViewer = viewer
+        val newPosition = viewer?.let { viewers.indexOf(it) }?.takeIf { it >= 0 }
+
+        oldPosition?.let { notifyItemChanged(it) }
+        newPosition?.let { notifyItemChanged(it) }
+    }
+
     override fun onCreateViewHolder(
         parent: android.view.ViewGroup,
         viewType: Int,
@@ -71,7 +134,9 @@ class SelectViewerAdapter(
         holder: ViewHolder,
         position: Int,
     ) {
-        holder.bind(viewers[position])
+        val viewer = viewers[position]
+        val isSelected = selectedViewer?.id == viewer.id
+        holder.bind(viewer, isSelected)
     }
 
     override fun getItemCount(): Int = viewers.size
@@ -82,8 +147,23 @@ class SelectViewerAdapter(
     ) : RecyclerView.ViewHolder(itemView) {
         private val nameTextView: android.widget.TextView = itemView.findViewById(R.id.tv_viewer_name)
 
-        fun bind(viewer: ViewerEntity) {
+        fun bind(
+            viewer: ViewerEntity,
+            isSelected: Boolean,
+        ) {
             nameTextView.text = viewer.name
+            // Seçili izleyiciyi görsel olarak işaretle
+            if (isSelected) {
+                itemView.alpha = 1.0f
+                ContextCompat.getDrawable(itemView.context, R.drawable.navyfocus_selector)?.let {
+                    itemView.background = it
+                }
+            } else {
+                itemView.alpha = 0.7f
+                ContextCompat.getDrawable(itemView.context, R.drawable.second_focus_selector)?.let {
+                    itemView.background = it
+                }
+            }
             itemView.setOnClickListener {
                 onViewerClick(viewer)
             }

@@ -1,5 +1,6 @@
 package com.pnr.tv.domain
 
+import android.content.Context
 import com.pnr.tv.db.entity.LiveStreamEntity
 import com.pnr.tv.db.entity.UserAccountEntity
 import com.pnr.tv.repository.UserRepository
@@ -21,11 +22,13 @@ import org.mockito.kotlin.whenever
 class BuildLiveStreamUrlUseCaseTest {
     private lateinit var useCase: BuildLiveStreamUrlUseCase
     private lateinit var mockUserRepository: UserRepository
+    private lateinit var mockContext: Context
 
     @Before
     fun setup() {
         mockUserRepository = mock()
-        useCase = BuildLiveStreamUrlUseCase(mockUserRepository)
+        mockContext = mock()
+        useCase = BuildLiveStreamUrlUseCase(mockUserRepository, mockContext)
     }
 
     @Test

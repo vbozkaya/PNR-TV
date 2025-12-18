@@ -47,6 +47,8 @@
     <string name="dialog_exit_message">Uygulamadan çıkış yapmak istediğinize emin misiniz?</string>
     <string name="dialog_yes">Evet</string>
     <string name="dialog_no">Hayır</string>
+    <string name="dialog_cancel">İptal</string>
+    <string name="dialog_ok">Tamam</string>
     
     <!-- Viewer Management -->
     <string name="page_viewers">İzleyiciler</string>
@@ -74,6 +76,10 @@
     
     <!-- Series Detail -->
     <string name="series_creator">Yönetmen:</string>
+    <string name="series_genre">Tür:</string>
+    <string name="series_cast">Oyuncular:</string>
+    <string name="series_overview_label">Açıklama:</string>
+    <string name="error_media_load">Medya yüklenirken hata oluştu: %1$s</string>
     <string name="btn_add_favorite">Favoriye Ekle</string>
     <string name="btn_play">Oynat</string>
     <string name="toast_favorite_added">Favorilere eklendi</string>
@@ -81,5 +87,36 @@
     <string name="error_movie_not_found">Film bulunamadı</string>
     <string name="loading_movie_details">Film detayları yükleniyor...</string>
     <string name="error_loading_movie">Film yüklenirken hata oluştu</string>
+    <string name="error_video_playback_failed">Video Oynatılamıyor - Sunucu Hatası</string>
+    
+    <!-- Content Descriptions for Player -->
+    <string name="cd_rewind">Geri sar</string>
+    <string name="cd_play">Oynat</string>
+    <string name="cd_pause">Duraklat</string>
+    <string name="cd_stop">Durdur</string>
+    <string name="cd_fast_forward">İleri sar</string>
+    <string name="cd_subtitle">Altyazı</string>
+    <string name="cd_audio_track">Ses parçası</string>
+    
+    <!-- Settings -->
+    <string name="settings_user_status">Kullanıcı Durumu</string>
+    <string name="settings_app_language">Uygulama Dili</string>
+    <string name="settings_clear_cache">Önbelleği Temizle</string>
+    <string name="settings_about_app">Uygulama Hakkında</string>
+    
+    <!-- About App -->
+    <string name="about_app_title">Uygulama Hakkında</string>
+    <string name="about_app_description">PNR TV, Android TV platformu için geliştirilmiş bir IPTV (İnternet Protokolü Televizyonu) uygulamasıdır. Kullanıcıların canlı yayınları, filmleri ve dizileri izlemesine olanak tanır.</string>
+    <string name="about_features_title">Özellikler</string>
+    <string name="about_features">• Filmler (VOD): Film kategorileri, detaylar ve oynatma\n• Diziler: Dizi kategorileri, sezonlar, bölümler ve oynatma\n• Canlı Yayınlar: Canlı TV kanalları ve kategorileri\n• Çoklu Kullanıcı: Birden fazla IPTV hesabı yönetimi\n• İzleyici Profilleri: Her kullanıcı için ayrı izleyici profilleri\n• Favoriler: Favori kanalları kaydetme\n• Son İzlenenler: Son izlenen içerikleri takip etme\n• Kaldığınız Yerden Devam: Oynatma pozisyonu kaydetme</string>
+    <string name="about_thanks_title">Teşekkürler</string>
+    <string name="about_thanks">The Movie Database (TMDB) - Film ve dizi verileri için\nAndroid TV Leanback Library - TV UI bileşenleri için\nTüm açık kaynak kütüphane geliştiricilerine</string>
+    <string name="about_contact_title">İletişim</string>
+    <string name="about_contact_message">İş birliği, görüş ve önerileriniz için lütfen bize mail atınız: tvpnrtv@gmail.com</string>
+    <string name="about_contact_email">tvpnrtv@gmail.com</string>
+    <string name="about_contact_email_subject">PNR TV - İletişim</string>
+    
+    <!-- Dialog -->
+    <string name="ok">Tamam</string>
 </resources>
 

@@ -83,6 +83,8 @@
     <string name="dialog_exit_message">Êtes-vous sûr de vouloir quitter l\'application?</string>
     <string name="dialog_yes">Oui</string>
     <string name="dialog_no">Non</string>
+    <string name="dialog_cancel">Annuler</string>
+    <string name="dialog_ok">OK</string>
     
     <!-- Informations Utilisateur -->
     <string name="current_user_label">Utilisateur Actuel: %1$s</string>
@@ -107,6 +109,7 @@
     <string name="error_server_error">Erreur Serveur</string>
     <string name="error_content_info_failed">Échec du Chargement des Informations de Contenu</string>
     <string name="error_no_internet">Pas de Connexion Internet</string>
+    <string name="error_video_playback_failed">La Vidéo Ne Peut Pas Être Lue - Erreur Serveur</string>
     <string name="error_timeout">La connexion a expiré. Veuillez réessayer.</string>
     <string name="error_timeout_connect">Impossible de se connecter au serveur. La connexion a expiré.</string>
     <string name="error_timeout_read">Délai d\'attente lors de la réception des données du serveur. Veuillez réessayer.</string>
@@ -177,6 +180,10 @@
     
     <!-- Détails de la Série -->
     <string name="series_creator">Créateur:</string>
+    <string name="series_genre">Genre:</string>
+    <string name="series_cast">Casting:</string>
+    <string name="series_overview_label">Aperçu:</string>
+    <string name="error_media_load">Erreur lors du chargement des médias: %1$s</string>
     <string name="error_movie_not_found">Film introuvable</string>
     <string name="loading_movie_details">Chargement des détails du film...</string>
     <string name="error_loading_movie">Erreur lors du chargement du film</string>
@@ -185,6 +192,19 @@
     <string name="settings_user_status">Statut Utilisateur</string>
     <string name="settings_app_language">Langue de l\'Application</string>
     <string name="settings_clear_cache">Effacer le Cache et Toutes les Données</string>
+    <string name="settings_about_app">À Propos de l\'Application</string>
+    
+    <!-- À Propos de l\'Application -->
+    <string name="about_app_title">À Propos de l\'Application</string>
+    <string name="about_app_description">PNR TV est une application IPTV (Télévision sur Protocole Internet) développée exclusivement pour la plateforme Android TV. Elle permet aux utilisateurs de regarder des diffusions en direct, des films et des séries.</string>
+    <string name="about_features_title">Caractéristiques</string>
+    <string name="about_features">• Films (VOD): Catégories de films, détails et lecture\n• Séries: Catégories de séries, saisons, épisodes et lecture\n• Diffusions en Direct: Chaînes de télévision en direct et catégories\n• Utilisateurs Multiples: Gestion de plusieurs comptes IPTV\n• Profils de Spectateur: Profils de spectateur séparés pour chaque utilisateur\n• Favoris: Enregistrer les chaînes favorites\n• Récemment Regardés: Suivre le contenu récemment regardé\n• Reprendre la Lecture: Enregistrer la position de lecture</string>
+    <string name="about_thanks_title">Remerciements</string>
+    <string name="about_thanks">The Movie Database (TMDB) - Pour les données de films et séries\nAndroid TV Leanback Library - Pour les composants UI TV\nTous les développeurs de bibliothèques open source</string>
+    <string name="about_contact_title">Contact</string>
+    <string name="about_contact_message">Pour la collaboration, les commentaires et les suggestions, veuillez nous envoyer un e-mail: tvpnrtv@gmail.com</string>
+    <string name="about_contact_email">tvpnrtv@gmail.com</string>
+    <string name="about_contact_email_subject">PNR TV - Contact</string>
     <string name="dialog_select_language_title">Sélectionner la Langue</string>
     <string name="dialog_clear_cache_title">Effacer Toutes les Données</string>
     <string name="dialog_clear_cache_message">Toutes les données (utilisateurs, favoris, historique de visionnage, contenu, etc.) seront supprimées et l\'application s\'ouvrira comme si elle venait d\'être installée. Cette action ne peut pas être annulée. Voulez-vous continuer?</string>
@@ -226,6 +246,7 @@
     <string name="cd_rewind">Rembobiner</string>
     <string name="cd_play">Lire</string>
     <string name="cd_pause">Pause</string>
+    <string name="cd_stop">Arrêter</string>
     <string name="cd_fast_forward">Avance Rapide</string>
     <string name="cd_subtitle">Sous-titre</string>
     <string name="cd_audio_track">Langue Audio</string>

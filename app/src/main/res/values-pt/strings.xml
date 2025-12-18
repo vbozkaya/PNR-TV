@@ -83,6 +83,8 @@
     <string name="dialog_exit_message">Tem certeza de que deseja sair do aplicativo?</string>
     <string name="dialog_yes">Sim</string>
     <string name="dialog_no">Não</string>
+    <string name="dialog_cancel">Cancelar</string>
+    <string name="dialog_ok">OK</string>
     
     <!-- Informações do Usuário -->
     <string name="current_user_label">Usuário Atual: %1$s</string>
@@ -107,6 +109,7 @@
     <string name="error_server_error">Erro do Servidor</string>
     <string name="error_content_info_failed">Falha ao Carregar Informações do Conteúdo</string>
     <string name="error_no_internet">Sem Conexão à Internet</string>
+    <string name="error_video_playback_failed">O Vídeo Não Pode Ser Reproduzido - Erro do Servidor</string>
     <string name="error_timeout">A conexão expirou. Por favor, tente novamente.</string>
     <string name="error_timeout_connect">Não é possível conectar ao servidor. A conexão expirou.</string>
     <string name="error_timeout_read">Tempo limite ocorreu ao receber dados do servidor. Por favor, tente novamente.</string>
@@ -177,6 +180,10 @@
     
     <!-- Detalhes da Série -->
     <string name="series_creator">Criador:</string>
+    <string name="series_genre">Gênero:</string>
+    <string name="series_cast">Elenco:</string>
+    <string name="series_overview_label">Visão Geral:</string>
+    <string name="error_media_load">Erro ao carregar mídia: %1$s</string>
     <string name="error_movie_not_found">Filme não encontrado</string>
     <string name="loading_movie_details">Carregando detalhes do filme...</string>
     <string name="error_loading_movie">Erro ao carregar filme</string>
@@ -185,6 +192,19 @@
     <string name="settings_user_status">Status do Usuário</string>
     <string name="settings_app_language">Idioma do Aplicativo</string>
     <string name="settings_clear_cache">Limpar Cache e Todos os Dados</string>
+    <string name="settings_about_app">Sobre o Aplicativo</string>
+    
+    <!-- Sobre o Aplicativo -->
+    <string name="about_app_title">Sobre o Aplicativo</string>
+    <string name="about_app_description">PNR TV é um aplicativo IPTV (Televisão por Protocolo de Internet) desenvolvido exclusivamente para a plataforma Android TV. Permite que os usuários assistam a transmissões ao vivo, filmes e séries.</string>
+    <string name="about_features_title">Recursos</string>
+    <string name="about_features">• Filmes (VOD): Categorias de filmes, detalhes e reprodução\n• Séries: Categorias de séries, temporadas, episódios e reprodução\n• Transmissões ao Vivo: Canais de TV ao vivo e categorias\n• Múltiplos Usuários: Gerenciamento de múltiplas contas IPTV\n• Perfis de Visualizador: Perfis de visualizador separados para cada usuário\n• Favoritos: Salvar canais favoritos\n• Recentemente Assistidos: Rastrear conteúdo recentemente assistido\n• Retomar Reprodução: Salvar posição de reprodução</string>
+    <string name="about_thanks_title">Agradecimentos</string>
+    <string name="about_thanks">The Movie Database (TMDB) - Por dados de filmes e séries\nAndroid TV Leanback Library - Por componentes de UI de TV\nTodos os desenvolvedores de bibliotecas de código aberto</string>
+    <string name="about_contact_title">Contato</string>
+    <string name="about_contact_message">Para colaboração, feedback e sugestões, por favor envie-nos um e-mail: tvpnrtv@gmail.com</string>
+    <string name="about_contact_email">tvpnrtv@gmail.com</string>
+    <string name="about_contact_email_subject">PNR TV - Contato</string>
     <string name="dialog_select_language_title">Selecionar Idioma</string>
     <string name="dialog_clear_cache_title">Limpar Todos os Dados</string>
     <string name="dialog_clear_cache_message">Todos os dados (usuários, favoritos, histórico de visualização, conteúdo, etc.) serão excluídos e o aplicativo será aberto como se tivesse sido recém-instalado. Esta ação não pode ser desfeita. Deseja continuar?</string>
@@ -226,6 +246,7 @@
     <string name="cd_rewind">Retroceder</string>
     <string name="cd_play">Reproduzir</string>
     <string name="cd_pause">Pausar</string>
+    <string name="cd_stop">Parar</string>
     <string name="cd_fast_forward">Avançar Rápido</string>
     <string name="cd_subtitle">Legenda</string>
     <string name="cd_audio_track">Idioma do Áudio</string>

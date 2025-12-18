@@ -3,7 +3,6 @@ package com.pnr.tv.db.entity
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
-import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "favorite_channels",
@@ -14,10 +13,18 @@ import androidx.room.PrimaryKey
             childColumns = ["viewerId"],
             onDelete = ForeignKey.CASCADE,
         ),
+        ForeignKey(
+            entity = UserAccountEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["userId"],
+            onDelete = ForeignKey.CASCADE,
+        ),
     ],
-    indices = [Index(value = ["viewerId"])],
+    indices = [Index(value = ["viewerId"]), Index(value = ["userId"])],
+    primaryKeys = ["channelId", "viewerId", "userId"],
 )
 data class FavoriteChannelEntity(
-    @PrimaryKey val channelId: Int,
+    val channelId: Int,
     val viewerId: Int,
+    val userId: Int,
 )

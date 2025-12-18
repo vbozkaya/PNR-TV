@@ -39,6 +39,7 @@ class SeriesDetailViewModelTest {
     private val mockTmdbRepository: TmdbRepository = mock()
     private val mockWatchedEpisodeDao: com.pnr.tv.db.dao.WatchedEpisodeDao = mock()
     private val mockViewerRepository: com.pnr.tv.repository.ViewerRepository = mock()
+    private val mockSessionManager: com.pnr.tv.SessionManager = mock()
     private val mockContext: Context = mock()
 
     @Before
@@ -59,6 +60,7 @@ class SeriesDetailViewModelTest {
             tmdbRepository = mockTmdbRepository,
             watchedEpisodeDao = mockWatchedEpisodeDao,
             viewerRepository = mockViewerRepository,
+            sessionManager = mockSessionManager,
             context = mockContext,
         )
     }

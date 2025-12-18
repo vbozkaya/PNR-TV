@@ -58,6 +58,13 @@
         app:layout_constraintTop_toBottomOf="@id/navbar"
         app:layout_constraintBottom_toBottomOf="parent">
 
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/ic_error"
+            android:contentDescription="@string/cd_error_icon"
+            android:layout_marginBottom="24dp" />
+
         <TextView
             android:id="@+id/txt_error_message"
             android:layout_width="wrap_content"
@@ -66,18 +73,24 @@
             android:textSize="20sp"
             android:textColor="#FF6B6B"
             android:gravity="center"
-            android:padding="24dp" />
+            android:padding="24dp"
+            android:maxWidth="600dp" />
 
         <Button
             android:id="@+id/btn_retry"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/btn_update"
+            android:text="@string/btn_retry"
             android:textSize="18sp"
             android:paddingStart="32dp"
             android:paddingEnd="32dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:background="@drawable/second_focus_selector"
             android:focusable="true"
-            android:focusableInTouchMode="true" />
+            android:clickable="true"
+            android:focusableInTouchMode="true"
+            android:layout_marginTop="16dp" />
     </LinearLayout>
 
     <!-- Content Container (mevcut içerik) -->

@@ -38,13 +38,15 @@ abstract class BaseActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        // MainActivity hariç tüm activity'lerde navbar'ı setup et
-        if (this !is MainActivity) {
+        // SplashActivity ve MainActivity hariç tüm activity'lerde navbar'ı setup et
+        if (this !is MainActivity && this !is SplashActivity) {
             setupNavbar()
         }
-        // MainActivity hariç tüm activity'lerde arkaplan yükle
+        // MainActivity, SplashActivity ve PlayerActivity hariç tüm activity'lerde arkaplan yükle
         // MainActivity kendi özel loadMainActivityBackground() metodunu kullanır
-        if (this !is MainActivity) {
+        // SplashActivity kendi splash görselini gösterir
+        // PlayerActivity siyah arka plan kullanır (letterboxing için)
+        if (this !is MainActivity && this !is SplashActivity && this !is PlayerActivity) {
             loadBackground()
         }
     }

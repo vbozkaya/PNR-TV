@@ -37,8 +37,10 @@ open class BaseContentRepository(
      */
     protected suspend fun getApiServiceWithUser(): Pair<ApiService, com.pnr.tv.db.entity.UserAccountEntity>? {
         val user = userRepository.currentUser.firstOrNull() ?: return null
-        val dns = user.dns.trim()
-        if (dns.isEmpty()) return null
+        // Şifrelenmiş DNS'i çöz
+        val encryptedDns = user.dns.trim()
+        if (encryptedDns.isEmpty()) return null
+        val dns = com.pnr.tv.security.DataEncryption.decryptSensitiveData(encryptedDns, context)
 
         val baseUrl = dns.normalizeDnsUrl()
 
@@ -103,7 +105,9 @@ open class BaseContentRepository(
                         }
                     }
 
-                val result = apiCall(apiService, user.username, user.password)
+                // Şifrelenmiş password'u çöz
+                val decryptedPassword = com.pnr.tv.security.DataEncryption.decryptSensitiveData(user.password, context)
+                val result = apiCall(apiService, user.username, decryptedPassword)
                 // Başarılı ise retry yapma
                 if (attempt > 0) {
                     Timber.d("Retry successful after $attempt attempts")

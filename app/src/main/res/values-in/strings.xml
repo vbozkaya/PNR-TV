@@ -83,6 +83,8 @@
     <string name="dialog_exit_message">Apakah Anda yakin ingin keluar dari aplikasi?</string>
     <string name="dialog_yes">Ya</string>
     <string name="dialog_no">Tidak</string>
+    <string name="dialog_cancel">Batal</string>
+    <string name="dialog_ok">OK</string>
     
     <!-- Informasi Pengguna -->
     <string name="current_user_label">Pengguna Saat Ini: %1$s</string>
@@ -107,6 +109,7 @@
     <string name="error_server_error">Kesalahan Server</string>
     <string name="error_content_info_failed">Gagal Memuat Informasi Konten</string>
     <string name="error_no_internet">Tidak Ada Koneksi Internet</string>
+    <string name="error_video_playback_failed">Video Tidak Dapat Diputar - Kesalahan Server</string>
     <string name="error_timeout">Koneksi berakhir waktu. Silakan coba lagi.</string>
     <string name="error_timeout_connect">Tidak dapat terhubung ke server. Koneksi berakhir waktu.</string>
     <string name="error_timeout_read">Waktu habis saat menerima data dari server. Silakan coba lagi.</string>
@@ -177,6 +180,10 @@
     
     <!-- Detail Serial -->
     <string name="series_creator">Pencipta:</string>
+    <string name="series_genre">Genre:</string>
+    <string name="series_cast">Pemeran:</string>
+    <string name="series_overview_label">Ringkasan:</string>
+    <string name="error_media_load">Kesalahan memuat media: %1$s</string>
     <string name="error_movie_not_found">Film tidak ditemukan</string>
     <string name="loading_movie_details">Memuat detail film...</string>
     <string name="error_loading_movie">Kesalahan memuat film</string>
@@ -185,6 +192,19 @@
     <string name="settings_user_status">Status Pengguna</string>
     <string name="settings_app_language">Bahasa Aplikasi</string>
     <string name="settings_clear_cache">Hapus Cache dan Semua Data</string>
+    <string name="settings_about_app">Tentang Aplikasi</string>
+    
+    <!-- Tentang Aplikasi -->
+    <string name="about_app_title">Tentang Aplikasi</string>
+    <string name="about_app_description">PNR TV adalah aplikasi IPTV (Televisi Protokol Internet) yang dikembangkan khusus untuk platform Android TV. Memungkinkan pengguna untuk menonton siaran langsung, film, dan serial.</string>
+    <string name="about_features_title">Fitur</string>
+    <string name="about_features">• Film (VOD): Kategori film, detail, dan pemutaran\n• Serial: Kategori serial, musim, episode, dan pemutaran\n• Siaran Langsung: Saluran TV langsung dan kategori\n• Beberapa Pengguna: Manajemen beberapa akun IPTV\n• Profil Penonton: Profil penonton terpisah untuk setiap pengguna\n• Favorit: Simpan saluran favorit\n• Baru Ditonton: Lacak konten yang baru ditonton\n• Lanjutkan Pemutaran: Simpan posisi pemutaran</string>
+    <string name="about_thanks_title">Terima Kasih</string>
+    <string name="about_thanks">The Movie Database (TMDB) - Untuk data film dan serial\nAndroid TV Leanback Library - Untuk komponen UI TV\nSemua pengembang perpustakaan open source</string>
+    <string name="about_contact_title">Kontak</string>
+    <string name="about_contact_message">Untuk kolaborasi, umpan balik, dan saran, silakan kirim email kepada kami: tvpnrtv@gmail.com</string>
+    <string name="about_contact_email">tvpnrtv@gmail.com</string>
+    <string name="about_contact_email_subject">PNR TV - Kontak</string>
     <string name="dialog_select_language_title">Pilih Bahasa</string>
     <string name="dialog_clear_cache_title">Hapus Semua Data</string>
     <string name="dialog_clear_cache_message">Semua data (pengguna, favorit, riwayat tontonan, konten, dll.) akan dihapus dan aplikasi akan terbuka seperti baru diinstal. Tindakan ini tidak dapat dibatalkan. Apakah Anda ingin melanjutkan?</string>
@@ -226,6 +246,7 @@
     <string name="cd_rewind">Putar Mundur</string>
     <string name="cd_play">Putar</string>
     <string name="cd_pause">Jeda</string>
+    <string name="cd_stop">Berhenti</string>
     <string name="cd_fast_forward">Putar Cepat</string>
     <string name="cd_subtitle">Subtitle</string>
     <string name="cd_audio_track">Bahasa Audio</string>

@@ -27,7 +27,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintWidth_percent="0.208">
 
-        <androidx.recyclerview.widget.RecyclerView
+        <com.pnr.tv.ui.base.CustomCategoriesRecyclerView
             android:id="@+id/recycler_categories"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -54,7 +54,7 @@
         app:layout_constraintBottom_toBottomOf="parent" />
 
     <!-- Sağ taraf: İçerik alanı (ekranın 5/6'sı) -->
-    <androidx.recyclerview.widget.RecyclerView
+    <com.pnr.tv.ui.base.CustomContentRecyclerView
         android:id="@+id/recycler_channels"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -109,6 +109,13 @@
         app:layout_constraintTop_toBottomOf="@id/navbar"
         app:layout_constraintBottom_toBottomOf="parent">
 
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/ic_error"
+            android:contentDescription="@string/cd_error_icon"
+            android:layout_marginBottom="24dp" />
+
         <TextView
             android:id="@+id/txt_error_message"
             android:layout_width="wrap_content"
@@ -117,7 +124,8 @@
             android:textSize="20sp"
             android:textColor="#FF6B6B"
             android:gravity="center"
-            android:padding="24dp" />
+            android:padding="24dp"
+            android:maxWidth="600dp" />
 
         <Button
             android:id="@+id/btn_retry"
@@ -137,19 +145,35 @@
     </LinearLayout>
 
     <!-- Boş durum bilgilendirme mesajı -->
-    <TextView
-        android:id="@+id/txt_empty_state"
+    <LinearLayout
+        android:id="@+id/empty_state_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="24sp"
-        android:textColor="@android:color/white"
-        android:textStyle="bold"
+        android:orientation="vertical"
         android:gravity="center"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="@id/recycler_channels"
         app:layout_constraintEnd_toEndOf="@id/recycler_channels"
         app:layout_constraintTop_toTopOf="@id/recycler_channels"
-        app:layout_constraintBottom_toBottomOf="@id/recycler_channels" />
+        app:layout_constraintBottom_toBottomOf="@id/recycler_channels">
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/ic_empty_state"
+            android:contentDescription="@string/cd_empty_state_icon"
+            android:layout_marginBottom="24dp" />
+
+        <TextView
+            android:id="@+id/txt_empty_state"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:maxWidth="600dp" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

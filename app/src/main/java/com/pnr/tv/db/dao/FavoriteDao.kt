@@ -12,29 +12,40 @@ interface FavoriteDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addFavorite(favorite: FavoriteChannelEntity)
 
-    @Query("DELETE FROM favorite_channels WHERE channelId = :channelId AND viewerId = :viewerId")
+    @Query("DELETE FROM favorite_channels WHERE channelId = :channelId AND viewerId = :viewerId AND userId = :userId")
     suspend fun removeFavorite(
         channelId: Int,
         viewerId: Int,
+        userId: Int,
     )
 
-    @Query("SELECT EXISTS(SELECT 1 FROM favorite_channels WHERE channelId = :channelId AND viewerId = :viewerId)")
+    @Query("SELECT EXISTS(SELECT 1 FROM favorite_channels WHERE channelId = :channelId AND viewerId = :viewerId AND userId = :userId)")
     fun isFavorite(
         channelId: Int,
         viewerId: Int,
+        userId: Int,
     ): Flow<Boolean>
 
-    @Query("SELECT channelId FROM favorite_channels WHERE viewerId = :viewerId")
-    fun getFavoriteChannelIds(viewerId: Int): Flow<List<Int>>
+    @Query("SELECT channelId FROM favorite_channels WHERE viewerId = :viewerId AND userId = :userId")
+    fun getFavoriteChannelIds(
+        viewerId: Int,
+        userId: Int,
+    ): Flow<List<Int>>
 
-    @Query("SELECT channelId FROM favorite_channels")
-    fun getAllFavoriteChannelIds(): Flow<List<Int>>
+    @Query("SELECT channelId FROM favorite_channels WHERE userId = :userId")
+    fun getAllFavoriteChannelIds(userId: Int): Flow<List<Int>>
 
-    @Query("SELECT DISTINCT viewerId FROM favorite_channels")
-    fun getViewerIdsWithFavorites(): Flow<List<Int>>
+    @Query("SELECT DISTINCT viewerId FROM favorite_channels WHERE userId = :userId")
+    fun getViewerIdsWithFavorites(userId: Int): Flow<List<Int>>
 
     /**
-     * Tüm favorileri siler (kullanıcı silindiğinde kullanılır).
+     * Belirli bir kullanıcıya ait tüm favorileri siler (kullanıcı silindiğinde kullanılır).
+     */
+    @Query("DELETE FROM favorite_channels WHERE userId = :userId")
+    suspend fun deleteByUserId(userId: Int)
+
+    /**
+     * Tüm favorileri siler (tüm kullanıcılar için - sadece clearAllData için).
      */
     @Query("DELETE FROM favorite_channels")
     suspend fun deleteAll()

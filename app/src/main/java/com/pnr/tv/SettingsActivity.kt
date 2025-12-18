@@ -29,7 +29,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class SettingsActivity : BaseActivity() {
-    private val viewModel: MainViewModel by viewModels()
+    private val sharedViewModel: com.pnr.tv.ui.shared.SharedViewModel by viewModels()
 
     @Inject
     lateinit var userRepository: UserRepository
@@ -57,8 +57,12 @@ class SettingsActivity : BaseActivity() {
             showClearCacheDialog()
         }
 
+        findViewById<View>(R.id.btn_about)?.setOnClickListener {
+            startActivity(Intent(this, AboutActivity::class.java))
+        }
+
         // Kullanıcı bilgilerini çek
-        viewModel.fetchUserInfo()
+        sharedViewModel.fetchUserInfo()
 
         // İlk butona focus ver
         findViewById<View>(R.id.btn_user_status)?.requestFocus()
@@ -84,10 +88,10 @@ class SettingsActivity : BaseActivity() {
         val binding = DialogUserStatusBinding.bind(view)
 
         // Dialog açıldığında yeniden bilgi çek
-        viewModel.fetchUserInfo()
+        sharedViewModel.fetchUserInfo()
 
         // Kullanıcı bilgilerini gözlemle
-        viewModel.currentUser.observe(this) { user ->
+        sharedViewModel.currentUser.observe(this) { user ->
             if (user != null) {
                 binding.tvCurrentUser.text = getString(R.string.current_user_label, user.accountName)
             } else {
@@ -96,7 +100,7 @@ class SettingsActivity : BaseActivity() {
             }
         }
 
-        viewModel.userInfo.observe(this) { authResponse ->
+        sharedViewModel.userInfo.observe(this) { authResponse ->
             if (authResponse != null) {
                 // extractUserInfo() metodu wrapper varsa onu, yoksa direkt alanları kullanır
                 val userInfo = authResponse.extractUserInfo()
@@ -121,7 +125,7 @@ class SettingsActivity : BaseActivity() {
                 val formattedDate =
                     if (!expDate.isNullOrEmpty() && expDate != "0") {
                         try {
-                            val timestamp = expDate.toLong() * Constants.TIMESTAMP_TO_MILLIS_MULTIPLIER
+                            val timestamp = expDate.toLong() * TimeConstants.TIMESTAMP_TO_MILLIS_MULTIPLIER
                             val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
                             dateFormat.format(Date(timestamp))
                         } catch (e: Exception) {
@@ -154,8 +158,8 @@ class SettingsActivity : BaseActivity() {
 
         // Hata mesajlarını gözlemle
         lifecycleScope.launch {
-            viewModel.errorMessage.collectLatest { errorMsg ->
-                if (errorMsg != null && viewModel.userInfo.value == null) {
+            sharedViewModel.errorMessage.collectLatest { errorMsg ->
+                if (errorMsg != null && sharedViewModel.userInfo.value == null) {
                     Toast.makeText(this@SettingsActivity, errorMsg, Toast.LENGTH_LONG).show()
                 }
             }

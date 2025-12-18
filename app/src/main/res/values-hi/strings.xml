@@ -83,6 +83,8 @@
     <string name="dialog_exit_message">क्या आप वाकई एप्लिकेशन से बाहर निकलना चाहते हैं?</string>
     <string name="dialog_yes">हाँ</string>
     <string name="dialog_no">नहीं</string>
+    <string name="dialog_cancel">रद्द करें</string>
+    <string name="dialog_ok">ठीक है</string>
     
     <!-- उपयोगकर्ता जानकारी -->
     <string name="current_user_label">वर्तमान उपयोगकर्ता: %1$s</string>
@@ -107,6 +109,7 @@
     <string name="error_server_error">सर्वर त्रुटि</string>
     <string name="error_content_info_failed">सामग्री जानकारी लोड करने में विफल</string>
     <string name="error_no_internet">कोई इंटरनेट कनेक्शन नहीं</string>
+    <string name="error_video_playback_failed">वीडियो चलाया नहीं जा सकता - सर्वर त्रुटि</string>
     <string name="error_timeout">कनेक्शन समय समाप्त हो गया। कृपया पुनः प्रयास करें।</string>
     <string name="error_timeout_connect">सर्वर से कनेक्ट नहीं हो सका। कनेक्शन समय समाप्त हो गया।</string>
     <string name="error_timeout_read">सर्वर से डेटा प्राप्त करते समय समय समाप्त हो गया। कृपया पुनः प्रयास करें।</string>
@@ -177,6 +180,10 @@
     
     <!-- सीरीज़ विवरण -->
     <string name="series_creator">निर्माता:</string>
+    <string name="series_genre">शैली:</string>
+    <string name="series_cast">कलाकार:</string>
+    <string name="series_overview_label">अवलोकन:</string>
+    <string name="error_media_load">मीडिया लोड करने में त्रुटि: %1$s</string>
     <string name="error_movie_not_found">फिल्म नहीं मिली</string>
     <string name="loading_movie_details">फिल्म विवरण लोड हो रहे हैं...</string>
     <string name="error_loading_movie">फिल्म लोड करते समय त्रुटि</string>
@@ -185,6 +192,19 @@
     <string name="settings_user_status">उपयोगकर्ता स्थिति</string>
     <string name="settings_app_language">एप भाषा</string>
     <string name="settings_clear_cache">कैश और सभी डेटा साफ करें</string>
+    <string name="settings_about_app">एप के बारे में</string>
+    
+    <!-- एप के बारे में -->
+    <string name="about_app_title">एप के बारे में</string>
+    <string name="about_app_description">PNR TV Android TV प्लेटफॉर्म के लिए विशेष रूप से विकसित एक IPTV (इंटरनेट प्रोटोकॉल टेलीविज़न) एप्लिकेशन है। यह उपयोगकर्ताओं को लाइव स्ट्रीम, फिल्में और सीरीज़ देखने की अनुमति देता है।</string>
+    <string name="about_features_title">विशेषताएं</string>
+    <string name="about_features">• फिल्में (VOD): फिल्म श्रेणियां, विवरण और प्लेबैक\n• सीरीज़: सीरीज़ श्रेणियां, सीज़न, एपिसोड और प्लेबैक\n• लाइव स्ट्रीम: लाइव TV चैनल और श्रेणियां\n• कई उपयोगकर्ता: कई IPTV खातों का प्रबंधन\n• दर्शक प्रोफाइल: प्रत्येक उपयोगकर्ता के लिए अलग दर्शक प्रोफाइल\n• पसंदीदा: पसंदीदा चैनल सहेजना\n• हाल ही में देखे गए: हाल ही में देखी गई सामग्री को ट्रैक करना\n• प्लेबैक फिर से शुरू करें: प्लेबैक स्थिति सहेजना</string>
+    <string name="about_thanks_title">धन्यवाद</string>
+    <string name="about_thanks">The Movie Database (TMDB) - फिल्म और सीरीज़ डेटा के लिए\nAndroid TV Leanback Library - TV UI घटकों के लिए\nसभी ओपन सोर्स लाइब्रेरी डेवलपर्स</string>
+    <string name="about_contact_title">संपर्क</string>
+    <string name="about_contact_message">सहयोग, प्रतिक्रिया और सुझावों के लिए, कृपया हमें ईमेल करें: tvpnrtv@gmail.com</string>
+    <string name="about_contact_email">tvpnrtv@gmail.com</string>
+    <string name="about_contact_email_subject">PNR TV - संपर्क</string>
     <string name="dialog_select_language_title">भाषा चुनें</string>
     <string name="dialog_clear_cache_title">सभी डेटा साफ करें</string>
     <string name="dialog_clear_cache_message">सभी डेटा (उपयोगकर्ता, पसंदीदा, देखने का इतिहास, सामग्री, आदि) हटा दिया जाएगा और ऐप नए स्थापित की तरह खुलेगा। यह कार्रवाई पूर्ववत नहीं की जा सकती। क्या आप जारी रखना चाहते हैं?</string>
@@ -226,6 +246,7 @@
     <string name="cd_rewind">रिवाइंड</string>
     <string name="cd_play">चलाएं</string>
     <string name="cd_pause">रोकें</string>
+    <string name="cd_stop">रोकें</string>
     <string name="cd_fast_forward">फास्ट फॉरवर्ड</string>
     <string name="cd_subtitle">उपशीर्षक</string>
     <string name="cd_audio_track">ऑडियो भाषा</string>

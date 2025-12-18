@@ -18,11 +18,9 @@ import com.pnr.tv.repository.ContentRepository
 import com.pnr.tv.ui.player.PlayerViewModel
 import com.pnr.tv.ui.player.TrackInfo
 import com.pnr.tv.ui.player.TrackSelectionAdapter
+import com.pnr.tv.util.IntentValidator
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -53,8 +51,15 @@ class PlayerActivity : BaseActivity() {
     private var channelId: Int? = null
     private var categoryId: Int? = null // Canlı yayın kategorisi ID
 
+    // Video bilgilerini saklamak için (onStop'ta release edildikten sonra yeniden yüklemek için)
+    private var savedVideoUrl: String? = null
+    private var savedContentId: String? = null
+    private var savedContentTitle: String? = null
+    private var savedContentRating: Double? = null
+    private var savedChannelId: Int? = null
+    private var savedCategoryId: Int? = null
+
     // Progress güncelleme döngüsü için
-    private val activityScope = CoroutineScope(Dispatchers.Main)
     private var progressUpdateJob: Job? = null
 
     // Alt yazı paneli için
@@ -77,6 +82,15 @@ class PlayerActivity : BaseActivity() {
         // Ayarlar paneli binding'i
         settingsPanelBinding = PlayerSettingsPanelBinding.bind(binding.root.findViewById(R.id.settings_panel_container))
         setupSubtitlePanel()
+
+        // Intent validation - güvenlik kontrolü
+        val validationResult = IntentValidator.validatePlayerIntent(intent)
+        if (!validationResult.isValid) {
+            timber.log.Timber.e("❌ Intent validation başarısız: ${validationResult.errorMessage}")
+            Toast.makeText(this, validationResult.errorMessage ?: "Geçersiz intent verisi", Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
 
         // Intent'ten verileri al
         val videoUrl = intent.getStringExtra(EXTRA_VIDEO_URL)
@@ -190,6 +204,7 @@ class PlayerActivity : BaseActivity() {
                         viewModel.playPlaylist(mediaItems, startIndex, null)
                         viewModel.startWatching(channelId!!)
                     } catch (e: Exception) {
+                        timber.log.Timber.tag("VIDEO_PLAYBACK_ERROR").e(e, "Playlist creation failed: ${e.javaClass.simpleName}")
                         // Fallback: Normal playVideo kullan
                         viewModel.playVideo(videoUrl, contentId)
                         viewModel.startWatching(channelId!!)
@@ -207,13 +222,90 @@ class PlayerActivity : BaseActivity() {
 
     override fun onStart() {
         super.onStart()
+
         val exoPlayer = viewModel.getPlayer()
         timber.log.Timber.d("🔍 onStart: ExoPlayer null mu? ${exoPlayer == null}")
-        binding.playerView.player = exoPlayer
-        if (exoPlayer != null) {
+
+        // Player null ise yeniden oluştur ve video'yu yeniden yükle
+        if (exoPlayer == null && savedVideoUrl != null) {
+            timber.log.Timber.d("🔄 Player null, yeniden oluşturuluyor ve video yükleniyor...")
+
+            // Player'ı yeniden oluştur
+            viewModel.reinitializePlayerIfNeeded()
+
+            // Video bilgileri kaydedilmişse, video'yu yeniden yükle
+            val videoUrl = savedVideoUrl!!
+            val contentId = savedContentId
+            val contentTitle = savedContentTitle
+            val contentRating = savedContentRating
+            val savedChannel = savedChannelId
+            val savedCategory = savedCategoryId
+
+            // ChannelId ve CategoryId'yi geri yükle
+            channelId = savedChannel
+            categoryId = savedCategory
+
+            // İçerik başlığı ve rating'i geri yükle
+            if (binding.playerControlView != null && contentTitle != null) {
+                binding.playerControlView.setContentInfo(contentTitle, contentRating)
+            }
+
+            // Canlı yayın mı kontrol et
+            if (savedChannel != null && savedCategory != null) {
+                // Canlı yayın: Playlist ile yeniden yükle
+                lifecycleScope.launch {
+                    try {
+                        val channels = contentRepository.getLiveStreamsByCategoryIdSync(savedCategory)
+                        if (channels.isNotEmpty()) {
+                            val startIndex = channels.indexOfFirst { it.streamId == savedChannel }
+                            if (startIndex != -1) {
+                                val mediaItems = viewModel.createPlaylistFromChannels(channels, buildLiveStreamUrlUseCase)
+                                if (mediaItems.isNotEmpty()) {
+                                    viewModel.playPlaylist(mediaItems, startIndex, null)
+                                    viewModel.startWatching(savedChannel)
+                                    timber.log.Timber.d("✅ Canlı yayın playlist ile yeniden yüklendi")
+                                } else {
+                                    // Fallback: Normal playVideo
+                                    viewModel.playVideo(videoUrl, contentId)
+                                    viewModel.startWatching(savedChannel)
+                                    timber.log.Timber.d("✅ Canlı yayın normal playVideo ile yeniden yüklendi")
+                                }
+                            } else {
+                                // Fallback: Normal playVideo
+                                viewModel.playVideo(videoUrl, contentId)
+                                viewModel.startWatching(savedChannel)
+                                timber.log.Timber.d("✅ Canlı yayın fallback ile yeniden yüklendi")
+                            }
+                        } else {
+                            // Fallback: Normal playVideo
+                            viewModel.playVideo(videoUrl, contentId)
+                            viewModel.startWatching(savedChannel)
+                            timber.log.Timber.d("✅ Canlı yayın fallback (channels empty) ile yeniden yüklendi")
+                        }
+                    } catch (e: Exception) {
+                        timber.log.Timber.e(e, "❌ Playlist yeniden yükleme hatası")
+                        // Fallback: Normal playVideo
+                        viewModel.playVideo(videoUrl, contentId)
+                        if (savedChannel != null) {
+                            viewModel.startWatching(savedChannel)
+                        }
+                    }
+                }
+            } else {
+                // Film/Dizi: Normal playVideo (pozisyon otomatik geri yüklenecek)
+                viewModel.playVideo(videoUrl, contentId)
+                timber.log.Timber.d("✅ Film/Dizi yeniden yüklendi (pozisyon otomatik geri yüklenecek)")
+            }
+        }
+
+        // PlayerView'a player'ı ata
+        val currentPlayer = viewModel.getPlayer()
+        binding.playerView.player = currentPlayer
+
+        if (currentPlayer != null) {
             timber.log.Timber.d("✅ ExoPlayer PlayerView'a atandı")
         } else {
-            timber.log.Timber.e("❌ ExoPlayer NULL! Video oynatılamayacak!")
+            timber.log.Timber.w("⚠️ ExoPlayer hala NULL! Video yükleniyor olabilir...")
         }
     }
 
@@ -228,19 +320,44 @@ class PlayerActivity : BaseActivity() {
 
     override fun onStop() {
         super.onStop()
-        // Uygulama arka plandayken player'ı pause yap
-        // Activity destroy edilmemeli, sadece pause yapılmalı
-        viewModel.pause()
-        timber.log.Timber.d("⏸️ onStop: Player pause edildi")
+
+        // Video bilgilerini kaydet (yeniden yüklemek için)
+        savedVideoUrl = intent.getStringExtra(EXTRA_VIDEO_URL)
+        savedContentId = intent.getStringExtra(EXTRA_CONTENT_ID)
+        savedContentTitle = intent.getStringExtra(EXTRA_CONTENT_TITLE)
+        savedContentRating = intent.getDoubleExtra(EXTRA_CONTENT_RATING, -1.0).takeIf { it > 0 }
+        savedChannelId = channelId
+        savedCategoryId = categoryId
+
+        // Progress updater'ı durdur
+        stopProgressUpdater()
+
+        // Player kaynaklarını TAMAMEN serbest bırak (KESİN ÇÖZÜM)
+        // Bu, decoder, buffer, network thread'lerini tamamen temizler
+        viewModel.releasePlayer()
+
+        // PlayerView'ı null yap
+        binding.playerView.player = null
+
+        // Ekran açık kalma flag'ini kaldır
+        window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+        timber.log.Timber.d("⏸️ onStop: Player release edildi, tüm kaynaklar serbest bırakıldı")
     }
 
     override fun onResume() {
         super.onResume()
-        // Activity tekrar görünür olduğunda oynatmaya devam et
-        // Ekranın açık kalmasını tekrar sağla (uygulama foreground'dayken)
+
+        // Ekran açık kalma flag'ini ekle
         window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        viewModel.play()
-        timber.log.Timber.d("▶️ onResume: Player devam ediyor, ekran açık kalma flag'i eklendi")
+
+        // Player varsa oynatmaya devam et
+        viewModel.getPlayer()?.let {
+            viewModel.play()
+            timber.log.Timber.d("▶️ onResume: Player devam ediyor, ekran açık kalma flag'i eklendi")
+        } ?: run {
+            timber.log.Timber.d("⏳ onResume: Player henüz hazır değil, onStart'ta yükleniyor...")
+        }
     }
 
     override fun onDestroy() {
@@ -249,8 +366,6 @@ class PlayerActivity : BaseActivity() {
         window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         // Progress güncelleme döngüsünü durdur
         stopProgressUpdater()
-        // Coroutine scope'u temizle
-        activityScope.cancel()
         // PlayerView'ı null yapmamız, memory leak önlemek adına iyi bir pratik olabilir.
         // ViewModel onCleared'da player'ı tamamen serbest bırakacak.
         binding.playerView.player = null
@@ -304,7 +419,14 @@ class PlayerActivity : BaseActivity() {
         lifecycleScope.launch {
             viewModel.errorMessage.collect { errorMessage ->
                 errorMessage?.let {
+                    // Tek bir mesaj göster (3 saniye)
                     Toast.makeText(this@PlayerActivity, it, Toast.LENGTH_LONG).show()
+                    // 3 saniye bekle ve otomatik olarak detay sayfasına geri dön
+                    delay(3000)
+                    // Activity durumunu kontrol et - destroy edilmişse finish çağırma
+                    if (!isFinishing && !isDestroyed) {
+                        finishWithResult()
+                    }
                 }
             }
         }
@@ -478,7 +600,7 @@ class PlayerActivity : BaseActivity() {
         if (progressUpdateJob?.isActive == true) return
 
         progressUpdateJob =
-            activityScope.launch {
+            lifecycleScope.launch {
                 while (isActive) {
                     // Sadece player oynuyorsa ve kullanıcı seek yapmıyorsa güncelle
                     if (viewModel.isPlaying.value && !binding.playerControlView.isSeeking()) {
@@ -496,6 +618,11 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun finishWithResult() {
+        // Activity durumunu kontrol et - destroy edilmişse finish çağırma
+        if (isFinishing || isDestroyed) {
+            timber.log.Timber.w("⚠️ finishWithResult: Activity zaten kapanıyor veya destroy edilmiş, finish çağrılmıyor")
+            return
+        }
         val resultIntent =
             Intent().apply {
                 channelId?.let { putExtra(RESULT_CHANNEL_ID, it) }

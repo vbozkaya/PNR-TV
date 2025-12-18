@@ -83,6 +83,8 @@
     <string name="dialog_exit_message">Are you sure you want to exit the application?</string>
     <string name="dialog_yes">Yes</string>
     <string name="dialog_no">No</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_ok">OK</string>
     
     <!-- User Information -->
     <string name="current_user_label">Current User: %1$s</string>
@@ -110,6 +112,7 @@
     <string name="error_timeout">Connection timed out. Please try again.</string>
     <string name="error_timeout_connect">Cannot connect to server. Connection timed out.</string>
     <string name="error_timeout_read">Timeout occurred while receiving data from server. Please try again.</string>
+    <string name="error_video_playback_failed">Video Cannot Be Played - Server Error</string>
     
     <!-- Short Error Messages -->
     <string name="error_categories_short">Categories could not be loaded</string>
@@ -177,6 +180,10 @@
     
     <!-- Series Detail -->
     <string name="series_creator">Creator:</string>
+    <string name="series_genre">Genre:</string>
+    <string name="series_cast">Cast:</string>
+    <string name="series_overview_label">Overview:</string>
+    <string name="error_media_load">Error loading media: %1$s</string>
     <string name="error_movie_not_found">Movie not found</string>
     <string name="loading_movie_details">Loading movie details...</string>
     <string name="error_loading_movie">Error loading movie</string>
@@ -185,6 +192,19 @@
     <string name="settings_user_status">User Status</string>
     <string name="settings_app_language">App Language</string>
     <string name="settings_clear_cache">Clear Cache and All Data</string>
+    <string name="settings_about_app">About App</string>
+    
+    <!-- About App -->
+    <string name="about_app_title">About App</string>
+    <string name="about_app_description">PNR TV is an IPTV (Internet Protocol Television) application developed exclusively for the Android TV platform. It allows users to watch live streams, movies, and series.</string>
+    <string name="about_features_title">Features</string>
+    <string name="about_features">• Movies (VOD): Movie categories, details, and playback\n• Series: Series categories, seasons, episodes, and playback\n• Live Streams: Live TV channels and categories\n• Multiple Users: Management of multiple IPTV accounts\n• Viewer Profiles: Separate viewer profiles for each user\n• Favorites: Save favorite channels\n• Recently Watched: Track recently watched content\n• Resume Playback: Save playback position</string>
+    <string name="about_thanks_title">Thanks</string>
+    <string name="about_thanks">The Movie Database (TMDB) - For movie and series data\nAndroid TV Leanback Library - For TV UI components\nAll open source library developers</string>
+    <string name="about_contact_title">Contact</string>
+    <string name="about_contact_message">For collaboration, feedback and suggestions, please email us: tvpnrtv@gmail.com</string>
+    <string name="about_contact_email">tvpnrtv@gmail.com</string>
+    <string name="about_contact_email_subject">PNR TV - Contact</string>
     <string name="dialog_select_language_title">Select Language</string>
     <string name="dialog_clear_cache_title">Clear All Data</string>
     <string name="dialog_clear_cache_message">All data (users, favorites, watch history, content, etc.) will be deleted and the app will open as if newly installed. This action cannot be undone. Do you want to continue?</string>
@@ -226,6 +246,7 @@
     <string name="cd_rewind">Rewind</string>
     <string name="cd_play">Play</string>
     <string name="cd_pause">Pause</string>
+    <string name="cd_stop">Stop</string>
     <string name="cd_fast_forward">Fast Forward</string>
     <string name="cd_subtitle">Subtitle</string>
     <string name="cd_audio_track">Audio Language</string>

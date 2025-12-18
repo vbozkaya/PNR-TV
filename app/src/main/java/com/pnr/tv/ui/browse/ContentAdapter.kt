@@ -1,5 +1,8 @@
 package com.pnr.tv.ui.browse
 
+import android.os.Handler
+import android.os.Looper
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,11 +27,13 @@ import com.pnr.tv.model.ContentItem
  * - Click events
  * - Long press events
  * - Left/right directional navigation (category list ←→ content grid)
+ * - OK button long press (3 seconds) for favorites (optional)
  */
 class ContentAdapter(
     private val onContentClick: (ContentItem) -> Unit,
     private val onContentLongPress: (ContentItem) -> Unit,
     private val gridColumnCount: Int,
+    private val onOkButtonLongPress: ((ContentItem) -> Unit)? = null, // Optional: for 3-second OK button press
 ) : ListAdapter<ContentItem, ContentAdapter.ViewHolder>(ContentDiff) {
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -37,7 +42,7 @@ class ContentAdapter(
         val view =
             LayoutInflater.from(parent.context)
                 .inflate(R.layout.item_channel, parent, false)
-        return ViewHolder(view, onContentClick, onContentLongPress, this, gridColumnCount)
+        return ViewHolder(view, onContentClick, onContentLongPress, onOkButtonLongPress, this, gridColumnCount)
     }
 
     override fun onBindViewHolder(
@@ -51,6 +56,7 @@ class ContentAdapter(
         itemView: View,
         private val onContentClick: (ContentItem) -> Unit,
         private val onContentLongPress: (ContentItem) -> Unit,
+        private val onOkButtonLongPress: ((ContentItem) -> Unit)?,
         private val adapter: ContentAdapter,
         private val gridColumnCount: Int,
     ) : RecyclerView.ViewHolder(itemView) {
@@ -58,6 +64,13 @@ class ContentAdapter(
         private val contentName: TextView = itemView.findViewById(R.id.channel_name)
         private val imageContainer: ViewGroup = itemView.findViewById(R.id.image_container)
         private val ratingBadge: TextView = itemView.findViewById(R.id.rating_badge)
+
+        // OK tuşu için 3 saniyelik basılı tutma desteği
+        private var okButtonPressHandler: Handler? = null
+        private var okButtonPressRunnable: Runnable? = null
+        private var isOkButtonPressed = false
+        private var isOkButtonLongPressTriggered = false // 3 saniye geçti mi?
+        private val OK_BUTTON_LONG_PRESS_DURATION = 3000L // 3 saniye
 
         init {
             itemView.isFocusable = true
@@ -138,7 +151,7 @@ class ContentAdapter(
             if (!imageUrl.isNullOrBlank()) {
                 // Dinamik boyut hesapla - CardPresenter ile aynı optimizasyon
                 val screenWidth = itemView.context.resources.displayMetrics.widthPixels
-                val cardWidth = (screenWidth / com.pnr.tv.Constants.CARD_WIDTH_DIVISOR).toInt()
+                val cardWidth = (screenWidth / com.pnr.tv.UIConstants.CARD_WIDTH_DIVISOR).toInt()
                 val cardHeight = (cardWidth * 9.0 / 16.0).toInt()
 
                 contentImage.load(imageUrl) {
@@ -158,22 +171,101 @@ class ContentAdapter(
                     networkCachePolicy(CachePolicy.ENABLED)
                 }
             } else {
-                // Use placeholder if no image URL - orantıyı korumak için scaleType değiştir
-                contentImage.scaleType = ImageView.ScaleType.FIT_CENTER
+                // Use placeholder if no image URL - üst kısma hizalamak için scaleType değiştir
+                contentImage.scaleType = ImageView.ScaleType.FIT_START
+                // Görseli üst kısma yaklaştırmak için ImageView'ın gravity'sini ayarla
+                // FIT_START sol üst köşeye hizalar, bu yüzden görseli üst kısma yaklaştırır
                 contentImage.load(R.drawable.placeholder_image) {
                     scale(Scale.FIT) // Orantıyı koru
                 }
+                // Görseli üst kısma yaklaştırmak için ImageView'ın padding'ini ayarla
+                val topPadding = (8f * itemView.context.resources.displayMetrics.density).toInt()
+                val bottomPadding = (60f * itemView.context.resources.displayMetrics.density).toInt()
+                contentImage.setPadding(0, topPadding, 0, bottomPadding)
             }
 
             // Set up item-specific click listeners
             itemView.setOnClickListener {
-                onContentClick(item)
+                // Eğer OK tuşu long press tetiklendiyse, normal click'i engelle
+                if (!isOkButtonLongPressTriggered) {
+                    onContentClick(item)
+                }
+                // Flag'i sıfırla
+                isOkButtonLongPressTriggered = false
             }
 
             itemView.setOnLongClickListener {
                 onContentLongPress(item)
                 true
             }
+
+            // OK tuşu için 3 saniyelik basılı tutma desteği (sadece callback sağlanmışsa)
+            if (onOkButtonLongPress != null) {
+                setupOkButtonLongPress(item)
+            } else {
+                // Callback yoksa, mevcut handler'ı temizle
+                clearOkButtonHandler()
+            }
+        }
+
+        /**
+         * OK tuşuna 3 saniye basılı tutulduğunda favori işlemi yapar.
+         */
+        private fun setupOkButtonLongPress(item: ContentItem) {
+            // Önceki handler'ı temizle
+            clearOkButtonHandler()
+
+            itemView.setOnKeyListener { _, keyCode, event ->
+                if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+                    when (event.action) {
+                        KeyEvent.ACTION_DOWN -> {
+                            // OK tuşu basıldı
+                            isOkButtonPressed = true
+                            isOkButtonLongPressTriggered = false
+                            okButtonPressHandler = Handler(Looper.getMainLooper())
+                            okButtonPressRunnable =
+                                Runnable {
+                                    // 3 saniye geçti, long press callback'ini çağır
+                                    if (isOkButtonPressed) {
+                                        isOkButtonLongPressTriggered = true
+                                        onOkButtonLongPress?.invoke(item)
+                                        isOkButtonPressed = false
+                                    }
+                                }
+                            // 3 saniye sonra çalışacak runnable'ı planla
+                            okButtonPressHandler?.postDelayed(okButtonPressRunnable!!, OK_BUTTON_LONG_PRESS_DURATION)
+                            // Olayı tüketme, normal click davranışı da çalışsın
+                            false
+                        }
+                        KeyEvent.ACTION_UP -> {
+                            // OK tuşu bırakıldı
+                            isOkButtonPressed = false
+                            clearOkButtonHandler()
+                            // Eğer 3 saniye geçmediyse, normal click davranışı çalışsın
+                            // (setOnClickListener zaten bunu handle ediyor)
+                            // Eğer 3 saniye geçtiyse, isOkButtonLongPressTriggered flag'i zaten true olacak
+                            // ve click listener içinde normal click engellenecek
+                            false
+                        }
+                        else -> false
+                    }
+                } else {
+                    false
+                }
+            }
+        }
+
+        /**
+         * OK tuşu handler'ını temizler.
+         */
+        private fun clearOkButtonHandler() {
+            okButtonPressRunnable?.let { runnable ->
+                okButtonPressHandler?.removeCallbacks(runnable)
+            }
+            okButtonPressHandler = null
+            okButtonPressRunnable = null
+            isOkButtonPressed = false
+            // isOkButtonLongPressTriggered flag'ini sıfırlama, click listener içinde sıfırlanacak
         }
     }
 }

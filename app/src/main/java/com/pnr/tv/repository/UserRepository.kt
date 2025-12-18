@@ -72,30 +72,31 @@ class UserRepository
          */
         suspend fun deleteUser(user: UserAccountEntity) {
             val currentUserId = sessionManager.getCurrentUserId().firstOrNull()
+            val userId = user.id
 
             // Kullanıcıya ait tüm verileri sil
-            Timber.d("🗑️ Kullanıcı siliniyor: ${user.accountName} (ID: ${user.id})")
+            Timber.d("🗑️ Kullanıcı siliniyor: ${user.accountName} (ID: $userId)")
             Timber.d("   • Favoriler siliniyor...")
-            favoriteDao.deleteAll()
+            favoriteDao.deleteByUserId(userId)
 
             Timber.d("   • Son izlenenler siliniyor...")
-            recentlyWatchedDao.deleteAll()
+            recentlyWatchedDao.deleteByUserId(userId)
 
             Timber.d("   • Oynatma pozisyonları siliniyor...")
-            playbackPositionDao.deleteAll()
+            playbackPositionDao.deleteByUserId(userId)
 
             Timber.d("   • İzlenen bölümler siliniyor...")
-            watchedEpisodeDao.clearAll()
+            watchedEpisodeDao.deleteByUserId(userId)
 
             Timber.d("   • Viewer'lar siliniyor...")
-            viewerDao.deleteAll()
+            viewerDao.deleteByUserId(userId)
 
             // Kullanıcıyı sil
             Timber.d("   • Kullanıcı hesabı siliniyor...")
             userDao.deleteUser(user)
 
             // Eğer silinen kullanıcı seçili kullanıcıysa, seçili kullanıcıyı temizle
-            if (currentUserId == user.id) {
+            if (currentUserId == userId) {
                 Timber.d("   • Seçili kullanıcı temizleniyor (silinen kullanıcı seçiliydi)...")
                 sessionManager.clearCurrentUser()
             }

@@ -17,9 +17,8 @@ import androidx.fragment.app.commit
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.pnr.tv.Constants
-import com.pnr.tv.MainViewModel
 import com.pnr.tv.R
+import com.pnr.tv.UIConstants
 import com.pnr.tv.model.CategoryItem
 import com.pnr.tv.model.ContentItem
 import com.pnr.tv.model.ContentType
@@ -38,11 +37,17 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class ContentBrowseFragment : BaseBrowseFragment() {
     private var contentType: ContentType? = null
-    private val mainViewModel: MainViewModel by activityViewModels()
+    private val movieViewModel: com.pnr.tv.ui.movies.MovieViewModel by activityViewModels()
+    private val seriesViewModel: com.pnr.tv.ui.series.SeriesViewModel by activityViewModels()
 
     // BaseBrowseFragment requires BaseViewModel
     override val viewModel: com.pnr.tv.ui.base.BaseViewModel
-        get() = mainViewModel
+        get() =
+            when (contentType) {
+                ContentType.MOVIES -> movieViewModel
+                ContentType.SERIES -> seriesViewModel
+                else -> movieViewModel // fallback (bu durum olmamalı)
+            }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,13 +83,13 @@ class ContentBrowseFragment : BaseBrowseFragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 val errorFlow =
                     when (contentType) {
-                        ContentType.MOVIES -> mainViewModel.moviesErrorMessage
-                        ContentType.SERIES -> mainViewModel.seriesErrorMessage
+                        ContentType.MOVIES -> movieViewModel.moviesErrorMessage
+                        ContentType.SERIES -> seriesViewModel.seriesErrorMessage
                         else -> kotlinx.coroutines.flow.flowOf(null)
                     }
                 errorFlow.collect { errorMsg ->
-                    if (errorMsg != null) {
-                        showErrorState(errorMsg)
+                    errorMsg?.let {
+                        showErrorState(it)
                     }
                 }
             }
@@ -96,14 +101,14 @@ class ContentBrowseFragment : BaseBrowseFragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 val loadingFlow =
                     when (contentType) {
-                        ContentType.MOVIES -> mainViewModel.isMoviesLoading
-                        ContentType.SERIES -> mainViewModel.isSeriesLoading
+                        ContentType.MOVIES -> movieViewModel.isMoviesLoading
+                        ContentType.SERIES -> seriesViewModel.isSeriesLoading
                         else -> kotlinx.coroutines.flow.flowOf(false)
                     }
                 val errorFlow =
                     when (contentType) {
-                        ContentType.MOVIES -> mainViewModel.moviesErrorMessage
-                        ContentType.SERIES -> mainViewModel.seriesErrorMessage
+                        ContentType.MOVIES -> movieViewModel.moviesErrorMessage
+                        ContentType.SERIES -> seriesViewModel.seriesErrorMessage
                         else -> kotlinx.coroutines.flow.flowOf(null)
                     }
                 loadingFlow.collect { isLoading ->
@@ -124,29 +129,34 @@ class ContentBrowseFragment : BaseBrowseFragment() {
     override val categoriesFlow: Flow<List<CategoryItem>>
         get() =
             when (contentType) {
-                ContentType.MOVIES -> mainViewModel.movieCategoriesFlow
-                ContentType.SERIES -> mainViewModel.seriesCategoriesFlow
+                ContentType.MOVIES -> movieViewModel.movieCategoriesFlow
+                ContentType.SERIES -> seriesViewModel.seriesCategoriesFlow
                 else -> kotlinx.coroutines.flow.flowOf(emptyList())
             }
 
     override val contentsFlow: Flow<List<ContentItem>>
         get() =
             when (contentType) {
-                ContentType.MOVIES -> mainViewModel.moviesFlow
-                ContentType.SERIES -> mainViewModel.seriesFlow
+                ContentType.MOVIES -> movieViewModel.moviesFlow
+                ContentType.SERIES -> seriesViewModel.seriesFlow
                 else -> kotlinx.coroutines.flow.flowOf(emptyList())
             }
 
     override val selectedCategoryIdFlow: Flow<String?>
         get() =
             when (contentType) {
-                ContentType.MOVIES -> mainViewModel.selectedMovieCategoryId.map { it as? String }
-                ContentType.SERIES -> mainViewModel.selectedSeriesCategoryId.map { it as? String }
+                ContentType.MOVIES -> movieViewModel.selectedMovieCategoryId.map { it as? String }
+                ContentType.SERIES -> seriesViewModel.selectedSeriesCategoryId.map { it as? String }
                 else -> kotlinx.coroutines.flow.flowOf(null)
             }
 
     override val toastEventFlow: Flow<String>
-        get() = mainViewModel.toastEvent
+        get() =
+            when (contentType) {
+                ContentType.MOVIES -> movieViewModel.toastEvent
+                ContentType.SERIES -> seriesViewModel.toastEvent
+                else -> movieViewModel.toastEvent // fallback
+            }
 
     // Abstract methods from BaseBrowseFragment
     override fun getNavbarTitle(): String =
@@ -163,21 +173,21 @@ class ContentBrowseFragment : BaseBrowseFragment() {
 
     override fun getEmptyStateTextViewId(): Int = R.id.txt_empty_state
 
-    override fun getGridColumnCount(): Int = Constants.GRID_COLUMN_COUNT
+    override fun getGridColumnCount(): Int = UIConstants.GRID_COLUMN_COUNT
 
     // Override hooks from BaseBrowseFragment
     override fun onInitialLoad() {
         when (contentType) {
-            ContentType.MOVIES -> mainViewModel.loadMoviesIfNeeded()
-            ContentType.SERIES -> mainViewModel.loadSeriesIfNeeded()
+            ContentType.MOVIES -> movieViewModel.loadMoviesIfNeeded()
+            ContentType.SERIES -> seriesViewModel.loadSeriesIfNeeded()
             else -> {}
         }
     }
 
     override fun onCategoryClicked(category: CategoryItem) {
         when (contentType) {
-            ContentType.MOVIES -> mainViewModel.selectMovieCategory(category.categoryId)
-            ContentType.SERIES -> mainViewModel.selectSeriesCategory(category.categoryId)
+            ContentType.MOVIES -> movieViewModel.selectMovieCategory(category.categoryId)
+            ContentType.SERIES -> seriesViewModel.selectSeriesCategory(category.categoryId)
             else -> {}
         }
     }
@@ -186,8 +196,8 @@ class ContentBrowseFragment : BaseBrowseFragment() {
         // Kategori ID'sine göre kategori seç
         categoryId?.let { id ->
             when (contentType) {
-                ContentType.MOVIES -> mainViewModel.selectMovieCategory(id)
-                ContentType.SERIES -> mainViewModel.selectSeriesCategory(id)
+                ContentType.MOVIES -> movieViewModel.selectMovieCategory(id)
+                ContentType.SERIES -> seriesViewModel.selectSeriesCategory(id)
                 else -> {}
             }
         }
@@ -195,26 +205,36 @@ class ContentBrowseFragment : BaseBrowseFragment() {
 
     override fun onCategoryFocused(category: CategoryItem) {
         // Focus geldiğinde kategoriyi seç ve içerikleri yükle
+        val startTime = System.currentTimeMillis()
+        timber.log.Timber.tag("GRID_UPDATE").d("🎯 Kategori focus: ${category.categoryName} (ID: ${category.categoryId})")
         when (contentType) {
-            ContentType.MOVIES -> mainViewModel.selectMovieCategory(category.categoryId)
-            ContentType.SERIES -> mainViewModel.selectSeriesCategory(category.categoryId)
+            ContentType.MOVIES -> {
+                timber.log.Timber.tag("GRID_UPDATE").d("🎬 selectMovieCategory çağrılıyor: ${category.categoryId}")
+                movieViewModel.selectMovieCategory(category.categoryId)
+            }
+            ContentType.SERIES -> {
+                timber.log.Timber.tag("GRID_UPDATE").d("📺 selectSeriesCategory çağrılıyor: ${category.categoryId}")
+                seriesViewModel.selectSeriesCategory(category.categoryId)
+            }
             else -> {}
         }
+        val focusTime = System.currentTimeMillis() - startTime
+        timber.log.Timber.tag("GRID_UPDATE").d("⚡ Kategori focus süresi: ${focusTime}ms")
     }
 
     override fun onContentClicked(item: ContentItem) {
         // Son seçili kategoriyi ve odaklanılan pozisyonu kaydet
         val position = contentAdapter.currentList.indexOf(item)
         if (position != -1) {
-            mainViewModel.lastFocusedContentPosition = position
+            viewModel.lastFocusedContentPosition = position
             // Mevcut seçili kategoriyi kaydet
             val categoryId =
                 when (contentType) {
-                    ContentType.MOVIES -> mainViewModel.selectedMovieCategoryId.value as? String
-                    ContentType.SERIES -> mainViewModel.selectedSeriesCategoryId.value as? String
+                    ContentType.MOVIES -> movieViewModel.selectedMovieCategoryId.value as? String
+                    ContentType.SERIES -> seriesViewModel.selectedSeriesCategoryId.value as? String
                     else -> null
                 }
-            mainViewModel.lastSelectedCategoryId = categoryId
+            viewModel.lastSelectedCategoryId = categoryId
         }
 
         // Navigate based on contentType
@@ -246,31 +266,8 @@ class ContentBrowseFragment : BaseBrowseFragment() {
     }
 
     override fun onContentLongPressed(item: ContentItem) {
-        // Long press: toggle favorite
-        // TODO: Show viewer selection dialog instead of using default viewer
-        viewLifecycleOwner.lifecycleScope.launch {
-            // For now, use default viewer (id = 1)
-            val defaultViewerId = 1
-            val isFavorite =
-                when (contentType) {
-                    ContentType.MOVIES -> mainViewModel.isMovieFavorite(item.id, defaultViewerId).firstOrNull() ?: false
-                    ContentType.SERIES -> mainViewModel.isSeriesFavorite(item.id, defaultViewerId).firstOrNull() ?: false
-                    else -> false
-                }
-            if (isFavorite) {
-                when (contentType) {
-                    ContentType.MOVIES -> mainViewModel.removeMovieFavorite(item.id, defaultViewerId)
-                    ContentType.SERIES -> mainViewModel.removeSeriesFavorite(item.id, defaultViewerId)
-                    else -> {}
-                }
-            } else {
-                when (contentType) {
-                    ContentType.MOVIES -> mainViewModel.addMovieFavorite(item.id, defaultViewerId)
-                    ContentType.SERIES -> mainViewModel.addSeriesFavorite(item.id, defaultViewerId)
-                    else -> {}
-                }
-            }
-        }
+        // Filmler ve diziler için favori işlemi yapılmaz
+        // Favoriye ekleme sadece detay sayfasından yapılabilir
     }
 
     override fun setupFilterButton() {
@@ -307,8 +304,8 @@ class ContentBrowseFragment : BaseBrowseFragment() {
                             count: Int,
                         ) {
                             when (contentType) {
-                                ContentType.MOVIES -> mainViewModel.onMovieSearchQueryChanged(s?.toString() ?: "")
-                                ContentType.SERIES -> mainViewModel.onSeriesSearchQueryChanged(s?.toString() ?: "")
+                                ContentType.MOVIES -> movieViewModel.onMovieSearchQueryChanged(s?.toString() ?: "")
+                                ContentType.SERIES -> seriesViewModel.onSeriesSearchQueryChanged(s?.toString() ?: "")
                                 else -> {}
                             }
                         }
@@ -355,8 +352,8 @@ class ContentBrowseFragment : BaseBrowseFragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             val sortOrderFlow =
                 when (contentType) {
-                    ContentType.MOVIES -> mainViewModel.getCurrentMovieSortOrder()
-                    ContentType.SERIES -> mainViewModel.getCurrentSeriesSortOrder()
+                    ContentType.MOVIES -> movieViewModel.getCurrentMovieSortOrder()
+                    ContentType.SERIES -> seriesViewModel.getCurrentSeriesSortOrder()
                     else -> kotlinx.coroutines.flow.flowOf(null)
                 }
             sortOrderFlow.firstOrNull()?.let { sortOrder ->
@@ -388,8 +385,8 @@ class ContentBrowseFragment : BaseBrowseFragment() {
                 }
 
             when (contentType) {
-                ContentType.MOVIES -> mainViewModel.saveMovieSortOrder(sortOrder)
-                ContentType.SERIES -> mainViewModel.saveSeriesSortOrder(sortOrder)
+                ContentType.MOVIES -> movieViewModel.saveMovieSortOrder(sortOrder)
+                ContentType.SERIES -> seriesViewModel.saveSeriesSortOrder(sortOrder)
                 else -> {}
             }
             dialog.dismiss()
@@ -408,10 +405,10 @@ class ContentBrowseFragment : BaseBrowseFragment() {
         val isFavoritesEmpty =
             when (contentType) {
                 ContentType.MOVIES -> {
-                    selectedCategoryId == MainViewModel.VIRTUAL_CATEGORY_ID_FAVORITES_MOVIES && contents.isEmpty()
+                    selectedCategoryId == com.pnr.tv.ui.movies.MovieViewModel.VIRTUAL_CATEGORY_ID_FAVORITES_MOVIES && contents.isEmpty()
                 }
                 ContentType.SERIES -> {
-                    selectedCategoryId == MainViewModel.VIRTUAL_CATEGORY_ID_FAVORITES_SERIES && contents.isEmpty()
+                    selectedCategoryId == com.pnr.tv.ui.series.SeriesViewModel.VIRTUAL_CATEGORY_ID_FAVORITES_SERIES && contents.isEmpty()
                 }
                 else -> false
             }

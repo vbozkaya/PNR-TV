@@ -10,7 +10,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import coil.imageLoader
 import com.pnr.tv.R
 import com.pnr.tv.extensions.hide
@@ -64,8 +63,8 @@ abstract class BaseBrowseFragment : Fragment() {
     }
 
     // RecyclerView'lar - child fragment'larda initialize edilmeli
-    protected lateinit var categoriesRecyclerView: RecyclerView
-    protected lateinit var contentRecyclerView: RecyclerView
+    protected lateinit var categoriesRecyclerView: CustomCategoriesRecyclerView
+    protected lateinit var contentRecyclerView: CustomContentRecyclerView
     protected lateinit var emptyStateTextView: TextView
 
     // Error and Loading containers
@@ -105,6 +104,9 @@ abstract class BaseBrowseFragment : Fragment() {
 
     // OK veya sağ yön tuşuna basıldığında içerik grid'ine geçiş yapılacak mı?
     private var pendingNavigationToContent: Boolean = false
+
+    // onCategoryFocused için debounce - gereksiz çağrıları önlemek için
+    private var categoryFocusDebounceJob: kotlinx.coroutines.Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -432,7 +434,7 @@ abstract class BaseBrowseFragment : Fragment() {
 
         backButton?.setOnKeyListener(navbarDownListener)
 
-        // Listener for Home Button (manages both DOWN and RIGHT keys)
+        // Listener for Home Button (manages DOWN key)
         homeButton?.setOnKeyListener { _, keyCode, event ->
             if (event.action == KeyEvent.ACTION_DOWN) {
                 when (keyCode) {
@@ -441,27 +443,28 @@ abstract class BaseBrowseFragment : Fragment() {
                         categoriesRecyclerView.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
                         return@setOnKeyListener true
                     }
-                    KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                        // Sağ tuşu: Hiçbir şey yapma, sadece olayı tüketerek odağın arama çubuğuna geçmesini engelle.
-                        return@setOnKeyListener true
-                    }
                 }
             }
-            // Diğer tüm tuşlar için varsayılan davranışa izin ver.
+            // Diğer tüm tuşlar için varsayılan davranışa izin ver (sağa basıldığında arama çubuğuna geçiş yapılabilir).
             false
         }
 
-        // Listener for Search Bar (manages LEFT key)
+        // Listener for Search Bar (manages DOWN key for empty state navigation)
         val searchEditText = navbarView?.findViewById<View>(R.id.edt_navbar_search)
         searchEditText?.setOnKeyListener { _, keyCode, event ->
             if (event.action == KeyEvent.ACTION_DOWN) {
                 when (keyCode) {
-                    KeyEvent.KEYCODE_DPAD_LEFT -> {
-                        // Sol tuşu: Hiçbir şey yapma, sadece olayı tüketerek odağın Home butonuna geçmesini engelle.
-                        return@setOnKeyListener true
+                    KeyEvent.KEYCODE_DPAD_DOWN -> {
+                        // Aşağı tuşu: Eğer içerik listesi boşsa ve empty state görünürse, focus'u empty state'e taşı
+                        if (emptyStateTextView.visibility == View.VISIBLE && contentRecyclerView.visibility != View.VISIBLE) {
+                            emptyStateTextView.requestFocus()
+                            return@setOnKeyListener true
+                        }
+                        // İçerik varsa varsayılan davranışa izin ver (kategorilere veya grid'e geçiş)
                     }
                 }
             }
+            // Sol tuşu ve diğer tuşlar için varsayılan davranışa izin ver (sola basıldığında Home butonuna geçiş yapılabilir).
             false
         }
 
@@ -483,8 +486,9 @@ abstract class BaseBrowseFragment : Fragment() {
     /**
      * Generic adapters oluşturur.
      * BaseBrowseFragment creates and owns the CategoryAdapter and ContentAdapter instances.
+     * Child fragments can override this to customize adapter creation (e.g., add OK button long press support).
      */
-    private fun createAdapters() {
+    protected open fun createAdapters() {
         categoryAdapter =
             CategoryAdapter(
                 onCategoryClick = { category ->
@@ -493,7 +497,25 @@ abstract class BaseBrowseFragment : Fragment() {
                 onNavigateToContent = ::navigateFocusToContent,
                 onNavigateToNavbar = ::navigateFocusToNavbar,
                 onCategoryFocused = { category ->
-                    onCategoryFocused(category)
+                    // Debounce: Önceki çağrıyı iptal et ve yeni bir delay başlat
+                    categoryFocusDebounceJob?.cancel()
+                    categoryFocusDebounceJob = viewLifecycleOwner.lifecycleScope.launch {
+                        kotlinx.coroutines.delay(100) // 100ms debounce (daha hızlı tepki için azaltıldı)
+                        // Hala fragment aktifse ve kategori hala aynıysa callback çağır
+                        if (viewLifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                            // Kategori focus'unu koru - callback çağrılmadan önce focus'un kaybolmadığından emin ol
+                            val currentFocusedView = categoriesRecyclerView.findFocus()
+                            onCategoryFocused(category)
+                            // Callback sonrası focus'u koru
+                            if (currentFocusedView != null && !currentFocusedView.hasFocus()) {
+                                currentFocusedView.post {
+                                    if (!currentFocusedView.hasFocus()) {
+                                        currentFocusedView.requestFocus()
+                                    }
+                                }
+                            }
+                        }
+                    }
                 },
             )
 
@@ -506,6 +528,7 @@ abstract class BaseBrowseFragment : Fragment() {
                     onContentLongPressed(content)
                 },
                 gridColumnCount = getGridColumnCount(),
+                onOkButtonLongPress = null, // Default: no OK button long press support
             )
     }
 
@@ -524,6 +547,10 @@ abstract class BaseBrowseFragment : Fragment() {
      * İçerik RecyclerView'ı setup eder.
      */
     private fun setupContentRecyclerView() {
+        // Sol yön tuşu ile kategorilere geçiş için callback
+        contentRecyclerView.onNavigateToCategoriesCallback = {
+            navigateFocusToCategories()
+        }
         // Custom GridLayoutManager kullan
         contentRecyclerView.layoutManager =
             CustomGridLayoutManager(
@@ -541,6 +568,8 @@ abstract class BaseBrowseFragment : Fragment() {
 
         // Odak sınırlarını kontrol etme işini artık sadece CustomGridLayoutManager yapacak
         // Gereksiz ve hatalı key listener ve focus change listener blokları kaldırıldı
+
+        // CustomContentRecyclerView zaten dispatchKeyEvent'i override ediyor, ekstra setup gerekmiyor
     }
 
     /**
@@ -629,7 +658,60 @@ abstract class BaseBrowseFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 contentsFlow.collectLatest { contents ->
-                    contentAdapter.submitList(contents)
+                    val currentItemCount = contentAdapter.itemCount
+                    Timber.tag(
+                        "GRID_UPDATE",
+                    ).d("📦 Yeni içerikler geldi: ${contents.size} item, mevcut adapter itemCount: $currentItemCount")
+
+                    // Performans optimizasyonu: Büyük listelerden küçük listelere geçişte DiffUtil çok yavaş
+                    // Eğer mevcut liste çok büyükse (1000+) ve yeni liste çok küçükse (500-),
+                    // DiffUtil'i atla ve direkt güncelle
+                    val shouldSkipDiffUtil =
+                        currentItemCount > 1000 && contents.size < 500 &&
+                            (currentItemCount - contents.size) > 1000
+
+                    if (shouldSkipDiffUtil) {
+                        Timber.tag("GRID_UPDATE").d("⚡ Performans optimizasyonu: DiffUtil atlanıyor ($currentItemCount → ${contents.size})")
+                        // DiffUtil'i atla: Önce listeyi temizle, sonra yeni listeyi ekle
+                        // Bu, DiffUtil'in tüm item'ları karşılaştırmasını önler
+                        contentAdapter.submitList(null) // Önce temizle
+                        contentRecyclerView.post {
+                            // Temizleme tamamlandıktan sonra yeni listeyi ekle
+                            contentAdapter.submitList(contents) {
+                                Timber.tag("GRID_UPDATE").d("✅ Direkt güncelleme tamamlandı, yeni itemCount: ${contentAdapter.itemCount}")
+                            }
+                        }
+                    } else {
+                        contentAdapter.submitList(contents) {
+                            // submitList callback - DiffUtil tamamlandığında çağrılır
+                            Timber.tag(
+                                "GRID_UPDATE",
+                            ).d("✅ submitList callback - DiffUtil tamamlandı, yeni itemCount: ${contentAdapter.itemCount}")
+                        }
+                    }
+
+                    // RecyclerView'ı zorla güncelle (UI refresh için)
+                    // Ancak kategori focus'unu koru - içerik yükleme sırasında focus kaybını önle
+                    val currentFocusedCategoryPosition = categoryAdapter.getSelectedPosition()
+                    contentRecyclerView.post {
+                        Timber.tag("GRID_UPDATE").d("🔄 RecyclerView post - UI güncellemesi tetiklendi")
+                        contentRecyclerView.invalidate()
+                        
+                        // Kategori focus'unu koru - içerik yükleme sırasında focus kaybını önle
+                        if (currentFocusedCategoryPosition >= 0 && currentFocusedCategoryPosition < categoryAdapter.itemCount) {
+                            val categoryViewHolder = categoriesRecyclerView.findViewHolderForAdapterPosition(currentFocusedCategoryPosition)
+                            val categoryTextView = categoryViewHolder?.itemView?.findViewById<android.widget.TextView>(R.id.text_category_name)
+                            if (categoryTextView != null && !categoryTextView.hasFocus()) {
+                                // Eğer kategori focus'u kaybolduysa, geri ver
+                                categoryTextView.post {
+                                    if (!categoryTextView.hasFocus()) {
+                                        categoryTextView.requestFocus()
+                                        Timber.tag("FOCUS_DEBUG").d("🔧 İçerik yükleme sonrası kategori focus geri verildi: pozisyon $currentFocusedCategoryPosition")
+                                    }
+                                }
+                            }
+                        }
+                    }
                     // Get current selected category for empty state
                     val selectedCategoryId = selectedCategoryIdFlow.firstOrNull()
                     updateEmptyState(contents, selectedCategoryId)
@@ -727,9 +809,38 @@ abstract class BaseBrowseFragment : Fragment() {
     }
 
     private fun navigateFocusToCategories() {
-        // Bu metot artık sadece grid'den çıkıldığında çağrılacak ve görevi
-        // odağı basitçe RecyclerView'a geri vermektir. Geri kalanını Adapter halleder.
-        categoriesRecyclerView.requestFocus()
+        // Seçili kategoriye focus ver
+        val selectedPosition = categoryAdapter.getSelectedPosition()
+
+        if (selectedPosition >= 0 && selectedPosition < categoryAdapter.itemCount) {
+            // Seçili kategori pozisyonu geçerli, o pozisyondaki ViewHolder'ı bul ve focus ver
+            val viewHolder = categoriesRecyclerView.findViewHolderForAdapterPosition(selectedPosition)
+            if (viewHolder != null) {
+                // ViewHolder bulunduysa, onun itemView'ına odaklan
+                viewHolder.itemView.findViewById<View>(R.id.text_category_name)?.requestFocus() ?: viewHolder.itemView.requestFocus()
+                Timber.tag("ContentGrid").d("✅ navigateFocusToCategories: Seçili kategoriye focus verildi (pos=$selectedPosition)")
+            } else {
+                // ViewHolder hemen bulunamadıysa (çizim bekleniyorsa), scroll yap ve focus ver
+                categoriesRecyclerView.scrollToPosition(selectedPosition)
+                categoriesRecyclerView.post {
+                    val retryViewHolder = categoriesRecyclerView.findViewHolderForAdapterPosition(selectedPosition)
+                    retryViewHolder?.itemView?.findViewById<View>(R.id.text_category_name)?.requestFocus()
+                        ?: retryViewHolder?.itemView?.requestFocus()
+                    Timber.tag(
+                        "ContentGrid",
+                    ).d("✅ navigateFocusToCategories: Scroll yapıldı ve seçili kategoriye focus verildi (pos=$selectedPosition)")
+                }
+            }
+        } else {
+            // Seçili kategori pozisyonu geçersizse, ilk kategoriye focus ver
+            Timber.tag(
+                "ContentGrid",
+            ).w("⚠️ navigateFocusToCategories: Seçili pozisyon geçersiz ($selectedPosition), ilk kategoriye focus veriliyor")
+            val firstViewHolder = categoriesRecyclerView.findViewHolderForAdapterPosition(0)
+            firstViewHolder?.itemView?.findViewById<View>(R.id.text_category_name)?.requestFocus()
+                ?: firstViewHolder?.itemView?.requestFocus()
+                ?: categoriesRecyclerView.requestFocus()
+        }
     }
 
     /**
@@ -796,6 +907,11 @@ abstract class BaseBrowseFragment : Fragment() {
         emptyStateTextView.show()
         emptyStateTextView.text = message
         contentRecyclerView.hide()
+
+        // Empty state TextView'ı focusable yap ve focus ver
+        emptyStateTextView.isFocusable = true
+        emptyStateTextView.isFocusableInTouchMode = true
+        emptyStateTextView.requestFocus()
     }
 
     /**
@@ -806,6 +922,10 @@ abstract class BaseBrowseFragment : Fragment() {
         contentRecyclerView.show()
         errorContainer?.hide()
         loadingContainer?.hide()
+
+        // Empty state TextView'ın focus özelliğini kapat
+        emptyStateTextView.isFocusable = false
+        emptyStateTextView.isFocusableInTouchMode = false
     }
 
     /**

@@ -10,6 +10,7 @@ import com.pnr.tv.network.ApiActions
 import com.pnr.tv.network.dto.toEntity
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import retrofit2.Retrofit
 import timber.log.Timber
 import javax.inject.Inject
@@ -44,6 +45,22 @@ class MovieRepository
         suspend fun getMoviesByIds(movieIds: List<Int>): List<MovieEntity> {
             if (movieIds.isEmpty()) return emptyList()
             return movieDao.getByIds(movieIds)
+        }
+
+        /**
+         * Veritabanında film verisi olup olmadığını kontrol eder.
+         * @return true ise veri var, false ise veri yok
+         */
+        suspend fun hasMovies(): Boolean {
+            return getMovies().firstOrNull()?.isNotEmpty() == true
+        }
+
+        /**
+         * Veritabanında film kategori verisi olup olmadığını kontrol eder.
+         * @return true ise veri var, false ise veri yok
+         */
+        suspend fun hasMovieCategories(): Boolean {
+            return getMovieCategories().firstOrNull()?.isNotEmpty() == true
         }
 
         // ==================== Refresh Operations ====================

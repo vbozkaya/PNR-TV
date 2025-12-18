@@ -20,17 +20,29 @@ interface PlaybackPositionDao {
     /**
      * İçerik ID'sine göre pozisyonu getirir.
      */
-    @Query("SELECT * FROM playback_positions WHERE contentId = :contentId")
-    suspend fun getPosition(contentId: String): PlaybackPositionEntity?
+    @Query("SELECT * FROM playback_positions WHERE contentId = :contentId AND userId = :userId")
+    suspend fun getPosition(
+        contentId: String,
+        userId: Int,
+    ): PlaybackPositionEntity?
 
     /**
      * Belirli bir içeriğin pozisyonunu siler.
      */
-    @Query("DELETE FROM playback_positions WHERE contentId = :contentId")
-    suspend fun deletePosition(contentId: String)
+    @Query("DELETE FROM playback_positions WHERE contentId = :contentId AND userId = :userId")
+    suspend fun deletePosition(
+        contentId: String,
+        userId: Int,
+    )
 
     /**
-     * Tüm pozisyonları siler (temizlik için).
+     * Belirli bir kullanıcıya ait tüm pozisyonları siler (kullanıcı silindiğinde kullanılır).
+     */
+    @Query("DELETE FROM playback_positions WHERE userId = :userId")
+    suspend fun deleteByUserId(userId: Int)
+
+    /**
+     * Tüm pozisyonları siler (tüm kullanıcılar için - sadece clearAllData için).
      */
     @Query("DELETE FROM playback_positions")
     suspend fun deleteAll()

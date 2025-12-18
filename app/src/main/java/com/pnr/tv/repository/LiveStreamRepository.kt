@@ -10,6 +10,7 @@ import com.pnr.tv.network.ApiActions
 import com.pnr.tv.network.dto.toEntity
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import retrofit2.Retrofit
 import timber.log.Timber
 import javax.inject.Inject
@@ -41,6 +42,22 @@ class LiveStreamRepository
         suspend fun getLiveStreamsByIds(channelIds: List<Int>): List<LiveStreamEntity> {
             if (channelIds.isEmpty()) return emptyList()
             return liveStreamDao.getByIds(channelIds)
+        }
+
+        /**
+         * Veritabanında canlı yayın verisi olup olmadığını kontrol eder.
+         * @return true ise veri var, false ise veri yok
+         */
+        suspend fun hasLiveStreams(): Boolean {
+            return getLiveStreams().firstOrNull()?.isNotEmpty() == true
+        }
+
+        /**
+         * Veritabanında canlı yayın kategori verisi olup olmadığını kontrol eder.
+         * @return true ise veri var, false ise veri yok
+         */
+        suspend fun hasLiveStreamCategories(): Boolean {
+            return getLiveStreamCategories().firstOrNull()?.isNotEmpty() == true
         }
 
         // ==================== Refresh Operations ====================

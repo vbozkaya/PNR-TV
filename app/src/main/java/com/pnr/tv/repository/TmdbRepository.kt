@@ -1,7 +1,7 @@
 package com.pnr.tv.repository
 
 import android.content.Context
-import com.pnr.tv.Constants
+import com.pnr.tv.NetworkConstants
 import com.pnr.tv.db.dao.TmdbCacheDao
 import com.pnr.tv.db.entity.TmdbCacheEntity
 import com.pnr.tv.network.TmdbApiService
@@ -31,6 +31,7 @@ class TmdbRepository
         private val tmdbApiService: TmdbApiService,
         val tmdbCacheDao: TmdbCacheDao, // Internal kullanım için public
         @ApplicationContext private val context: Context,
+        @javax.inject.Named("tmdb_api_key") private val tmdbApiKey: String,
     ) {
         companion object {
             /**
@@ -140,7 +141,7 @@ class TmdbRepository
                     val details =
                         tmdbApiService.getMovieDetails(
                             movieId = tmdbId,
-                            apiKey = Constants.Tmdb.API_KEY,
+                            apiKey = tmdbApiKey,
                             language = language,
                         )
 
@@ -173,7 +174,7 @@ class TmdbRepository
                     val details =
                         tmdbApiService.getMovieDetails(
                             movieId = tmdbId,
-                            apiKey = Constants.Tmdb.API_KEY,
+                            apiKey = tmdbApiKey,
                             language = originalLanguage,
                         )
 
@@ -295,7 +296,7 @@ class TmdbRepository
                 // Strateji 1: Türkçe dil + Türkiye region ile tam temizlenmiş başlık
                 var searchResult =
                     tmdbApiService.searchMovie(
-                        apiKey = Constants.Tmdb.API_KEY,
+                        apiKey = NetworkConstants.Tmdb.API_KEY,
                         query = cleanedTitle,
                         language = "tr-TR",
                         region = "TR",
@@ -310,7 +311,7 @@ class TmdbRepository
 
                     searchResult =
                         tmdbApiService.searchMovie(
-                            apiKey = Constants.Tmdb.API_KEY,
+                            apiKey = tmdbApiKey,
                             query = cleanedTitle,
                             language = "tr-TR",
                             region = null,
@@ -326,7 +327,7 @@ class TmdbRepository
 
                     searchResult =
                         tmdbApiService.searchMovie(
-                            apiKey = Constants.Tmdb.API_KEY,
+                            apiKey = tmdbApiKey,
                             query = cleanedTitle,
                             language = "en-US",
                             region = null,
@@ -343,7 +344,7 @@ class TmdbRepository
 
                     searchResult =
                         tmdbApiService.searchMovie(
-                            apiKey = Constants.Tmdb.API_KEY,
+                            apiKey = tmdbApiKey,
                             query = mainTitle,
                             language = "tr-TR",
                             region = "TR",
@@ -360,7 +361,7 @@ class TmdbRepository
 
                     searchResult =
                         tmdbApiService.searchMovie(
-                            apiKey = Constants.Tmdb.API_KEY,
+                            apiKey = tmdbApiKey,
                             query = mainTitle,
                             language = "tr-TR",
                             region = null,
@@ -377,7 +378,7 @@ class TmdbRepository
 
                     searchResult =
                         tmdbApiService.searchMovie(
-                            apiKey = Constants.Tmdb.API_KEY,
+                            apiKey = tmdbApiKey,
                             query = mainTitle,
                             language = "en-US",
                             region = null,
@@ -409,7 +410,7 @@ class TmdbRepository
                     val details =
                         tmdbApiService.getMovieDetails(
                             movieId = movieId,
-                            apiKey = Constants.Tmdb.API_KEY,
+                            apiKey = tmdbApiKey,
                         )
 
                     Timber.d(
@@ -644,7 +645,7 @@ class TmdbRepository
                     val details =
                         tmdbApiService.getTvShowDetails(
                             tvId = tmdbId,
-                            apiKey = Constants.Tmdb.API_KEY,
+                            apiKey = tmdbApiKey,
                             language = language,
                         )
 
@@ -674,7 +675,7 @@ class TmdbRepository
                     val details =
                         tmdbApiService.getTvShowDetails(
                             tvId = tmdbId,
-                            apiKey = Constants.Tmdb.API_KEY,
+                            apiKey = tmdbApiKey,
                             language = originalLanguage,
                         )
 
@@ -750,7 +751,7 @@ class TmdbRepository
                 // 6 katmanlı arama stratejisi (filmlerle aynı)
                 var searchResult =
                     tmdbApiService.searchTvShow(
-                        apiKey = Constants.Tmdb.API_KEY,
+                        apiKey = NetworkConstants.Tmdb.API_KEY,
                         query = cleanedTitle,
                         language = "tr-TR",
                         region = "TR",
@@ -760,7 +761,7 @@ class TmdbRepository
                 if (searchResult.results.isNullOrEmpty()) {
                     searchResult =
                         tmdbApiService.searchTvShow(
-                            apiKey = Constants.Tmdb.API_KEY,
+                            apiKey = tmdbApiKey,
                             query = cleanedTitle,
                             language = "tr-TR",
                             year = year,
@@ -770,7 +771,7 @@ class TmdbRepository
                 if (searchResult.results.isNullOrEmpty()) {
                     searchResult =
                         tmdbApiService.searchTvShow(
-                            apiKey = Constants.Tmdb.API_KEY,
+                            apiKey = tmdbApiKey,
                             query = cleanedTitle,
                             language = "en-US",
                             year = year,
@@ -781,7 +782,7 @@ class TmdbRepository
                     val mainTitle = getMainTitle(cleanedTitle)
                     searchResult =
                         tmdbApiService.searchTvShow(
-                            apiKey = Constants.Tmdb.API_KEY,
+                            apiKey = tmdbApiKey,
                             query = mainTitle,
                             language = "tr-TR",
                             region = "TR",

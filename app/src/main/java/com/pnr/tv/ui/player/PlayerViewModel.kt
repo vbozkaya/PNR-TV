@@ -13,8 +13,10 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
-import com.pnr.tv.Constants
+import com.pnr.tv.PlayerConstants
 import com.pnr.tv.R
+import com.pnr.tv.TimeConstants
+import com.pnr.tv.UIConstants
 import com.pnr.tv.repository.ContentRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -45,6 +47,7 @@ class PlayerViewModel
             const val KEY_WATCHING_CHANNEL_ID = "watching_channel_id"
             const val KEY_WATCHING_START_TIME = "watching_start_time"
             const val KEY_CONTENT_ID = "content_id"
+            const val TAG_VIDEO_PLAYBACK_ERROR = "VIDEO_PLAYBACK_ERROR"
         }
 
         private val _isPlaying = MutableStateFlow(false)
@@ -79,8 +82,9 @@ class PlayerViewModel
                 }
 
                 override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
-                    _errorMessage.value = error.localizedMessage ?: "Oynatma hatası oluştu"
-                    Timber.e(error, "Player error occurred")
+                    // Her zaman aynı mesajı göster (tüm dillere uyarlanmış)
+                    _errorMessage.value = context.getString(R.string.error_video_playback_failed)
+                    Timber.tag(TAG_VIDEO_PLAYBACK_ERROR).e(error, "Playback failed: ${error.errorCode}")
                 }
 
                 override fun onPositionDiscontinuity(
@@ -117,10 +121,10 @@ class PlayerViewModel
                 val loadControl =
                     DefaultLoadControl.Builder()
                         .setBufferDurationsMs(
-                            Constants.Player.MIN_BUFFER_DURATION.toInt(), // Min buffer: 5 saniye
-                            Constants.Player.DEFAULT_BUFFER_DURATION.toInt(), // Max buffer: 15 saniye
-                            Constants.Player.MIN_BUFFER_DURATION.toInt(), // Buffer for playback: 5 saniye
-                            Constants.Player.MIN_BUFFER_DURATION.toInt(), // Buffer for playback after rebuffer: 5 saniye
+                            PlayerConstants.MIN_BUFFER_DURATION.toInt(), // Min buffer: 5 saniye
+                            PlayerConstants.DEFAULT_BUFFER_DURATION.toInt(), // Max buffer: 15 saniye
+                            PlayerConstants.MIN_BUFFER_DURATION.toInt(), // Buffer for playback: 5 saniye
+                            PlayerConstants.MIN_BUFFER_DURATION.toInt(), // Buffer for playback after rebuffer: 5 saniye
                         )
                         .build()
 
@@ -189,8 +193,8 @@ class PlayerViewModel
 
                 startPositionUpdates()
             } catch (e: Exception) {
-                _errorMessage.value = "Medya yüklenirken hata oluştu: ${e.localizedMessage}"
-                Timber.e(e, "Error playing video")
+                _errorMessage.value = context.getString(R.string.error_media_load, e.localizedMessage ?: context.getString(R.string.error_unknown))
+                Timber.tag(TAG_VIDEO_PLAYBACK_ERROR).e(e, "playVideo failed: ${e.javaClass.simpleName}")
             }
         }
 
@@ -289,8 +293,8 @@ class PlayerViewModel
 
                 startPositionUpdates()
             } catch (e: Exception) {
-                _errorMessage.value = "Medya yüklenirken hata oluştu: ${e.localizedMessage}"
-                Timber.e(e, "Error playing playlist")
+                _errorMessage.value = context.getString(R.string.error_media_load, e.localizedMessage ?: context.getString(R.string.error_unknown))
+                Timber.tag(TAG_VIDEO_PLAYBACK_ERROR).e(e, "playPlaylist failed: ${e.javaClass.simpleName}")
             }
         }
 
@@ -639,7 +643,7 @@ class PlayerViewModel
 
             if (channelId != null && startTime != null) {
                 val elapsedTime = System.currentTimeMillis() - startTime
-                if (elapsedTime >= Constants.WatchingDuration.MILLIS) {
+                if (elapsedTime >= TimeConstants.WatchingDuration.MILLIS) {
                     viewModelScope.launch { contentRepository.saveRecentlyWatched(channelId) }
                 }
             }
@@ -658,7 +662,7 @@ class PlayerViewModel
                 viewModelScope.launch {
                     while (isActive) {
                         updateCurrentPosition()
-                        delay(Constants.DelayDurations.PLAYER_POSITION_UPDATE_INTERVAL)
+                        delay(UIConstants.DelayDurations.PLAYER_POSITION_UPDATE_INTERVAL)
                     }
                 }
         }
@@ -668,13 +672,31 @@ class PlayerViewModel
             positionUpdateJob = null
         }
 
-        private fun releasePlayer() {
+        /**
+         * ExoPlayer'ı ve tüm kaynaklarını serbest bırakır.
+         * Video pozisyonu otomatik olarak kaydedilir.
+         * Public metod - Activity lifecycle'da çağrılabilir.
+         */
+        fun releasePlayer() {
             saveCurrentPosition()
             stopPositionUpdates()
             stopWatching()
             player?.removeListener(playerListener)
             player?.release()
             player = null
+            Timber.d("🔴 Player release edildi, tüm kaynaklar serbest bırakıldı")
+        }
+
+        /**
+         * Player null ise yeniden oluşturur.
+         * onStart() lifecycle'da kullanılır.
+         */
+        fun reinitializePlayerIfNeeded() {
+            if (player == null) {
+                Timber.d("🔄 Player null, yeniden oluşturuluyor...")
+                initializeExoPlayer()
+                Timber.d("✅ Player yeniden oluşturuldu")
+            }
         }
 
         override fun onCleared() {

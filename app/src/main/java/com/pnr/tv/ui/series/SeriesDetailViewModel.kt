@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pnr.tv.R
+import com.pnr.tv.SessionManager
 import com.pnr.tv.db.dao.WatchedEpisodeDao
 import com.pnr.tv.db.entity.SeriesEntity
 import com.pnr.tv.db.entity.ViewerEntity
@@ -60,6 +61,7 @@ class SeriesDetailViewModel
         private val tmdbRepository: TmdbRepository,
         private val watchedEpisodeDao: WatchedEpisodeDao,
         private val viewerRepository: ViewerRepository,
+        private val sessionManager: SessionManager,
         @ApplicationContext private val context: Context,
     ) : ViewModel() {
         private val _series = MutableStateFlow<SeriesEntity?>(null)
@@ -186,17 +188,22 @@ class SeriesDetailViewModel
                 val episodesInSeason = _allParsedEpisodesBySeason.value[seasonNumber]?.sortedBy { it.episodeNumber } ?: emptyList()
 
                 // İzlenme durumlarını kontrol et
+                val userId = sessionManager.getCurrentUserId().firstOrNull()
                 val episodesWithWatchedStatus =
-                    episodesInSeason.map { episode ->
-                        val watchedEntity = watchedEpisodeDao.getWatchedEpisode(episode.episodeId)
-                        val newStatus =
-                            when {
-                                watchedEntity == null -> WatchStatus.NOT_WATCHED
-                                watchedEntity.watchProgress >= 90 -> WatchStatus.FULLY_WATCHED
-                                watchedEntity.watchProgress > 10 -> WatchStatus.IN_PROGRESS // %10'dan fazla ve %90'dan az
-                                else -> WatchStatus.NOT_WATCHED // %10 veya daha az
-                            }
-                        episode.copy(watchStatus = newStatus)
+                    if (userId == null) {
+                        episodesInSeason.map { it.copy(watchStatus = WatchStatus.NOT_WATCHED) }
+                    } else {
+                        episodesInSeason.map { episode ->
+                            val watchedEntity = watchedEpisodeDao.getWatchedEpisode(episode.episodeId, userId)
+                            val newStatus =
+                                when {
+                                    watchedEntity == null -> WatchStatus.NOT_WATCHED
+                                    watchedEntity.watchProgress >= 90 -> WatchStatus.FULLY_WATCHED
+                                    watchedEntity.watchProgress > 10 -> WatchStatus.IN_PROGRESS // %10'dan fazla ve %90'dan az
+                                    else -> WatchStatus.NOT_WATCHED // %10 veya daha az
+                                }
+                            episode.copy(watchStatus = newStatus)
+                        }
                     }
 
                 _episodes.value = episodesWithWatchedStatus
@@ -208,9 +215,11 @@ class SeriesDetailViewModel
          */
         fun markEpisodeAsWatched(episode: ParsedEpisode) {
             viewModelScope.launch {
+                val userId = sessionManager.getCurrentUserId().firstOrNull() ?: return@launch
                 val watchedEntity =
                     WatchedEpisodeEntity(
                         episodeId = episode.episodeId,
+                        userId = userId,
                         seriesId = _series.value?.streamId ?: 0,
                         seasonNumber = episode.seasonNumber,
                         episodeNumber = episode.episodeNumber,

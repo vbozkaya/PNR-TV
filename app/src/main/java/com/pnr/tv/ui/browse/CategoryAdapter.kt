@@ -37,21 +37,42 @@ class CategoryAdapter(
 
     /**
      * Updates the selected category and redraws the visual state.
+     * Focus kaybını önlemek için mevcut focus'u korur.
      */
     fun updateSelectedItem(selectedCategoryId: String?) {
         val oldPosition = selectedPosition
 
         // Find new selected position
         val newPosition =
-            if (selectedCategoryId != null) {
-                currentList.indexOfFirst { it.categoryId == selectedCategoryId }
+            if (selectedCategoryId != null && currentList.isNotEmpty()) {
+                // Kategori ID karşılaştırması - hem String hem de Int formatlarını kontrol et
+                val foundIndex = currentList.indexOfFirst { 
+                    it.categoryId == selectedCategoryId || 
+                    it.categoryId == selectedCategoryId.toIntOrNull()?.toString() ||
+                    it.categoryId.toIntOrNull()?.toString() == selectedCategoryId
+                }
+                if (foundIndex == -1) {
+                    // Debug için tüm kategori ID'lerini logla (güvenli şekilde)
+                    try {
+                        val categoryList = currentList.map { "${it.categoryId} (${it.categoryName})" }
+                        Timber.tag("FOCUS_DEBUG").d("🔍 Kategori bulunamadı: $selectedCategoryId, Mevcut kategoriler: $categoryList")
+                    } catch (e: Exception) {
+                        Timber.tag("FOCUS_DEBUG").e(e, "🔍 Kategori bulunamadı: $selectedCategoryId, Liste boş veya hata")
+                    }
+                }
+                foundIndex
             } else {
                 -1
             }
 
         val categoryName =
-            if (newPosition >= 0 && newPosition < currentList.size) {
-                currentList[newPosition].categoryName
+            if (newPosition >= 0 && newPosition < currentList.size && currentList.isNotEmpty()) {
+                try {
+                    currentList[newPosition].categoryName ?: "UNKNOWN"
+                } catch (e: Exception) {
+                    Timber.tag("FOCUS_DEBUG").e(e, "❌ Kategori adı alınırken hata (pozisyon: $newPosition)")
+                    "HATA"
+                }
             } else {
                 "BULUNAMADI"
             }
@@ -61,15 +82,34 @@ class CategoryAdapter(
             "🔄 updateSelectedItem() - selectedCategoryId: $selectedCategoryId, Eski pozisyon: $oldPosition, Yeni pozisyon: $newPosition, Kategori: $categoryName",
         )
 
-        // Update old position (mark as not selected)
-        if (oldPosition >= 0 && oldPosition < currentList.size) {
-            notifyItemChanged(oldPosition)
+        // Eğer pozisyon değişmediyse, güncelleme yapma (gereksiz focus kaybını önle)
+        if (oldPosition == newPosition && newPosition >= 0) {
+            // Sadece görsel durumu güncelle, focus'u koru
+            return
         }
 
-        // Update new position
+        // Focus koruma ViewHolder.bind() içinde yapılıyor
+
+        // Update old position (mark as not selected) - güvenli kontrollerle
+        if (oldPosition >= 0 && oldPosition != newPosition && currentList.isNotEmpty() && oldPosition < currentList.size) {
+            try {
+                notifyItemChanged(oldPosition)
+            } catch (e: Exception) {
+                Timber.tag("FOCUS_DEBUG").e(e, "❌ notifyItemChanged hatası (eski pozisyon: $oldPosition)")
+            }
+        }
+
+        // Update new position - güvenli kontrollerle
         selectedPosition = newPosition
-        if (newPosition >= 0 && newPosition < currentList.size) {
-            notifyItemChanged(newPosition)
+        if (newPosition >= 0 && currentList.isNotEmpty() && newPosition < currentList.size) {
+            try {
+                // Sadece görsel güncelleme yap, focus'u koru
+                // notifyItemChanged() çağrıldığında ViewHolder yeniden bind edilir
+                // ama focus kaybını önlemek için ViewHolder.bind() içinde focus kontrolü yapacağız
+                notifyItemChanged(newPosition)
+            } catch (e: Exception) {
+                Timber.tag("FOCUS_DEBUG").e(e, "❌ notifyItemChanged hatası (yeni pozisyon: $newPosition)")
+            }
         }
     }
 
@@ -107,6 +147,9 @@ class CategoryAdapter(
             category: CategoryItem,
             isSelected: Boolean,
         ) {
+            // Mevcut focus durumunu sakla (focus kaybını önlemek için)
+            val hadFocus = categoryNameText.hasFocus()
+            
             currentCategory = category
             // Kategori ismini yerelleştir
             val localizedName =
@@ -144,6 +187,24 @@ class CategoryAdapter(
             categoryNameText.isFocusable = true
             categoryNameText.isFocusableInTouchMode = true
 
+            // Focus kaybını önle: Eğer önceden focus varsa, geri ver
+            // İçerik yükleme sırasında focus kaybını önlemek için daha agresif bir yaklaşım
+            if (hadFocus) {
+                // Hemen dene
+                categoryNameText.post {
+                    if (!categoryNameText.hasFocus()) {
+                        categoryNameText.requestFocus()
+                    }
+                }
+                // Biraz gecikme ile tekrar dene (içerik yükleme tamamlanması için)
+                categoryNameText.postDelayed({
+                    if (!categoryNameText.hasFocus() && hadFocus) {
+                        categoryNameText.requestFocus()
+                        Timber.tag("FOCUS_DEBUG").d("🔧 Kategori focus geri verildi (gecikmeli): ${category.categoryName}")
+                    }
+                }, 200)
+            }
+
             // Focus değişikliklerini log'la ve callback çağır
             categoryNameText.setOnFocusChangeListener { view, hasFocus ->
                 if (hasFocus) {
@@ -153,6 +214,7 @@ class CategoryAdapter(
                         "FOCUS_DEBUG",
                     ).d("✨ FOCUS ALINDI - Pozisyon: $position, Kategori: $categoryName, View: ${view.javaClass.simpleName}")
                     // Focus geldiğinde kategoriyi seç ve içerikleri yükle
+                    // Debounce BaseBrowseFragment'ta yapılıyor, burada direkt çağır
                     currentCategory?.let { onCategoryFocused(it) }
                 } else {
                     val position = bindingAdapterPosition
@@ -176,7 +238,9 @@ class CategoryAdapter(
                     KeyEvent.KEYCODE_DPAD_DOWN -> {
                         val adapter = bindingAdapter as? CategoryAdapter
                         if (adapter != null && currentPosition == adapter.itemCount - 1) {
-                            return@setOnKeyListener true // En alttaysan olayı tüket, aşağı gitme
+                            // En alttaysan olayı kesinlikle tüket, navbar'a veya başka yere gitmesin
+                            Timber.tag("FOCUS_DEBUG").d("🛑 DPAD_DOWN: Son kategori, olay tüketiliyor (pozisyon: $currentPosition)")
+                            return@setOnKeyListener true
                         }
                     }
                     KeyEvent.KEYCODE_DPAD_RIGHT -> {

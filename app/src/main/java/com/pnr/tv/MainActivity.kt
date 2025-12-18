@@ -24,7 +24,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : BaseActivity(), ToolbarController {
     private lateinit var binding: ActivityMainBinding
-    private val viewModel: MainViewModel by viewModels()
+    private val sharedViewModel: com.pnr.tv.ui.shared.SharedViewModel by viewModels()
 
     @Inject
     lateinit var viewerInitializer: ViewerInitializer
@@ -38,20 +38,24 @@ class MainActivity : BaseActivity(), ToolbarController {
         observeUpdateState()
 
         binding.btnUpdate.setOnClickListener {
-            viewModel.refreshAllContent()
+            sharedViewModel.refreshAllContent()
         }
 
         // Retry butonu için click listener
         binding.btnRetryError.setOnClickListener {
-            viewModel.refreshAllContent()
+            sharedViewModel.refreshAllContent()
         }
 
         binding.btnUsers.setOnClickListener {
-            startActivity(Intent(this, UserManagementActivity::class.java))
+            val intent = Intent(this, UserManagementActivity::class.java)
+            startActivity(intent)
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
         binding.btnSettings.setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
         binding.btnExit.setOnClickListener {
@@ -207,7 +211,7 @@ class MainActivity : BaseActivity(), ToolbarController {
     }
 
     private fun observeCurrentUser() {
-        viewModel.currentUser.observe(this) { user ->
+        sharedViewModel.currentUser.observe(this) { user ->
             if (user != null) {
                 // Kullanıcı adını hemen göster
                 binding.tvCurrentUser.text = getString(R.string.current_user_label, user.accountName)
@@ -219,16 +223,16 @@ class MainActivity : BaseActivity(), ToolbarController {
 
     private fun observeUpdateState() {
         lifecycleScope.launch {
-            viewModel.updateState.collectLatest { state ->
+            sharedViewModel.updateState.collectLatest { state ->
                 when (state) {
-                    MainViewModel.UpdateState.LOADING -> {
+                    com.pnr.tv.ui.shared.SharedViewModel.UpdateState.LOADING -> {
                         // Yüklenme başladı - overlay'i göster ve mesajı ayarla
                         binding.loadingOverlay.show()
                         binding.txtLoadingMessage.text = getString(R.string.loading_content)
                         // Retry butonunu gizle (loading durumunda gerekli değil)
                         binding.btnRetryError.visibility = android.view.View.GONE
                     }
-                    MainViewModel.UpdateState.COMPLETED -> {
+                    com.pnr.tv.ui.shared.SharedViewModel.UpdateState.COMPLETED -> {
                         // Güncelleme tamamlandı - overlay hala görünür, mesajı değiştir
                         binding.loadingOverlay.show()
                         binding.txtLoadingMessage.text = getString(R.string.loading_completed)
@@ -237,14 +241,14 @@ class MainActivity : BaseActivity(), ToolbarController {
 
                         // Belirli bir süre sonra durumu IDLE'a çek (UI mantığı)
                         lifecycleScope.launch {
-                            delay(Constants.DelayDurations.UPDATE_COMPLETED_DELAY)
-                            viewModel.resetUpdateState()
+                            delay(UIConstants.DelayDurations.UPDATE_COMPLETED_DELAY)
+                            sharedViewModel.resetUpdateState()
                         }
                     }
-                    MainViewModel.UpdateState.ERROR -> {
+                    com.pnr.tv.ui.shared.SharedViewModel.UpdateState.ERROR -> {
                         // Hata durumu - overlay'i göster ve hata mesajını göster
                         binding.loadingOverlay.show()
-                        val errorMsg = viewModel.errorMessage.value
+                        val errorMsg = sharedViewModel.errorMessage.value
                         // Hata mesajını direkt göster (error_with_message formatı yerine)
                         binding.txtLoadingMessage.text = errorMsg ?: getString(R.string.error_unknown)
 
@@ -254,7 +258,7 @@ class MainActivity : BaseActivity(), ToolbarController {
 
                         // Otomatik kapanmayı kaldırdık - kullanıcı retry yapabilir veya overlay'i kapatabilir
                     }
-                    MainViewModel.UpdateState.IDLE -> {
+                    com.pnr.tv.ui.shared.SharedViewModel.UpdateState.IDLE -> {
                         // Durum sıfırlandı - overlay'i gizle
                         binding.loadingOverlay.hide()
                     }

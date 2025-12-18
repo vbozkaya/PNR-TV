@@ -25,7 +25,7 @@ class UsersListActivity : BaseActivity(), UsersListAdapter.OnUserActionListener 
         binding = ActivityUsersListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.rvUsers.layoutManager = GridLayoutManager(this, Constants.Layout.USER_GRID_COLUMNS)
+        binding.rvUsers.layoutManager = GridLayoutManager(this, UIConstants.Layout.USER_GRID_COLUMNS)
         binding.rvUsers.adapter = usersAdapter
 
         observeUsers()

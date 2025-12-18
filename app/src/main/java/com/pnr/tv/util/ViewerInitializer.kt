@@ -35,9 +35,11 @@ class ViewerInitializer
                 val accountName = currentUser?.accountName ?: context.getString(R.string.default_viewer_name)
 
                 // Create default viewer
+                // userId will be set by repository
                 val defaultViewer =
                     ViewerEntity(
                         name = accountName,
+                        userId = 0,
                         isDeletable = false,
                     )
                 viewerRepository.addViewer(defaultViewer)

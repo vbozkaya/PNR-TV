@@ -1,14 +1,17 @@
 package com.pnr.tv.di
 
+import android.content.Context
 import com.pnr.tv.BuildConfig
-import com.pnr.tv.Constants
+import com.pnr.tv.NetworkConstants
 import com.pnr.tv.network.RateLimiterInterceptor
 import com.pnr.tv.network.TmdbApiService
+import com.pnr.tv.security.KeystoreManager
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -66,9 +69,9 @@ object NetworkModule {
             .addInterceptor(rateLimiterInterceptor) // Rate limiter önce eklenir
             .addInterceptor(loggingInterceptor) // Logging sonra eklenir
             // Timeout değerleri - IPTV stream'leri için yüksek tutulmuştur
-            .connectTimeout(Constants.Network.TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
-            .readTimeout(Constants.Network.TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
-            .writeTimeout(Constants.Network.TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
+            .connectTimeout(NetworkConstants.Network.TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
+            .readTimeout(NetworkConstants.Network.TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
+            .writeTimeout(NetworkConstants.Network.TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
             // Otomatik retry için
             .retryOnConnectionFailure(true)
             .build()
@@ -109,7 +112,7 @@ object NetworkModule {
         moshi: Moshi,
     ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(Constants.Tmdb.BASE_URL)
+            .baseUrl(NetworkConstants.Tmdb.BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
@@ -124,5 +127,17 @@ object NetworkModule {
         @TmdbRetrofit retrofit: Retrofit,
     ): TmdbApiService {
         return retrofit.create(TmdbApiService::class.java)
+    }
+
+    /**
+     * TMDB API key provider - KeystoreManager kullanarak güvenli şekilde sağlar.
+     */
+    @Provides
+    @Singleton
+    @javax.inject.Named("tmdb_api_key")
+    fun provideTmdbApiKey(
+        @ApplicationContext context: Context,
+    ): String {
+        return KeystoreManager.getApiKey(context, BuildConfig.TMDB_API_KEY)
     }
 }

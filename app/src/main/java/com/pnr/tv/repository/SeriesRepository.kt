@@ -11,6 +11,7 @@ import com.pnr.tv.network.dto.SeriesInfoDto
 import com.pnr.tv.network.dto.toEntity
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import retrofit2.Retrofit
 import timber.log.Timber
 import javax.inject.Inject
@@ -45,6 +46,22 @@ class SeriesRepository
         suspend fun getSeriesByIds(seriesIds: List<Int>): List<SeriesEntity> {
             if (seriesIds.isEmpty()) return emptyList()
             return seriesDao.getByIds(seriesIds)
+        }
+
+        /**
+         * Veritabanında dizi verisi olup olmadığını kontrol eder.
+         * @return true ise veri var, false ise veri yok
+         */
+        suspend fun hasSeries(): Boolean {
+            return getSeries().firstOrNull()?.isNotEmpty() == true
+        }
+
+        /**
+         * Veritabanında dizi kategori verisi olup olmadığını kontrol eder.
+         * @return true ise veri var, false ise veri yok
+         */
+        suspend fun hasSeriesCategories(): Boolean {
+            return getSeriesCategories().firstOrNull()?.isNotEmpty() == true
         }
 
         // ==================== Refresh Operations ====================

@@ -21,29 +21,47 @@ interface WatchedEpisodeDao {
     /**
      * Belirli bir dizinin tüm izlenmiş bölümlerini getir.
      */
-    @Query("SELECT * FROM watched_episodes WHERE seriesId = :seriesId ORDER BY seasonNumber, episodeNumber")
-    fun getWatchedEpisodesForSeries(seriesId: Int): Flow<List<WatchedEpisodeEntity>>
+    @Query("SELECT * FROM watched_episodes WHERE seriesId = :seriesId AND userId = :userId ORDER BY seasonNumber, episodeNumber")
+    fun getWatchedEpisodesForSeries(
+        seriesId: Int,
+        userId: Int,
+    ): Flow<List<WatchedEpisodeEntity>>
 
     /**
      * Belirli bir bölümün izlenip izlenmediğini kontrol et.
      */
-    @Query("SELECT * FROM watched_episodes WHERE episodeId = :episodeId LIMIT 1")
-    suspend fun getWatchedEpisode(episodeId: String): WatchedEpisodeEntity?
+    @Query("SELECT * FROM watched_episodes WHERE episodeId = :episodeId AND userId = :userId LIMIT 1")
+    suspend fun getWatchedEpisode(
+        episodeId: String,
+        userId: Int,
+    ): WatchedEpisodeEntity?
 
     /**
      * Belirli bir bölümün izlenme durumunu sil.
      */
-    @Query("DELETE FROM watched_episodes WHERE episodeId = :episodeId")
-    suspend fun removeWatchedEpisode(episodeId: String)
+    @Query("DELETE FROM watched_episodes WHERE episodeId = :episodeId AND userId = :userId")
+    suspend fun removeWatchedEpisode(
+        episodeId: String,
+        userId: Int,
+    )
 
     /**
      * Belirli bir dizinin en son izlenen bölümünü getir.
      */
-    @Query("SELECT * FROM watched_episodes WHERE seriesId = :seriesId ORDER BY watchedTimestamp DESC LIMIT 1")
-    suspend fun getLastWatchedEpisode(seriesId: Int): WatchedEpisodeEntity?
+    @Query("SELECT * FROM watched_episodes WHERE seriesId = :seriesId AND userId = :userId ORDER BY watchedTimestamp DESC LIMIT 1")
+    suspend fun getLastWatchedEpisode(
+        seriesId: Int,
+        userId: Int,
+    ): WatchedEpisodeEntity?
 
     /**
-     * Tüm izlenme verilerini temizle (test için).
+     * Belirli bir kullanıcıya ait tüm izlenme verilerini temizle (kullanıcı silindiğinde kullanılır).
+     */
+    @Query("DELETE FROM watched_episodes WHERE userId = :userId")
+    suspend fun deleteByUserId(userId: Int)
+
+    /**
+     * Tüm izlenme verilerini temizle (tüm kullanıcılar için - sadece clearAllData için).
      */
     @Query("DELETE FROM watched_episodes")
     suspend fun clearAll()

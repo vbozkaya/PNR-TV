@@ -52,11 +52,14 @@ class PlayerControlView
         private var isUserSeeking = false
         private var seekCommitJob: Job? = null
         private var isFirstPanelOpen = true
-        private var isInitialFocus = false
         private var isLiveStream = false // Canlı yayın modu
 
         // Mevcut video pozisyonu (ms cinsinden)
         private var currentVideoPosition = 0L
+
+        // Kademeli seek için state değişkenleri
+        private var pendingSeekAmount = 0L // Biriken seek miktarı
+        private var lastSeekTime = 0L // Son seek işleminin zamanı (throttle için)
 
         // Coroutine scope
         private var viewScope: CoroutineScope? = null
@@ -64,8 +67,15 @@ class PlayerControlView
         companion object {
             private const val CONTROLS_AUTO_HIDE_DELAY = 8000L // 8 saniye
             private const val SEEK_AUTO_COMMIT_DELAY = 1000L // 1 saniye
-            private const val SEEK_INCREMENT = 30000L // 30 saniye
-            private const val BUTTON_SEEK_AMOUNT = 30000L // 30 saniye
+            private const val SEEK_INCREMENT = 30000L // 30 saniye (varsayılan)
+            private const val BUTTON_SEEK_AMOUNT = 30000L // 30 saniye (butonlar için)
+
+            // Kademeli seek sabitleri
+            private const val SEEK_AMOUNT_SHORT_HOLD = 60000L // 1 dakika (500ms-5s arası)
+            private const val SEEK_AMOUNT_LONG_HOLD = 300000L // 5 dakika (5s+)
+            private const val HOLD_THRESHOLD_SHORT = 500L // 500ms (kısa basılı tutma başlangıcı)
+            private const val HOLD_THRESHOLD_LONG = 5000L // 5 saniye (uzun basılı tutma başlangıcı)
+            private const val THROTTLE_DELAY = 300L // 300ms (5 dakikalık atlamalar için throttle)
         }
 
         init {
@@ -251,8 +261,11 @@ class PlayerControlView
             binding.txtTotalTime.visibility = View.VISIBLE
 
             // Butonları da görünür yap - canlı yayında bile görünür ama devre dışı
-            binding.btnPlay.visibility = if (listener?.isPlayingState() == false) View.VISIBLE else View.GONE
-            binding.btnStop.visibility = if (listener?.isPlayingState() == true) View.VISIBLE else View.GONE
+            val isPlaying = listener?.isPlayingState() ?: false
+            timber.log.Timber.d("🔍 showControls: isPlaying=$isPlaying, listener null mu? ${listener == null}")
+            binding.btnPlay.visibility = if (!isPlaying) View.VISIBLE else View.GONE
+            binding.btnStop.visibility = if (isPlaying) View.VISIBLE else View.GONE
+            timber.log.Timber.d("🔍 Buton görünürlükleri: Play=${binding.btnPlay.visibility}, Stop=${binding.btnStop.visibility}")
             binding.btnBackward.visibility = View.VISIBLE
             binding.btnForward.visibility = View.VISIBLE
             binding.btnSpeak.visibility = View.VISIBLE
@@ -303,11 +316,8 @@ class PlayerControlView
             val slideIn = AnimationUtils.loadAnimation(context, R.anim.slide_in_bottom)
             startAnimation(slideIn)
 
-            // HER ZAMAN kontrol bar açıldığında play/stop butonuna focus ver
-            // İlk açılışta butona focus ver (ama click çalışmasın)
-            val shouldUseInitialFocus = isFirstOpen
-            if (shouldUseInitialFocus) {
-                isInitialFocus = true
+            // İlk açılış flag'ini güncelle
+            if (isFirstOpen) {
                 isFirstPanelOpen = false
             }
 
@@ -321,14 +331,6 @@ class PlayerControlView
                     override fun onAnimationEnd(animation: android.view.animation.Animation?) {
                         // HER ZAMAN kontrol bar açıldığında Play/Stop butonuna focus ver
                         requestFocusOnPlayStopButton()
-
-                        // İlk açılış için flag'i kısa bir süre sonra sıfırla (ilk focus'ta click çalışmasın)
-                        if (shouldUseInitialFocus) {
-                            postDelayed({
-                                isInitialFocus = false
-                                timber.log.Timber.d("✅ İlk focus flag'i sıfırlandı")
-                            }, 300)
-                        }
                     }
                 },
             )
@@ -369,14 +371,31 @@ class PlayerControlView
         }
 
         fun updatePlayStopButtons(isPlaying: Boolean) {
+            val currentFocus = findFocus()
+            val wasFocusOnPlayStop = currentFocus == binding.btnPlay || currentFocus == binding.btnStop
+
             if (isPlaying) {
                 // Video oynatılıyorsa → Stop görünür, Play gizli
                 binding.btnStop.visibility = View.VISIBLE
                 binding.btnPlay.visibility = View.GONE
+                // Eğer focus play/stop butonlarındaysa, yeni görünen stop butonuna ver
+                if (wasFocusOnPlayStop) {
+                    post {
+                        binding.btnStop.requestFocus()
+                        timber.log.Timber.d("🎯 Focus Stop butonuna verildi (updatePlayStopButtons)")
+                    }
+                }
             } else {
                 // Video durdurulmuşsa → Play görünür, Stop gizli
                 binding.btnPlay.visibility = View.VISIBLE
                 binding.btnStop.visibility = View.GONE
+                // Eğer focus play/stop butonlarındaysa, yeni görünen play butonuna ver
+                if (wasFocusOnPlayStop) {
+                    post {
+                        binding.btnPlay.requestFocus()
+                        timber.log.Timber.d("🎯 Focus Play butonuna verildi (updatePlayStopButtons)")
+                    }
+                }
             }
             timber.log.Timber.d("🎮 Buton durumu güncellendi: isPlaying=$isPlaying")
         }
@@ -469,10 +488,43 @@ class PlayerControlView
                             return true // Olayı tüket
                         }
                     }
+                    // Play/Stop butonlarında OK tuşu - ÖNCE kontrol et (SeekBar'dan önce)
+                    if (event.keyCode == KeyEvent.KEYCODE_DPAD_CENTER && event.action == KeyEvent.ACTION_DOWN) {
+                        timber.log.Timber.d(
+                            "🔍🔍🔍 OK tuşu (DPAD_CENTER) basıldı! action=${event.action}, focusedView=${focusedView?.javaClass?.simpleName}",
+                        )
+                        timber.log.Timber.d(
+                            "🔍 btnPlay visibility: ${binding.btnPlay.visibility}, btnStop visibility: ${binding.btnStop.visibility}",
+                        )
+                        timber.log.Timber.d(
+                            "🔍 btnPlay == focusedView: ${focusedView == binding.btnPlay}, btnStop == focusedView: ${focusedView == binding.btnStop}",
+                        )
+
+                        // Play butonu görünür ve odaklanmışsa
+                        if (binding.btnPlay.visibility == View.VISIBLE && focusedView == binding.btnPlay) {
+                            timber.log.Timber.d("🎯✅✅✅ Play butonunda OK tuşu basıldı, listener doğrudan çağrılıyor")
+                            // Focus'u updatePlayStopButtons() içinde vereceğiz (buton görünür hale geldikten sonra)
+                            // Sonra listener'ı çağır ve controls'u göster
+                            listener?.onPlayClicked()
+                            showControls()
+                            return true // Olayı tüket
+                        }
+                        // Stop butonu görünür ve odaklanmışsa
+                        else if (binding.btnStop.visibility == View.VISIBLE && focusedView == binding.btnStop) {
+                            timber.log.Timber.d("🎯✅✅✅ Stop butonunda OK tuşu basıldı, listener doğrudan çağrılıyor")
+                            // Focus'u updatePlayStopButtons() içinde vereceğiz (buton görünür hale geldikten sonra)
+                            // Sonra listener'ı çağır ve controls'u göster
+                            listener?.onPauseClicked()
+                            showControls()
+                            return true // Olayı tüket
+                        } else {
+                            timber.log.Timber.d("⚠️ OK tuşu basıldı ama focusedView Play/Stop değil: ${focusedView?.javaClass?.simpleName}")
+                        }
+                    }
                     // SeekBar odaktaysa, tuş olaylarını özel olarak yönet
                     if (focusedView == binding.seekbarProgress) {
                         timber.log.Timber.d("📊 SeekBar'da tuş basıldı: keyCode=${event.keyCode}")
-                        val handled = handleSeekBarKeyEvent(event.keyCode, true)
+                        val handled = handleSeekBarKeyEvent(event, true)
                         if (handled) {
                             // LEFT/RIGHT tuşları için focus'un SeekBar'da kalmasını garanti et
                             // DOWN tuşu için focus butona geçmeli, geri almayalım
@@ -487,14 +539,6 @@ class PlayerControlView
                                 timber.log.Timber.d("✅ DPAD_DOWN ile butona focus geçişi yapıldı, geri alınmayacak")
                             }
                             return true
-                        }
-                    }
-                    // Play/Stop butonlarında OK tuşu - Focus değişmesin, sadece click çalışsın
-                    if (event.keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
-                        if (focusedView == binding.btnPlay || focusedView == binding.btnStop) {
-                            timber.log.Timber.d("🎯 Play/Stop butonunda OK tuşu basıldı, onClick tetiklenecek")
-                            // onClick zaten çalışacak, sadece focus'un değişmesini engelle
-                            return false // super.dispatchKeyEvent'e gitmesin, onClick çalışsın
                         }
                     }
                     // Diğer butonlarda DPAD DOWN kontrol bar'ı kapatsın (ayarlar paneli açık değilse)
@@ -550,8 +594,24 @@ class PlayerControlView
                         "🔍 ACTION_UP: keyCode=${event?.keyCode}, focus değişti mi? ${focusedView != newFocusedView}, yeni focus=$newFocusedViewName",
                     )
 
+                    // ACTION_UP'da focus kontrolü - ACTION_DOWN'da zaten focus verildi, burada sadece kontrol et
+                    if (event.keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+                        val currentFocus = findFocus()
+                        // Eğer focus SeekBar'a kaymışsa, doğru butona geri al
+                        if (currentFocus == binding.seekbarProgress) {
+                            val targetButton = if (focusedView == binding.btnPlay) binding.btnStop else binding.btnPlay
+                            if (targetButton.visibility == View.VISIBLE) {
+                                targetButton.requestFocus()
+                                timber.log.Timber.d(
+                                    "✅ ACTION_UP: Focus SeekBar'dan ${targetButton.javaClass.simpleName} butonuna geri alındı",
+                                )
+                            }
+                            return true
+                        }
+                    }
+
                     if (focusedView == binding.seekbarProgress) {
-                        val handled = handleSeekBarKeyEvent(event.keyCode, false)
+                        val handled = handleSeekBarKeyEvent(event, false)
                         // LEFT/RIGHT tuşları için focus değiştiyse geri al
                         // DOWN tuşu için focus butona geçmeli, geri almayalım
                         if (event.keyCode != KeyEvent.KEYCODE_DPAD_DOWN) {
@@ -587,21 +647,27 @@ class PlayerControlView
         }
 
         private fun handleSeekBarKeyEvent(
-            keyCode: Int,
+            event: KeyEvent,
             isKeyDown: Boolean,
         ): Boolean {
             // Sadece tuşa ilk basılma anıyla ilgileniyoruz.
             if (!isKeyDown) return false
 
-            when (keyCode) {
+            when (event.keyCode) {
                 KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                    handleSeekButtonClick(SEEK_INCREMENT)
-                    timber.log.Timber.d("⏩ SeekBar ileri: ${SEEK_INCREMENT / 1000}s")
+                    val seekAmount = calculateSeekAmount(event, true)
+                    handleSeekButtonClick(seekAmount)
+                    timber.log.Timber.d(
+                        "⏩ SeekBar ileri: ${seekAmount / 1000}s (holdDuration=${event.eventTime - event.downTime}ms, repeatCount=${event.repeatCount})",
+                    )
                     return true
                 }
                 KeyEvent.KEYCODE_DPAD_LEFT -> {
-                    handleSeekButtonClick(-SEEK_INCREMENT)
-                    timber.log.Timber.d("⏪ SeekBar geri: ${SEEK_INCREMENT / 1000}s")
+                    val seekAmount = calculateSeekAmount(event, false)
+                    handleSeekButtonClick(seekAmount)
+                    timber.log.Timber.d(
+                        "⏪ SeekBar geri: ${seekAmount / 1000}s (holdDuration=${event.eventTime - event.downTime}ms, repeatCount=${event.repeatCount})",
+                    )
                     return true
                 }
                 KeyEvent.KEYCODE_DPAD_DOWN -> {
@@ -630,6 +696,58 @@ class PlayerControlView
                 }
             }
             return false
+        }
+
+        /**
+         * Kademeli seek miktarını hesaplar.
+         * Basılı tutma süresine göre farklı seek miktarları döndürür.
+         *
+         * @param event KeyEvent - Tuş event'i
+         * @param isForward İleri mi geri mi (true = ileri, false = geri)
+         * @return Seek miktarı (milisaniye cinsinden, negatif veya pozitif)
+         */
+        private fun calculateSeekAmount(
+            event: KeyEvent,
+            isForward: Boolean,
+        ): Long {
+            val currentTime = System.currentTimeMillis()
+
+            // İlk basış mı kontrol et (repeatCount == 0)
+            if (event.repeatCount == 0) {
+                // İlk basış: Her zaman 30 saniye
+                lastSeekTime = currentTime // İlk basışta zaman damgasını güncelle
+                return if (isForward) SEEK_INCREMENT else -SEEK_INCREMENT
+            }
+
+            // Key repeat: Basılı tutma süresine göre hesapla
+            val holdDuration = event.eventTime - event.downTime
+
+            val seekAmount =
+                when {
+                    holdDuration > HOLD_THRESHOLD_LONG -> SEEK_AMOUNT_LONG_HOLD // 5 Dakika
+                    holdDuration > HOLD_THRESHOLD_SHORT -> SEEK_AMOUNT_SHORT_HOLD // 1 Dakika
+                    else -> SEEK_INCREMENT // 30 Saniye
+                }
+
+            // 5 dakikalık atlamalarda throttle uygula
+            if (seekAmount == SEEK_AMOUNT_LONG_HOLD) {
+                val timeSinceLastSeek = currentTime - lastSeekTime
+
+                if (timeSinceLastSeek < THROTTLE_DELAY) {
+                    // Throttle aktif: Önceki seek miktarını kullan (daha küçük)
+                    timber.log.Timber.d("⏱️ Throttle aktif: ${timeSinceLastSeek}ms < ${THROTTLE_DELAY}ms, 1 dakikalık atlama kullanılıyor")
+                    val throttledAmount = if (isForward) SEEK_AMOUNT_SHORT_HOLD else -SEEK_AMOUNT_SHORT_HOLD
+                    lastSeekTime = currentTime
+                    return throttledAmount
+                }
+
+                lastSeekTime = currentTime
+            } else {
+                // Diğer seek miktarları için de zaman damgasını güncelle
+                lastSeekTime = currentTime
+            }
+
+            return if (isForward) seekAmount else -seekAmount
         }
 
         private fun updatePreviewTime(positionMs: Long) {
@@ -663,7 +781,10 @@ class PlayerControlView
             // Flag'leri sıfırla
             isUserSeeking = false
             seekCommitJob?.cancel()
-            timber.log.Timber.d("✅ Kilit kaldırıldı. isUserSeeking: $isUserSeeking")
+
+            // Biriken seek miktarını sıfırla (commit edildi)
+            pendingSeekAmount = 0L
+            timber.log.Timber.d("✅ Kilit kaldırıldı. isUserSeeking: $isUserSeeking, pendingSeekAmount sıfırlandı")
 
             // Auto-hide sayacını yeniden başlat
             resetAutoHideTimer()
@@ -711,66 +832,30 @@ class PlayerControlView
             binding.btnPlay.setOnClickListener {
                 val currentFocus = findFocus()
                 timber.log.Timber.d(
-                    "▶️▶️▶️ PLAY BUTONU onClick TETİKLENDİ! Focus=${currentFocus?.javaClass?.simpleName}, isInitialFocus=$isInitialFocus",
+                    "▶️▶️▶️ PLAY BUTONU onClick TETİKLENDİ! Focus=${currentFocus?.javaClass?.simpleName}",
                 )
 
-                // İlk focus'ta click çalışmasın
-                if (isInitialFocus) {
-                    timber.log.Timber.d("⏸️ İlk focus'ta click engellendi (Play)")
-                    return@setOnClickListener
-                }
-
+                // Focus'u updatePlayStopButtons() içinde vereceğiz (buton görünür hale geldikten sonra)
+                // Sonra listener'ı çağır ve controls'u göster
                 timber.log.Timber.d("▶️ Play butonuna tıklandı, onPlayClicked çağrılıyor...")
                 listener?.onPlayClicked()
                 showControls() // Panel göster
-                // Focus'u Play butonunda tut (OK tuşundan sonra focus değişmesin)
-                post {
-                    binding.btnPlay.requestFocus()
-                }
                 timber.log.Timber.d("▶️ Play butonu onClick tamamlandı")
             }
 
             // Stop butonuna tıklanınca video durdur
             binding.btnStop.setOnClickListener {
-                // İlk focus'ta click çalışmasın
-                if (isInitialFocus) {
-                    timber.log.Timber.d("⏸️ İlk focus'ta click engellendi (Stop)")
-                    return@setOnClickListener
-                }
-
+                timber.log.Timber.d("⏸️⏸️⏸️ STOP BUTONU onClick TETİKLENDİ!")
+                timber.log.Timber.d("⏸️ listener null mu? ${listener == null}")
+                // Focus'u updatePlayStopButtons() içinde vereceğiz (buton görünür hale geldikten sonra)
+                // Sonra listener'ı çağır ve controls'u göster
                 listener?.onPauseClicked()
+                timber.log.Timber.d("⏸️ onPauseClicked() çağrıldı")
                 showControls() // Panel göster
-                // Focus'u Stop butonunda tut (OK tuşundan sonra focus değişmesin)
-                post {
-                    binding.btnStop.requestFocus()
-                }
-                timber.log.Timber.d("⏸️ Stop butonuna tıklandı")
+                timber.log.Timber.d("⏸️ Stop butonu onClick tamamlandı")
             }
 
-            // Play/Stop butonlarında OK tuşu için key listener ekle - focus değişmesin
-            binding.btnPlay.setOnKeyListener { view, keyCode, event ->
-                if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER && event.action == KeyEvent.ACTION_DOWN) {
-                    // onClick zaten çalışacak, sadece focus'un değişmesini engelle
-                    post {
-                        view.requestFocus()
-                    }
-                    false // onClick'in çalışmasına izin ver
-                } else {
-                    false
-                }
-            }
-
-            binding.btnStop.setOnKeyListener { view, keyCode, event ->
-                if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER && event.action == KeyEvent.ACTION_DOWN) {
-                    // onClick zaten çalışacak, sadece focus'un değişmesini engelle
-                    post {
-                        view.requestFocus()
-                    }
-                    false // onClick'in çalışmasına izin ver
-                } else {
-                    false
-                }
-            }
+            // setOnKeyListener kaldırıldı - dispatchKeyEvent içinde performClick() kullanılıyor
         }
 
         private fun setupForwardBackwardButtons() {
@@ -815,9 +900,14 @@ class PlayerControlView
             isUserSeeking = true
             hideControlsJob?.cancel()
 
-            // 2. Adım: Yeni pozisyonu hesapla (GÜVENİLİR KAYNAKTAN OKU: Doğrudan player'dan)
+            // 2. Adım: Biriken seek miktarına ekle (hızlı basışları doğru hesaplamak için)
+            pendingSeekAmount += amount
+            timber.log.Timber.d("🔘 Biriken seek miktarı: ${pendingSeekAmount / 1000}s")
+
+            // 3. Adım: Yeni pozisyonu hesapla (GÜVENİLİR KAYNAKTAN OKU: Doğrudan player'dan)
             val currentPosition = listener?.getCurrentPosition() ?: 0L
-            val newPosition = (currentPosition + amount).coerceIn(0, duration)
+            // Biriken seek miktarını da hesaba kat
+            val newPosition = (currentPosition + pendingSeekAmount).coerceIn(0, duration)
             val newProgress = ((newPosition * 100) / duration).toInt().coerceIn(0, 100)
 
             timber.log.Timber.d(

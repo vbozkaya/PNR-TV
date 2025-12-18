@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.pnr.tv.Constants
+import com.pnr.tv.ContentConstants
 import com.pnr.tv.db.dao.MovieCategoryDao
 import com.pnr.tv.db.dao.MovieDao
 import com.pnr.tv.db.dao.SeriesCategoryDao
@@ -94,9 +94,9 @@ class TmdbSyncWorker
                 categories.filter { category ->
                     val categoryId = category.categoryId
                     // "0", "-1", "-2" gibi sanal kategorileri atla
-                    categoryId != Constants.VirtualCategoryIds.ALL_STRING &&
-                        categoryId != Constants.VirtualCategoryIds.FAVORITES_STRING &&
-                        categoryId != Constants.VirtualCategoryIds.RECENTLY_ADDED_STRING
+                    categoryId != ContentConstants.VirtualCategoryIds.ALL_STRING &&
+                        categoryId != ContentConstants.VirtualCategoryIds.FAVORITES_STRING &&
+                        categoryId != ContentConstants.VirtualCategoryIds.RECENTLY_ADDED_STRING
                 }.sortedBy { it.sortOrder }
 
             Timber.d("   • İşlenecek kategori sayısı: ${categoriesToProcess.size} (Sanal kategoriler atlandı)")
@@ -154,9 +154,9 @@ class TmdbSyncWorker
                 categories.filter { category ->
                     val categoryId = category.categoryId
                     // Sanal kategorileri atla
-                    categoryId != Constants.VirtualCategoryIds.ALL_STRING &&
-                        categoryId != Constants.VirtualCategoryIds.FAVORITES_STRING &&
-                        categoryId != Constants.VirtualCategoryIds.RECENTLY_ADDED_STRING
+                    categoryId != ContentConstants.VirtualCategoryIds.ALL_STRING &&
+                        categoryId != ContentConstants.VirtualCategoryIds.FAVORITES_STRING &&
+                        categoryId != ContentConstants.VirtualCategoryIds.RECENTLY_ADDED_STRING
                 }.sortedBy { it.sortOrder }
 
             Timber.d("   • İşlenecek kategori sayısı: ${categoriesToProcess.size}")

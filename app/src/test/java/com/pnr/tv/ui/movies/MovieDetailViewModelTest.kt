@@ -295,8 +295,8 @@ class MovieDetailViewModelTest {
                 )
             val testViewers =
                 listOf(
-                    ViewerEntity(id = 1, name = "Viewer 1"),
-                    ViewerEntity(id = 2, name = "Viewer 2"),
+                    ViewerEntity(id = 1, name = "Viewer 1", userId = 1),
+                    ViewerEntity(id = 2, name = "Viewer 2", userId = 1),
                 )
 
             whenever(mockContentRepository.getMovies()).thenReturn(flowOf(listOf(testMovie)))

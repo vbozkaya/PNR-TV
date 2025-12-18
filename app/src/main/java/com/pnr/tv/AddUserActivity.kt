@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.pnr.tv.databinding.ActivityAddUserBinding
 import com.pnr.tv.db.entity.UserAccountEntity
+import com.pnr.tv.security.DataEncryption
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -45,8 +46,11 @@ class AddUserActivity : BaseActivity() {
         originalUser?.let {
             binding.etAccountName.setText(it.accountName)
             binding.etUsername.setText(it.username)
-            binding.etPassword.setText(it.password)
-            binding.etDns.setText(it.dns)
+            // Şifrelenmiş password ve DNS'i çöz
+            val decryptedPassword = DataEncryption.decryptSensitiveData(it.password, this)
+            val decryptedDns = DataEncryption.decryptSensitiveData(it.dns, this)
+            binding.etPassword.setText(decryptedPassword)
+            binding.etDns.setText(decryptedDns)
             binding.btnSaveUser.text = getString(R.string.btn_update)
         } ?: run {
             binding.btnSaveUser.text = getString(R.string.btn_save)
@@ -69,13 +73,17 @@ class AddUserActivity : BaseActivity() {
         }
 
         lifecycleScope.launch {
+            // Password ve DNS'i şifrele
+            val encryptedPassword = DataEncryption.encryptSensitiveData(password, this@AddUserActivity)
+            val encryptedDns = DataEncryption.encryptSensitiveData(dns, this@AddUserActivity)
+
             originalUser?.let {
                 val updatedUser =
                     it.copy(
                         accountName = accountName,
                         username = username,
-                        password = password,
-                        dns = dns,
+                        password = encryptedPassword,
+                        dns = encryptedDns,
                     )
                 viewModel.updateUser(updatedUser)
                 Toast.makeText(this@AddUserActivity, getString(R.string.toast_user_updated), Toast.LENGTH_SHORT).show()
@@ -84,8 +92,8 @@ class AddUserActivity : BaseActivity() {
                     UserAccountEntity(
                         accountName = accountName,
                         username = username,
-                        password = password,
-                        dns = dns,
+                        password = encryptedPassword,
+                        dns = encryptedDns,
                     )
                 viewModel.addUser(newUser)
                 Toast.makeText(this@AddUserActivity, getString(R.string.toast_user_saved), Toast.LENGTH_SHORT).show()
@@ -102,7 +110,7 @@ class AddUserActivity : BaseActivity() {
         editTexts.forEach { editText ->
             editText.setOnFocusChangeListener { view, hasFocus ->
                 if (hasFocus) {
-                    view.postDelayed({ showKeyboard(view) }, Constants.DelayDurations.KEYBOARD_SHOW_DELAY)
+                    view.postDelayed({ showKeyboard(view) }, UIConstants.DelayDurations.KEYBOARD_SHOW_DELAY)
                 }
             }
             editText.setOnClickListener { showKeyboard(it) }

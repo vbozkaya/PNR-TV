@@ -27,6 +27,7 @@ import com.pnr.tv.PlayerActivity
 import com.pnr.tv.R
 import com.pnr.tv.extensions.normalizeBaseUrl
 import com.pnr.tv.repository.UserRepository
+import com.pnr.tv.security.DataEncryption
 import com.pnr.tv.ui.viewers.SelectViewerDialog
 import com.pnr.tv.util.BackgroundManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -404,10 +405,14 @@ class MovieDetailFragment : Fragment() {
             viewLifecycleOwner.lifecycleScope.launch {
                 val user = userRepository.currentUser.firstOrNull()
                 if (user != null) {
-                    val baseUrl = user.dns.normalizeBaseUrl()
+                    // DNS ve password'ü şifre çöz
+                    val decryptedDns = DataEncryption.decryptSensitiveData(user.dns, requireContext())
+                    val decryptedPassword = DataEncryption.decryptSensitiveData(user.password, requireContext())
+
+                    val baseUrl = decryptedDns.normalizeBaseUrl()
 
                     // Stream URL'yi oluştur
-                    val streamUrl = viewModel.getStreamUrl(baseUrl, user.username, user.password)
+                    val streamUrl = viewModel.getStreamUrl(baseUrl, user.username, decryptedPassword)
                     if (streamUrl != null) {
                         val movie = viewModel.movie.value
                         timber.log.Timber.d("🎬 FİLM URL: $streamUrl (extension: ${movie?.containerExtension ?: "ts (default)"})")
@@ -500,14 +505,19 @@ class MovieDetailFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.showViewerSelectionDialog.collect { viewers ->
-                    SelectViewerDialog(requireContext(), viewers) { viewer ->
-                        viewModel.saveFavoriteForViewer(viewer)
-                        android.widget.Toast.makeText(
-                            requireContext(),
-                            getString(R.string.toast_favorite_added),
-                            android.widget.Toast.LENGTH_SHORT,
-                        ).show()
-                    }.show()
+                    SelectViewerDialog(
+                        context = requireContext(),
+                        viewers = viewers,
+                        onViewerSelected = { viewer ->
+                            viewModel.saveFavoriteForViewer(viewer)
+                            android.widget.Toast.makeText(
+                                requireContext(),
+                                getString(R.string.toast_favorite_added),
+                                android.widget.Toast.LENGTH_SHORT,
+                            ).show()
+                        },
+                        lifecycleScope = viewLifecycleOwner.lifecycleScope,
+                    ).show()
                 }
             }
         }

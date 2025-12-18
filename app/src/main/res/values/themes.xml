@@ -9,5 +9,11 @@
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActionBar">false</item>
     </style>
+    
+    <!-- Diğer activity'ler için siyah window background -->
+    <!-- Activity geçişlerinde MainActivity'nin butonlarının görünmesini önlemek için -->
+    <style name="Theme.Leanback.OtherActivities" parent="Theme.Leanback">
+        <item name="android:windowBackground">@drawable/window_background_black</item>
+    </style>
 </resources>
 

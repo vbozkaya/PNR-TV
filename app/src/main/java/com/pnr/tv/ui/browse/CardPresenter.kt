@@ -6,8 +6,8 @@ import coil.load
 import coil.request.CachePolicy
 import coil.size.Scale
 import coil.size.Size
-import com.pnr.tv.Constants
 import com.pnr.tv.R
+import com.pnr.tv.UIConstants
 import com.pnr.tv.model.ContentItem
 import kotlin.math.roundToInt
 
@@ -27,7 +27,7 @@ class CardPresenter : Presenter() {
         // Kart boyutunu sadece bir kez hesapla
         if (cardWidth == 0) {
             val screenWidth = parent.context.resources.displayMetrics.widthPixels
-            cardWidth = (screenWidth / Constants.CARD_WIDTH_DIVISOR).toInt()
+            cardWidth = (screenWidth / UIConstants.CARD_WIDTH_DIVISOR).toInt()
             // 16:9 en-boy oranı varsayımıyla yüksekliği hesapla
             cardHeight = (cardWidth * 9.0 / 16.0).roundToInt()
         }

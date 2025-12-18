@@ -1,7 +1,9 @@
 package com.pnr.tv.repository
 
+import com.pnr.tv.SessionManager
 import com.pnr.tv.db.dao.PlaybackPositionDao
 import com.pnr.tv.db.entity.PlaybackPositionEntity
+import kotlinx.coroutines.flow.firstOrNull
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -12,6 +14,7 @@ class PlaybackPositionRepository
     @Inject
     constructor(
         private val playbackPositionDao: PlaybackPositionDao,
+        private val sessionManager: SessionManager,
     ) {
         /**
          * Oynatma pozisyonunu kaydeder veya günceller.
@@ -24,9 +27,11 @@ class PlaybackPositionRepository
             positionMs: Long,
             durationMs: Long,
         ) {
+            val userId = sessionManager.getCurrentUserId().firstOrNull() ?: return
             val position =
                 PlaybackPositionEntity(
                     contentId = contentId,
+                    userId = userId,
                     positionMs = positionMs,
                     durationMs = durationMs,
                     lastUpdated = System.currentTimeMillis(),
@@ -40,7 +45,8 @@ class PlaybackPositionRepository
          * @return PlaybackPositionEntity veya null
          */
         suspend fun getPlaybackPosition(contentId: String): PlaybackPositionEntity? {
-            return playbackPositionDao.getPosition(contentId)
+            val userId = sessionManager.getCurrentUserId().firstOrNull() ?: return null
+            return playbackPositionDao.getPosition(contentId, userId)
         }
 
         /**
@@ -48,7 +54,8 @@ class PlaybackPositionRepository
          * Video tamamlandığında veya kullanıcı baştan başlatmak istediğinde kullanılır.
          */
         suspend fun deletePlaybackPosition(contentId: String) {
-            playbackPositionDao.deletePosition(contentId)
+            val userId = sessionManager.getCurrentUserId().firstOrNull() ?: return
+            playbackPositionDao.deletePosition(contentId, userId)
             Timber.d("🗑️ Pozisyon silindi: $contentId")
         }
 

@@ -64,19 +64,35 @@
         app:layout_constraintBottom_toBottomOf="parent" />
 
     <!-- Boş durum bilgilendirme mesajı -->
-    <TextView
-        android:id="@+id/txt_empty_state"
+    <LinearLayout
+        android:id="@+id/empty_state_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="24sp"
-        android:textColor="@android:color/white"
-        android:textStyle="bold"
+        android:orientation="vertical"
         android:gravity="center"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="@id/recycler_movies"
         app:layout_constraintEnd_toEndOf="@id/recycler_movies"
         app:layout_constraintTop_toTopOf="@id/recycler_movies"
-        app:layout_constraintBottom_toBottomOf="@id/recycler_movies" />
+        app:layout_constraintBottom_toBottomOf="@id/recycler_movies">
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/ic_empty_state"
+            android:contentDescription="@string/cd_empty_state_icon"
+            android:layout_marginBottom="24dp" />
+
+        <TextView
+            android:id="@+id/txt_empty_state"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:maxWidth="600dp" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

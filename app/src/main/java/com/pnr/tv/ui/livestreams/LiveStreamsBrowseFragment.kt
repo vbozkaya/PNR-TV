@@ -10,14 +10,14 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.pnr.tv.Constants
-import com.pnr.tv.MainViewModel
 import com.pnr.tv.PlayerActivity
 import com.pnr.tv.R
+import com.pnr.tv.UIConstants
 import com.pnr.tv.db.entity.LiveStreamEntity
 import com.pnr.tv.model.CategoryItem
 import com.pnr.tv.model.ContentItem
 import com.pnr.tv.ui.base.BaseBrowseFragment
+import com.pnr.tv.ui.browse.ContentAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -31,11 +31,11 @@ import kotlinx.coroutines.launch
  */
 @AndroidEntryPoint
 class LiveStreamsBrowseFragment : BaseBrowseFragment() {
-    private val mainViewModel: MainViewModel by activityViewModels()
+    private val liveStreamViewModel: LiveStreamViewModel by activityViewModels()
 
     // BaseBrowseFragment requires BaseViewModel
     override val viewModel: com.pnr.tv.ui.base.BaseViewModel
-        get() = mainViewModel
+        get() = liveStreamViewModel
 
     private val playerActivityLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
@@ -68,10 +68,37 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
         observeLoadingState()
     }
 
+    /**
+     * Adapter'ları oluşturur ve OK tuşu long press desteği ekler.
+     */
+    override fun createAdapters() {
+        // Önce base adapter'ları oluştur
+        super.createAdapters()
+
+        // ContentAdapter'ı OK tuşu long press desteği ile yeniden oluştur
+        contentAdapter =
+            ContentAdapter(
+                onContentClick = { content ->
+                    onContentClicked(content)
+                },
+                onContentLongPress = { content ->
+                    onContentLongPressed(content)
+                },
+                gridColumnCount = getGridColumnCount(),
+                onOkButtonLongPress = { content ->
+                    // OK tuşuna 3 saniye basılı tutulduğunda favori işlemi yap
+                    toggleFavorite(content)
+                },
+            )
+
+        // RecyclerView'a yeni adapter'ı set et
+        contentRecyclerView.adapter = contentAdapter
+    }
+
     private fun observeErrorState() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                mainViewModel.liveStreamsErrorMessage.collect { errorMsg ->
+                liveStreamViewModel.liveStreamsErrorMessage.collect { errorMsg ->
                     if (errorMsg != null) {
                         showErrorState(errorMsg)
                     }
@@ -83,10 +110,10 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
     private fun observeLoadingState() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                mainViewModel.isLiveStreamsLoading.collect { isLoading ->
+                liveStreamViewModel.isLiveStreamsLoading.collect { isLoading ->
                     if (isLoading) {
                         showLoadingState()
-                    } else if (mainViewModel.liveStreamsErrorMessage.value == null) {
+                    } else if (liveStreamViewModel.liveStreamsErrorMessage.value == null) {
                         showContentState()
                     }
                 }
@@ -97,18 +124,18 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
     // Abstract properties from BaseBrowseFragment
     override val categoriesFlow: Flow<List<CategoryItem>>
         get() =
-            mainViewModel.liveStreamCategories.distinctUntilChanged { old, new ->
+            liveStreamViewModel.liveStreamCategories.distinctUntilChanged { old, new ->
                 old.size == new.size && old.map { it.categoryId } == new.map { it.categoryId }
             }
 
     override val contentsFlow: Flow<List<ContentItem>>
-        get() = mainViewModel.liveStreams.map { it }
+        get() = liveStreamViewModel.liveStreams.map { it }
 
     override val selectedCategoryIdFlow: Flow<String?>
-        get() = mainViewModel.selectedLiveStreamCategoryId
+        get() = liveStreamViewModel.selectedLiveStreamCategoryId
 
     override val toastEventFlow: Flow<String>
-        get() = mainViewModel.toastEvent
+        get() = liveStreamViewModel.toastEvent
 
     // Abstract methods from BaseBrowseFragment
     override fun getNavbarTitle(): String = getString(R.string.page_live_streams)
@@ -119,27 +146,31 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
 
     override fun getEmptyStateTextViewId(): Int = R.id.txt_empty_state
 
-    override fun getGridColumnCount(): Int = Constants.GRID_COLUMN_COUNT
+    override fun getGridColumnCount(): Int = UIConstants.GRID_COLUMN_COUNT
 
     // Override hooks from BaseBrowseFragment
     override fun onInitialLoad() {
-        mainViewModel.loadLiveStreamsIfNeeded()
+        liveStreamViewModel.loadLiveStreamsIfNeeded()
     }
 
     override fun onCategoryClicked(category: CategoryItem) {
-        mainViewModel.selectLiveStreamCategory(category.categoryId)
+        liveStreamViewModel.selectLiveStreamCategory(category.categoryId)
     }
 
     override fun selectCategoryById(categoryId: String?) {
         // Kategori ID'sine göre kategori seç
         categoryId?.let { id ->
-            mainViewModel.selectLiveStreamCategory(id)
+            liveStreamViewModel.selectLiveStreamCategory(id)
         }
     }
 
     override fun onCategoryFocused(category: CategoryItem) {
         // Focus geldiğinde kategoriyi seç ve içerikleri yükle
-        mainViewModel.selectLiveStreamCategory(category.categoryId)
+        val startTime = System.currentTimeMillis()
+        timber.log.Timber.tag("GRID_UPDATE").d("🎯 Kategori focus: ${category.categoryName} (ID: ${category.categoryId})")
+        liveStreamViewModel.selectLiveStreamCategory(category.categoryId)
+        val focusTime = System.currentTimeMillis() - startTime
+        timber.log.Timber.tag("GRID_UPDATE").d("⚡ Kategori focus süresi: ${focusTime}ms")
     }
 
     override fun onContentClicked(item: ContentItem) {
@@ -148,24 +179,31 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
             // Son seçili kategoriyi ve odaklanılan pozisyonu kaydet
             val position = contentAdapter.currentList.indexOf(item)
             if (position != -1) {
-                mainViewModel.lastFocusedContentPosition = position
+                liveStreamViewModel.lastFocusedContentPosition = position
                 // Mevcut seçili kategoriyi kaydet
-                mainViewModel.lastSelectedCategoryId = mainViewModel.selectedLiveStreamCategoryId.value
+                liveStreamViewModel.lastSelectedCategoryId = liveStreamViewModel.selectedLiveStreamCategoryId.value
             }
 
-            mainViewModel.onChannelSelected(item)
+            liveStreamViewModel.onChannelSelected(item)
         }
     }
 
     override fun onContentLongPressed(item: ContentItem) {
-        // Long press: toggle favorite
+        // Long press: toggle favorite (for touch/long press events)
+        toggleFavorite(item)
+    }
+
+    /**
+     * Favori durumunu değiştirir.
+     */
+    private fun toggleFavorite(item: ContentItem) {
         if (item is LiveStreamEntity) {
             viewLifecycleOwner.lifecycleScope.launch {
-                val isFavorite = mainViewModel.isLiveStreamFavorite(item.streamId).first()
+                val isFavorite = liveStreamViewModel.isLiveStreamFavorite(item.streamId).first()
                 if (isFavorite) {
-                    mainViewModel.removeLiveStreamFavorite(item.streamId)
+                    liveStreamViewModel.removeLiveStreamFavorite(item.streamId)
                 } else {
-                    mainViewModel.addLiveStreamFavorite(item.streamId)
+                    liveStreamViewModel.addLiveStreamFavorite(item.streamId)
                 }
             }
         }
@@ -179,17 +217,17 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
         val categoryIdInt = selectedCategoryId?.toIntOrNull()
         if (categoryIdInt != null &&
             (
-                categoryIdInt == MainViewModel.VIRTUAL_CATEGORY_ID_FAVORITES ||
-                    categoryIdInt == MainViewModel.VIRTUAL_CATEGORY_ID_RECENTLY_WATCHED
+                categoryIdInt == LiveStreamViewModel.VIRTUAL_CATEGORY_ID_FAVORITES ||
+                    categoryIdInt == LiveStreamViewModel.VIRTUAL_CATEGORY_ID_RECENTLY_WATCHED
             ) &&
             channels.isEmpty()
         ) {
             val message =
                 when (categoryIdInt) {
-                    MainViewModel.VIRTUAL_CATEGORY_ID_FAVORITES -> {
+                    LiveStreamViewModel.VIRTUAL_CATEGORY_ID_FAVORITES -> {
                         getString(R.string.empty_favorites)
                     }
-                    MainViewModel.VIRTUAL_CATEGORY_ID_RECENTLY_WATCHED -> {
+                    LiveStreamViewModel.VIRTUAL_CATEGORY_ID_RECENTLY_WATCHED -> {
                         getString(R.string.empty_recently_watched)
                     }
                     else -> ""
@@ -206,7 +244,7 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
     private fun setupPlayerNavigation() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
-                mainViewModel.openPlayerEvent.collect { (url, channelId, categoryId) ->
+                liveStreamViewModel.openPlayerEvent.collect { (url, channelId, categoryId) ->
                     val intent =
                         Intent(requireContext(), PlayerActivity::class.java).apply {
                             putExtra(PlayerActivity.EXTRA_VIDEO_URL, url)
