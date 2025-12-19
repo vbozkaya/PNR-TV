@@ -10,6 +10,7 @@ import com.pnr.tv.network.dto.TmdbMovieDetailsDto
 import com.pnr.tv.repository.ContentRepository
 import com.pnr.tv.repository.TmdbRepository
 import com.pnr.tv.repository.ViewerRepository
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
@@ -82,27 +83,31 @@ class MovieDetailViewModelTest {
                 )
 
             whenever(mockContentRepository.getMovies()).thenReturn(flowOf(listOf(testMovie)))
-            // Suspend fonksiyonlar için runBlocking içinde mock'la
-            runBlocking {
-                whenever(mockTmdbRepository.getMovieDetailsById(any())).thenReturn(null)
-            }
-            whenever(mockTmdbRepository.getGenres(anyOrNull())).thenReturn(null)
-            runBlocking {
-                whenever(mockTmdbRepository.getDirector(any(), anyOrNull())).thenReturn(null)
-                whenever(mockTmdbRepository.getCast(any(), anyOrNull())).thenReturn(null)
-                whenever(mockTmdbRepository.getOverview(any(), anyOrNull())).thenReturn(null)
+            // Suspend fonksiyonlar için mock - Mockito-Kotlin suspend fonksiyonları destekler
+            // Spesifik değerlerle mock'la (matcher kullanmadan)
+            kotlinx.coroutines.runBlocking {
+                whenever(mockTmdbRepository.getMovieDetailsById(456)).thenReturn(null)
+                whenever(mockTmdbRepository.getDirector(456, null)).thenReturn(null)
+                whenever(mockTmdbRepository.getCast(456, null)).thenReturn(null)
+                whenever(mockTmdbRepository.getOverview(456, null)).thenReturn(null)
+                whenever(mockTmdbRepository.getGenres(null)).thenReturn(null)
             }
 
             viewModel = createViewModel()
 
-            // When
-            viewModel.loadMovie(movieId)
-            advanceUntilIdle()
-
-            // Then
-            viewModel.uiState.test {
-                val state = awaitItem()
-                assertEquals(MovieDetailUiState.Loading, state)
+            // When & Then - Flow'u dinlemeye başla, sonra action'ı tetikle
+            viewModel.uiState.test(timeout = 5.seconds) {
+                // İlk state Initial olabilir
+                val initialState = awaitItem()
+                assert(initialState is MovieDetailUiState.Initial)
+                
+                // loadMovie çağrısı
+                viewModel.loadMovie(movieId)
+                advanceUntilIdle()
+                
+                // Loading state'i bekle
+                val loadingState = awaitItem()
+                assertEquals(MovieDetailUiState.Loading, loadingState)
                 cancelAndIgnoreRemainingEvents()
             }
         }
@@ -112,6 +117,7 @@ class MovieDetailViewModelTest {
         runTest {
             // Given
             val movieId = 123
+            val tmdbId = 456
             val testMovie =
                 MovieEntity(
                     streamId = movieId,
@@ -121,31 +127,39 @@ class MovieDetailViewModelTest {
                     plot = "Test plot",
                     categoryId = "1",
                     added = "2024-01-01",
-                    tmdbId = 456,
+                    tmdbId = tmdbId,
                     containerExtension = "mp4",
                 )
 
+            val tmdbDetails: TmdbMovieDetailsDto? = null
+
             whenever(mockContentRepository.getMovies()).thenReturn(flowOf(listOf(testMovie)))
-            // Suspend fonksiyonlar için runBlocking içinde mock'la
+            // Suspend fonksiyonlar için mock - spesifik değerlerle
             runBlocking {
-                whenever(mockTmdbRepository.getMovieDetailsById(any())).thenReturn(null)
-            }
-            whenever(mockTmdbRepository.getGenres(anyOrNull())).thenReturn(null)
-            runBlocking {
-                whenever(mockTmdbRepository.getDirector(any(), anyOrNull())).thenReturn(null)
-                whenever(mockTmdbRepository.getCast(any(), anyOrNull())).thenReturn(null)
-                whenever(mockTmdbRepository.getOverview(any(), anyOrNull())).thenReturn(null)
+                whenever(mockTmdbRepository.getMovieDetailsById(tmdbId)).thenReturn(tmdbDetails)
+                whenever(mockTmdbRepository.getDirector(tmdbId, tmdbDetails)).thenReturn(null)
+                whenever(mockTmdbRepository.getCast(tmdbId, tmdbDetails)).thenReturn(null)
+                whenever(mockTmdbRepository.getOverview(tmdbId, tmdbDetails)).thenReturn(null)
+                whenever(mockTmdbRepository.getGenres(tmdbDetails)).thenReturn(null)
             }
 
             viewModel = createViewModel()
 
-            // When
-            viewModel.loadMovie(movieId)
-            advanceUntilIdle()
-
-            // Then
-            viewModel.uiState.test {
-                skipItems(1) // Skip Loading state
+            // When & Then - Flow'u dinlemeye başla, sonra action'ı tetikle
+            viewModel.uiState.test(timeout = 5.seconds) {
+                // İlk state Initial olabilir
+                val initialState = awaitItem()
+                assert(initialState is MovieDetailUiState.Initial)
+                
+                // loadMovie çağrısı
+                viewModel.loadMovie(movieId)
+                advanceUntilIdle()
+                
+                // Loading state'i skip et
+                val loadingState = awaitItem()
+                assertEquals(MovieDetailUiState.Loading, loadingState)
+                
+                // Success state'i bekle
                 val state = awaitItem()
                 assert(state is MovieDetailUiState.Success)
                 val successState = state as MovieDetailUiState.Success
@@ -163,15 +177,23 @@ class MovieDetailViewModelTest {
 
             viewModel = createViewModel()
 
-            // When
-            viewModel.loadMovie(movieId)
-            advanceUntilIdle()
+            // When & Then - Flow'u dinlemeye başla, sonra action'ı tetikle
+            viewModel.uiState.test(timeout = 5.seconds) {
+                // İlk state Initial olabilir
+                val initialState = awaitItem()
+                assert(initialState is MovieDetailUiState.Initial)
+                
+                // loadMovie çağrısı
+                viewModel.loadMovie(movieId)
+                advanceUntilIdle()
 
-            // Then
-            viewModel.uiState.test {
-                skipItems(1) // Skip Loading state
-                val state = awaitItem()
-                assert(state is MovieDetailUiState.Error)
+                // Loading state'i skip et
+                val loadingState = awaitItem()
+                assertEquals(MovieDetailUiState.Loading, loadingState)
+                
+                // Error state'i bekle
+                val errorState = awaitItem()
+                assert(errorState is MovieDetailUiState.Error)
                 cancelAndIgnoreRemainingEvents()
             }
         }
@@ -206,13 +228,14 @@ class MovieDetailViewModelTest {
                 )
 
             whenever(mockContentRepository.getMovies()).thenReturn(flowOf(listOf(testMovie)))
+            // Suspend fonksiyonlar için mock - spesifik değerlerle
             runBlocking {
                 whenever(mockTmdbRepository.getMovieDetailsById(tmdbId)).thenReturn(tmdbDetails)
-                whenever(mockTmdbRepository.getDirector(any(), anyOrNull())).thenReturn(null)
-                whenever(mockTmdbRepository.getCast(any(), anyOrNull())).thenReturn(null)
-                whenever(mockTmdbRepository.getOverview(any(), anyOrNull())).thenReturn(null)
+                whenever(mockTmdbRepository.getDirector(tmdbId, tmdbDetails)).thenReturn(null)
+                whenever(mockTmdbRepository.getCast(tmdbId, tmdbDetails)).thenReturn(null)
+                whenever(mockTmdbRepository.getOverview(tmdbId, tmdbDetails)).thenReturn(null)
+                whenever(mockTmdbRepository.getGenres(tmdbDetails)).thenReturn(null)
             }
-            whenever(mockTmdbRepository.getGenres(anyOrNull())).thenReturn(null)
 
             viewModel = createViewModel()
 
@@ -221,9 +244,7 @@ class MovieDetailViewModelTest {
             advanceUntilIdle()
 
             // Then
-            runBlocking {
-                verify(mockTmdbRepository).getMovieDetailsById(tmdbId)
-            }
+            verify(mockTmdbRepository).getMovieDetailsById(tmdbId)
             viewModel.tmdbDetails.test {
                 val details = awaitItem()
                 assertNotNull(details)
@@ -251,13 +272,11 @@ class MovieDetailViewModelTest {
                 )
 
             whenever(mockContentRepository.getMovies()).thenReturn(flowOf(listOf(testMovie)))
+            // Suspend fonksiyonlar için mock - spesifik değerlerle
             runBlocking {
                 whenever(mockTmdbRepository.getMovieDetailsByTitle("Test Movie")).thenReturn(null)
-                whenever(mockTmdbRepository.getDirector(any(), anyOrNull())).thenReturn(null)
-                whenever(mockTmdbRepository.getCast(any(), anyOrNull())).thenReturn(null)
-                whenever(mockTmdbRepository.getOverview(any(), anyOrNull())).thenReturn(null)
+                // getDirector, getCast, getOverview çağrılmayacak çünkü getMovieDetailsByTitle null döndürüyor
             }
-            whenever(mockTmdbRepository.getGenres(anyOrNull())).thenReturn(null)
 
             viewModel = createViewModel()
 
@@ -301,24 +320,21 @@ class MovieDetailViewModelTest {
 
             whenever(mockContentRepository.getMovies()).thenReturn(flowOf(listOf(testMovie)))
             whenever(mockViewerRepository.getAllViewers()).thenReturn(flowOf(testViewers))
-            runBlocking {
-                whenever(mockTmdbRepository.getMovieDetailsByTitle(any())).thenReturn(null)
-                whenever(mockTmdbRepository.getGenres(anyOrNull())).thenReturn(null)
-                whenever(mockTmdbRepository.getDirector(any(), anyOrNull())).thenReturn(null)
-                whenever(mockTmdbRepository.getCast(any(), anyOrNull())).thenReturn(null)
-                whenever(mockTmdbRepository.getOverview(any(), anyOrNull())).thenReturn(null)
+            // Suspend fonksiyonlar için mock - spesifik değerlerle
+            kotlinx.coroutines.runBlocking {
+                whenever(mockTmdbRepository.getMovieDetailsByTitle("Test Movie")).thenReturn(null)
+                // getDirector, getCast, getOverview çağrılmayacak çünkü getMovieDetailsByTitle null döndürüyor
             }
 
             viewModel = createViewModel()
             viewModel.loadMovie(movieId)
             advanceUntilIdle()
 
-            // When
-            viewModel.addToFavorites()
-            advanceUntilIdle()
+            // When & Then - SharedFlow test et, Flow'u dinlemeye başla, sonra action'ı tetikle
+            viewModel.showViewerSelectionDialog.test(timeout = 5.seconds) {
+                viewModel.addToFavorites()
+                advanceUntilIdle()
 
-            // Then - SharedFlow test et
-            viewModel.showViewerSelectionDialog.test {
                 val viewers = awaitItem()
                 assertEquals(testViewers, viewers)
                 cancelAndIgnoreRemainingEvents()

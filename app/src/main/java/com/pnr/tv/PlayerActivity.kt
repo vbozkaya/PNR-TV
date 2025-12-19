@@ -812,6 +812,7 @@ class PlayerActivity : BaseActivity() {
                     trackIndex = -1,
                     language = null,
                     label = getString(R.string.player_subtitles_off),
+                    rawLabel = null,
                     isSelected = true,
                 )
             subtitleTracks.add(0, closedOption)
@@ -825,6 +826,7 @@ class PlayerActivity : BaseActivity() {
                     trackIndex = -1,
                     language = null,
                     label = getString(R.string.player_subtitles_off),
+                    rawLabel = null,
                     isSelected = false,
                 )
             subtitleTracks.add(0, closedOption)
@@ -850,9 +852,6 @@ class PlayerActivity : BaseActivity() {
     private fun saveSubtitleSettings() {
         timber.log.Timber.d("💾 Alt yazı ayarları kaydediliyor...")
 
-        // Mevcut pozisyonu kaydet
-        val currentPosition = viewModel.getPlayer()?.currentPosition ?: 0L
-
         // Alt yazıyı uygula (groupIndex -1 ise kapat)
         val subtitleToApply =
             if (selectedSubtitleTrack?.groupIndex == -1) {
@@ -862,8 +861,9 @@ class PlayerActivity : BaseActivity() {
             }
         viewModel.selectSubtitleTrack(subtitleToApply)
 
-        // Video pozisyonunu koru (kaldığı yerden devam)
-        viewModel.seekTo(currentPosition)
+        // Not: seekTo() çağrısını kaldırdık çünkü track değişikliği pozisyonu etkilemez
+        // ve seekTo() track selector parametrelerini sıfırlayabilir
+        // Video pozisyonu zaten korunuyor, ekstra seekTo() gerekmez
 
         // Panel'i kapat (hideSubtitlePanel içinde focus yönetimi yapılıyor)
         hideSubtitlePanel()
@@ -986,16 +986,14 @@ class PlayerActivity : BaseActivity() {
     private fun saveAudioSettings() {
         timber.log.Timber.d("💾 Ses ayarları kaydediliyor...")
 
-        // Mevcut pozisyonu kaydet
-        val currentPosition = viewModel.getPlayer()?.currentPosition ?: 0L
-
         // Ses dilini uygula
         selectedAudioTrack?.let { track ->
             viewModel.selectAudioTrack(track)
         }
 
-        // Video pozisyonunu koru (kaldığı yerden devam)
-        viewModel.seekTo(currentPosition)
+        // Not: seekTo() çağrısını kaldırdık çünkü track değişikliği pozisyonu etkilemez
+        // ve seekTo() track selector parametrelerini sıfırlayabilir
+        // Video pozisyonu zaten korunuyor, ekstra seekTo() gerekmez
 
         // Panel'i kapat
         hideAudioPanel()

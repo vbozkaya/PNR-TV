@@ -36,6 +36,12 @@ class ErrorHelperTest {
             .thenReturn("Kullanıcı bilgisi bulunamadı veya DNS bilgisi eksik")
         whenever(mockContext.getString(R.string.error_image_preload, "Test error"))
             .thenReturn("Resim ön yükleme hatası: Test error")
+        whenever(mockContext.getString(R.string.error_timeout_read))
+            .thenReturn("Ağ bağlantı hatası")
+        whenever(mockContext.getString(R.string.error_timeout_connect))
+            .thenReturn("Ağ bağlantı hatası")
+        whenever(mockContext.getString(R.string.error_timeout))
+            .thenReturn("Ağ bağlantı hatası")
     }
 
     @Test

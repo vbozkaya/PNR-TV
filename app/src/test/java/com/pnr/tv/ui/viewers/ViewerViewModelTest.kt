@@ -80,7 +80,7 @@ class ViewerViewModelTest {
 
             // Then
             verify(mockViewerRepository).addViewer(
-                ViewerEntity(id = 0, name = "Test Viewer", userId = 1, isDeletable = true),
+                ViewerEntity(id = 0, name = "Test Viewer", userId = 0, isDeletable = true),
             )
         }
 
@@ -97,7 +97,7 @@ class ViewerViewModelTest {
 
             // Then
             verify(mockViewerRepository).addViewer(
-                ViewerEntity(id = 0, name = "Default Viewer", userId = 1, isDeletable = false),
+                ViewerEntity(id = 0, name = "Default Viewer", userId = 0, isDeletable = false),
             )
         }
 

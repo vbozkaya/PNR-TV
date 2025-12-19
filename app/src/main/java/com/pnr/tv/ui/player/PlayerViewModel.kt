@@ -82,9 +82,28 @@ class PlayerViewModel
                 }
 
                 override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
-                    // Her zaman aynı mesajı göster (tüm dillere uyarlanmış)
-                    _errorMessage.value = context.getString(R.string.error_video_playback_failed)
-                    Timber.tag(TAG_VIDEO_PLAYBACK_ERROR).e(error, "Playback failed: ${error.errorCode}")
+                    // AC3 codec hatası kontrolü
+                    val errorMessage = error.message ?: ""
+                    val causeMessage = error.cause?.message ?: ""
+                    val isAc3Error = errorMessage.contains("audio/ac3", ignoreCase = true) ||
+                        errorMessage.contains("audio/eac3", ignoreCase = true) ||
+                        errorMessage.contains("ac3", ignoreCase = true) ||
+                        causeMessage.contains("audio/ac3", ignoreCase = true) ||
+                        causeMessage.contains("audio/eac3", ignoreCase = true) ||
+                        causeMessage.contains("ac3", ignoreCase = true) ||
+                        (error.errorCode == androidx.media3.common.PlaybackException.ERROR_CODE_DECODER_INIT_FAILED &&
+                            (errorMessage.contains("Decoder init failed", ignoreCase = true) ||
+                                causeMessage.contains("Decoder init failed", ignoreCase = true)))
+
+                    if (isAc3Error) {
+                        // AC3 codec desteklenmiyor - kullanıcıya özel mesaj göster
+                        _errorMessage.value = context.getString(R.string.error_audio_codec_ac3_not_supported)
+                        Timber.tag(TAG_VIDEO_PLAYBACK_ERROR).w(error, "AC3 codec desteklenmiyor: ${error.errorCode}, message: $errorMessage")
+                    } else {
+                        // Diğer hatalar için genel mesaj
+                        _errorMessage.value = context.getString(R.string.error_video_playback_failed)
+                        Timber.tag(TAG_VIDEO_PLAYBACK_ERROR).e(error, "Playback failed: ${error.errorCode}")
+                    }
                 }
 
                 override fun onPositionDiscontinuity(
@@ -128,8 +147,14 @@ class PlayerViewModel
                         )
                         .build()
 
+                // DefaultRenderersFactory: Fallback decoder mekanizması ile codec desteği
+                // AC3 desteklenmeyen cihazlarda otomatik olarak alternatif codec'e geçer
+                val renderersFactory = androidx.media3.exoplayer.DefaultRenderersFactory(context)
+                    .setEnableDecoderFallback(true) // Fallback decoder'ı aktif et
+
                 player =
                     ExoPlayer.Builder(context)
+                        .setRenderersFactory(renderersFactory)
                         .setTrackSelector(trackSelector)
                         .setLoadControl(loadControl)
                         .build()
@@ -409,6 +434,7 @@ class PlayerViewModel
                                 trackIndex = i,
                                 language = language,
                                 label = displayLabel,
+                                rawLabel = formatLabel, // Videodan gelen orijinal ham etiket
                                 isSelected = isSelected,
                             ),
                         )
@@ -464,6 +490,7 @@ class PlayerViewModel
                                 trackIndex = i,
                                 language = language,
                                 label = displayLabel,
+                                rawLabel = formatLabel, // Videodan gelen orijinal ham etiket
                                 isSelected = isSelected,
                             ),
                         )
@@ -509,44 +536,113 @@ class PlayerViewModel
 
         /**
          * Ses dilini seçer
+         * Not: distinctBy nedeniyle groupIndex/trackIndex yanlış olabilir,
+         * bu yüzden track'i language ve label'a göre buluyoruz
          */
         @UnstableApi
         fun selectAudioTrack(trackInfo: TrackInfo) {
             val player = player as? ExoPlayer ?: return
             val trackSelector = player.trackSelector as? DefaultTrackSelector ?: return
 
-            Timber.d("🔊 Ses dili seçiliyor: ${trackInfo.label} (group=${trackInfo.groupIndex}, track=${trackInfo.trackIndex})")
+            Timber.d("🔊 Ses dili seçiliyor: ${trackInfo.label} (language=${trackInfo.language})")
 
             val tracks = currentTracks ?: return
             val audioGroups = tracks.groups.filter { it.type == androidx.media3.common.C.TRACK_TYPE_AUDIO }
 
-            if (trackInfo.groupIndex >= audioGroups.size) {
-                Timber.e("❌ Geçersiz groupIndex: ${trackInfo.groupIndex}")
+            // distinctBy nedeniyle groupIndex/trackIndex yanlış olabilir,
+            // bu yüzden track'i language ve label'a göre buluyoruz
+            var foundGroup: Tracks.Group? = null
+            var foundTrackIndex = -1
+
+            for (group in audioGroups) {
+                val trackGroup = group.mediaTrackGroup
+                for (i in 0 until trackGroup.length) {
+                    val format = trackGroup.getFormat(i)
+                    val formatLanguage = format.language
+                    val formatLabel = format.label
+
+                    // Language eşleşmesini kontrol et
+                    val languageMatch = formatLanguage == trackInfo.language || 
+                        (formatLanguage.isNullOrBlank() && trackInfo.language.isNullOrBlank())
+                    
+                    if (!languageMatch) continue
+                    
+                    // rawLabel kullanarak eşleştirme yap (orijinal ham etiket)
+                    // Eğer rawLabel null ise veya eşleşmezse, sadece language ile eşleştir
+                    val labelMatch = if (trackInfo.rawLabel != null && formatLabel != null) {
+                        // Her ikisi de null değilse, direkt karşılaştır
+                        formatLabel == trackInfo.rawLabel
+                    } else if (trackInfo.rawLabel.isNullOrBlank() && formatLabel.isNullOrBlank()) {
+                        // Her ikisi de null/boş ise, eşleşir
+                        true
+                    } else {
+                        // rawLabel null ama formatLabel var veya tam tersi - eşleşmez
+                        // Ancak distinctBy nedeniyle aynı language'a sahip track'lerden birini seçebiliriz
+                        // Bu durumda sadece language eşleşmesi yeterli
+                        true
+                    }
+
+                    if (languageMatch && labelMatch) {
+                        foundGroup = group
+                        foundTrackIndex = i
+                        Timber.d("🔊 Track bulundu: groupIndex=${audioGroups.indexOf(group)}, trackIndex=$i, formatLabel=$formatLabel, rawLabel=${trackInfo.rawLabel}, mimeType=${format.sampleMimeType}")
+                        break
+                    }
+                }
+                if (foundGroup != null) break
+            }
+
+            if (foundGroup == null || foundTrackIndex == -1) {
+                Timber.e("❌ Ses track'i bulunamadı: language=${trackInfo.language}, label=${trackInfo.label}, rawLabel=${trackInfo.rawLabel}")
+                Timber.e("❌ Mevcut audio groups: ${audioGroups.size}, track sayıları: ${audioGroups.map { it.mediaTrackGroup.length }}")
+                // Track bulunamadığında işlemi iptal et, mevcut track devam etsin
+                // ÖNEMLİ: Parametreleri değiştirmiyoruz, böylece ExoPlayer hata vermez
                 return
             }
 
-            val group = audioGroups[trackInfo.groupIndex]
-            val trackGroup = group.mediaTrackGroup
+            val trackGroup = foundGroup.mediaTrackGroup
 
-            val parameters =
-                trackSelector.parameters.buildUpon()
-                    .setRendererDisabled(androidx.media3.common.C.TRACK_TYPE_AUDIO, false)
-                    .clearSelectionOverrides(androidx.media3.common.C.TRACK_TYPE_AUDIO)
-                    .build()
+            // Track index'inin geçerli olduğundan emin ol
+            if (foundTrackIndex < 0 || foundTrackIndex >= trackGroup.length) {
+                Timber.e("❌ Geçersiz track index: $foundTrackIndex, trackGroup.length=${trackGroup.length}")
+                return
+            }
 
-            val override =
-                androidx.media3.common.TrackSelectionOverride(
-                    trackGroup,
-                    trackInfo.trackIndex,
-                )
+            try {
+                // Önce override'ı oluştur ve geçerliliğini kontrol et
+                val override =
+                    androidx.media3.common.TrackSelectionOverride(
+                        trackGroup,
+                        foundTrackIndex,
+                    )
 
-            val newParameters =
-                parameters.buildUpon()
-                    .addOverride(override)
-                    .build()
+                // Mevcut parametreleri al
+                val currentParameters = trackSelector.parameters
+                
+                // Yeni parametreleri oluştur: önce eski override'ları temizle, sonra yeni override'ı ekle
+                val newParameters =
+                    currentParameters.buildUpon()
+                        .setRendererDisabled(androidx.media3.common.C.TRACK_TYPE_AUDIO, false)
+                        .clearSelectionOverrides(androidx.media3.common.C.TRACK_TYPE_AUDIO)
+                        .addOverride(override)
+                        .build()
 
-            trackSelector.parameters = newParameters
-            Timber.d("✅ Ses dili seçildi: ${trackInfo.label}")
+                // Parametreleri uygula
+                trackSelector.parameters = newParameters
+                
+                Timber.d("✅ Ses dili seçildi: ${trackInfo.label} (groupIndex=${audioGroups.indexOf(foundGroup)}, trackIndex=$foundTrackIndex)")
+                Timber.d("✅ TrackGroup ID: ${trackGroup.id}, Track sayısı: ${trackGroup.length}")
+            } catch (e: IllegalArgumentException) {
+                Timber.e(e, "❌ Geçersiz track override: ${e.message}")
+                Timber.e("❌ TrackGroup: $trackGroup, trackIndex: $foundTrackIndex, trackGroup.length: ${trackGroup.length}")
+                Timber.e("❌ Stack trace: ${e.stackTraceToString()}")
+                // Hata durumunda mevcut parametreleri koru, ExoPlayer'ı bozma
+            } catch (e: Exception) {
+                Timber.e(e, "❌ Ses track seçimi sırasında hata oluştu: ${e.message}")
+                Timber.e("❌ Hata tipi: ${e.javaClass.simpleName}")
+                Timber.e("❌ Stack trace: ${e.stackTraceToString()}")
+                // Hata durumunda mevcut parametreleri koru, ExoPlayer'ı bozma
+            }
         }
 
         /**
@@ -564,10 +660,12 @@ class PlayerViewModel
                 val currentParameters = trackSelector.parameters
                 val builder = currentParameters.buildUpon()
 
-                // Text renderer'ı devre dışı bırak
+                // Text renderer'ı devre dışı bırak - Bu kritik!
                 builder.setRendererDisabled(androidx.media3.common.C.TRACK_TYPE_TEXT, true)
 
                 // Tüm text track selection override'larını temizle
+                // Not: clearSelectionOverrides deprecated ama hala çalışıyor
+                @Suppress("DEPRECATION")
                 builder.clearSelectionOverrides(androidx.media3.common.C.TRACK_TYPE_TEXT)
 
                 val newParameters = builder.build()
@@ -578,6 +676,11 @@ class PlayerViewModel
                         androidx.media3.common.C.TRACK_TYPE_TEXT,
                     )}",
                 )
+                
+                // Player'ı yeniden hazırla - track selector değişikliklerinin uygulanması için
+                // Not: Bu gerekli olmayabilir ama bazı durumlarda track selector değişiklikleri
+                // sadece yeni bir media item yüklendiğinde uygulanır
+                player.prepare()
             } else {
                 Timber.d("📝 Alt yazı seçiliyor: ${trackInfo.label} (group=${trackInfo.groupIndex}, track=${trackInfo.trackIndex})")
 

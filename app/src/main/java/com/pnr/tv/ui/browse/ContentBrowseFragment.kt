@@ -337,7 +337,8 @@ class ContentBrowseFragment : BaseBrowseFragment() {
             dialogWidth,
             WindowManager.LayoutParams.WRAP_CONTENT,
         )
-        window?.setBackgroundDrawableResource(android.R.color.transparent)
+        // Dialog arka planını koyu yap (şeffaf olmasın)
+        window?.setBackgroundDrawableResource(R.drawable.window_background_black)
 
         val radioGroup = view.findViewById<RadioGroup>(R.id.radio_group_sort)
         val radioAtoZ = view.findViewById<RadioButton>(R.id.radio_a_to_z)

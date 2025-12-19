@@ -12,6 +12,8 @@ import com.pnr.tv.repository.ContentRepository
 import com.pnr.tv.repository.Result
 import com.pnr.tv.repository.TmdbRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -47,6 +49,10 @@ class SeriesDetailViewModelTest {
         // Mock context string resources
         whenever(mockContext.getString(any())).thenReturn("Mock String")
         whenever(mockContext.getString(any(), any())).thenReturn("Mock String")
+        // Mock getString with 3 parameters (for season_format_with_episodes)
+        whenever(mockContext.getString(any(), any(), any())).thenReturn("Mock String")
+        // Mock sessionManager - getCurrentUserId returns null (no user logged in)
+        whenever(mockSessionManager.getCurrentUserId()).thenReturn(flowOf(null))
     }
 
     @After
@@ -74,8 +80,16 @@ class SeriesDetailViewModelTest {
             // Given
             val seriesId = 123
             val mockSeriesInfo = createMockSeriesInfo()
-            whenever(mockContentRepository.getSeriesInfo(seriesId))
-                .thenReturn(Result.Success(mockSeriesInfo))
+            // Mock suspend function - use runBlocking for suspend functions
+            kotlinx.coroutines.runBlocking {
+                whenever(mockContentRepository.getSeriesInfo(seriesId))
+                    .thenReturn(Result.Success(mockSeriesInfo))
+            }
+            
+            // Mock watchedEpisodeDao for selectSeason
+            kotlinx.coroutines.runBlocking {
+                whenever(mockWatchedEpisodeDao.getWatchedEpisode(any(), any())).thenReturn(null)
+            }
 
             viewModel = createViewModel()
 
@@ -83,30 +97,23 @@ class SeriesDetailViewModelTest {
             viewModel.loadSeries(seriesId)
             advanceUntilIdle()
 
-            // Then
-            viewModel.series.test {
-                val series = awaitItem()
-                assertNotNull(series)
-                assertEquals("Breaking Bad", series?.name)
-                assertEquals(123, series?.streamId)
-                cancelAndIgnoreRemainingEvents()
-            }
+            // Then - Series (StateFlow'un güncel değerini al)
+            val series = viewModel.series.value
+            assertNotNull("Series should not be null", series)
+            assertEquals("Breaking Bad", series?.name)
+            assertEquals(123, series?.streamId)
 
-            viewModel.seasons.test {
-                val seasons = awaitItem()
-                assertEquals(2, seasons.size)
-                assertEquals(1, seasons[0].seasonNumber)
-                assertEquals(2, seasons[1].seasonNumber)
-                cancelAndIgnoreRemainingEvents()
-            }
+            // Then - Seasons
+            val seasons = viewModel.seasons.value
+            assertEquals(2, seasons.size)
+            assertEquals(1, seasons[0].seasonNumber)
+            assertEquals(2, seasons[1].seasonNumber)
 
-            viewModel.episodes.test {
-                val episodes = awaitItem()
-                assertEquals(2, episodes.size) // İlk sezon otomatik seçilir
-                assertEquals(1, episodes[0].episodeNumber)
-                assertEquals(2, episodes[1].episodeNumber)
-                cancelAndIgnoreRemainingEvents()
-            }
+            // Then - Episodes (İlk sezon otomatik seçilir)
+            val episodes = viewModel.episodes.value
+            assertEquals(2, episodes.size)
+            assertEquals(1, episodes[0].episodeNumber)
+            assertEquals(2, episodes[1].episodeNumber)
         }
 
     /**
@@ -118,8 +125,10 @@ class SeriesDetailViewModelTest {
             // Given
             val seriesId = 123
             val mockSeriesInfo = createMockSeriesInfo()
-            whenever(mockContentRepository.getSeriesInfo(seriesId))
-                .thenReturn(Result.Success(mockSeriesInfo))
+            runBlocking {
+                whenever(mockContentRepository.getSeriesInfo(seriesId))
+                    .thenReturn(Result.Success(mockSeriesInfo))
+            }
 
             viewModel = createViewModel()
 
@@ -128,17 +137,14 @@ class SeriesDetailViewModelTest {
             advanceUntilIdle()
 
             // Then
-            viewModel.episodes.test {
-                val episodes = awaitItem()
+            val episodes = viewModel.episodes.value
+            assertTrue("Episodes should not be empty", episodes.isNotEmpty())
+            
+            // "S01E01 - Pilot" → cleanTitle = "Pilot"
+            assertEquals("Pilot", episodes[0].cleanTitle)
 
-                // "S01E01 - Pilot" → cleanTitle = "Pilot"
-                assertEquals("Pilot", episodes[0].cleanTitle)
-
-                // "S01E02: Cat's in the Bag..." → cleanTitle = "Cat's in the Bag..."
-                assertEquals("Cat's in the Bag...", episodes[1].cleanTitle)
-
-                cancelAndIgnoreRemainingEvents()
-            }
+            // "S01E02: Cat's in the Bag..." → cleanTitle = "Cat's in the Bag..."
+            assertEquals("Cat's in the Bag...", episodes[1].cleanTitle)
         }
 
     /**
@@ -150,8 +156,10 @@ class SeriesDetailViewModelTest {
             // Given
             val seriesId = 123
             val mockSeriesInfo = createMockSeriesInfo()
-            whenever(mockContentRepository.getSeriesInfo(seriesId))
-                .thenReturn(Result.Success(mockSeriesInfo))
+            runBlocking {
+                whenever(mockContentRepository.getSeriesInfo(seriesId))
+                    .thenReturn(Result.Success(mockSeriesInfo))
+            }
 
             viewModel = createViewModel()
             viewModel.loadSeries(seriesId)
@@ -161,20 +169,15 @@ class SeriesDetailViewModelTest {
             viewModel.selectSeason(2)
             advanceUntilIdle()
 
-            // Then
-            viewModel.selectedSeasonNumber.test {
-                val selectedSeason = awaitItem()
-                assertEquals(2, selectedSeason)
-                cancelAndIgnoreRemainingEvents()
-            }
+            // Then - Selected Season
+            val selectedSeason = viewModel.selectedSeasonNumber.value
+            assertEquals(2, selectedSeason)
 
-            viewModel.episodes.test {
-                val episodes = awaitItem()
-                assertEquals(1, episodes.size) // Sezon 2'de 1 bölüm var
-                assertEquals(2, episodes[0].seasonNumber)
-                assertEquals(1, episodes[0].episodeNumber)
-                cancelAndIgnoreRemainingEvents()
-            }
+            // Then - Episodes
+            val episodes = viewModel.episodes.value
+            assertEquals(1, episodes.size) // Sezon 2'de 1 bölüm var
+            assertEquals(2, episodes[0].seasonNumber)
+            assertEquals(1, episodes[0].episodeNumber)
         }
 
     /**
@@ -186,21 +189,20 @@ class SeriesDetailViewModelTest {
             // Given
             val seriesId = 123
             val errorMessage = "API Error: Network failure"
-            whenever(mockContentRepository.getSeriesInfo(seriesId))
-                .thenReturn(Result.Error(errorMessage))
+            runBlocking {
+                whenever(mockContentRepository.getSeriesInfo(seriesId))
+                    .thenReturn(Result.Error(errorMessage))
+            }
 
             viewModel = createViewModel()
 
             // When
-            viewModel.error.test {
-                viewModel.loadSeries(seriesId)
-                advanceUntilIdle()
+            viewModel.loadSeries(seriesId)
+            advanceUntilIdle()
 
-                // Then
-                val error = awaitItem()
-                assertTrue(error.contains("yüklenemedi"))
-                cancelAndIgnoreRemainingEvents()
-            }
+            // Then
+            val error = viewModel.error.value
+            assertTrue(error.contains("yüklenemedi"))
         }
 
     /**
@@ -212,25 +214,30 @@ class SeriesDetailViewModelTest {
             // Given
             val seriesId = 123
             val mockSeriesInfo = createMockSeriesInfo()
-            whenever(mockContentRepository.getSeriesInfo(seriesId))
-                .thenReturn(Result.Success(mockSeriesInfo))
+            runBlocking {
+                whenever(mockContentRepository.getSeriesInfo(seriesId))
+                    .thenReturn(Result.Success(mockSeriesInfo))
+            }
 
             viewModel = createViewModel()
 
-            // When
+            // When - Flow'u önce başlat, sonra loadSeries çağır
             viewModel.isLoading.test {
                 // Başlangıç: false
-                assertEquals(false, awaitItem())
+                val initial = awaitItem()
+                assertEquals(false, initial)
 
                 viewModel.loadSeries(seriesId)
 
                 // Yükleme sırasında: true
-                assertEquals(true, awaitItem())
+                val loading = awaitItem()
+                assertEquals(true, loading)
 
                 advanceUntilIdle()
 
                 // Yükleme bittikten sonra: false
-                assertEquals(false, awaitItem())
+                val finished = awaitItem()
+                assertEquals(false, finished)
 
                 cancelAndIgnoreRemainingEvents()
             }
@@ -244,26 +251,24 @@ class SeriesDetailViewModelTest {
         runTest {
             // Given
             val seriesId = 123
-            whenever(mockContentRepository.getSeriesInfo(seriesId))
-                .thenThrow(RuntimeException("Unexpected error"))
+            runBlocking {
+                whenever(mockContentRepository.getSeriesInfo(seriesId))
+                    .thenThrow(RuntimeException("Unexpected error"))
+            }
 
             viewModel = createViewModel()
 
-            // When/Then - Error emit edilir
-            viewModel.error.test {
-                viewModel.loadSeries(seriesId)
-                advanceUntilIdle()
+            // When
+            viewModel.loadSeries(seriesId)
+            advanceUntilIdle()
 
-                val error = awaitItem()
-                assertTrue(error.contains("beklenmeyen bir hata"))
-                cancelAndIgnoreRemainingEvents()
-            }
+            // Then - Error emit edilir
+            val error = viewModel.error.value
+            assertTrue(error.contains("beklenmeyen bir hata"))
 
-            // Then - Loading false olur
-            viewModel.isLoading.test {
-                assertEquals(false, awaitItem())
-                cancelAndIgnoreRemainingEvents()
-            }
+            // Then - Loading false olur (exception sonrası)
+            val isLoading = viewModel.isLoading.value
+            assertEquals(false, isLoading)
         }
 
     /**
@@ -306,10 +311,12 @@ class SeriesDetailViewModelTest {
                     credits = null,
                 )
 
-            whenever(mockContentRepository.getSeriesInfo(seriesId))
-                .thenReturn(Result.Success(mockSeriesInfo))
-            whenever(mockTmdbRepository.getTvShowDetailsById(1396))
-                .thenReturn(mockTmdbDetails)
+            runBlocking {
+                whenever(mockContentRepository.getSeriesInfo(seriesId))
+                    .thenReturn(Result.Success(mockSeriesInfo))
+                whenever(mockTmdbRepository.getTvShowDetailsById(1396))
+                    .thenReturn(mockTmdbDetails)
+            }
 
             viewModel = createViewModel()
 
@@ -317,15 +324,15 @@ class SeriesDetailViewModelTest {
             viewModel.loadSeries(seriesId)
             advanceUntilIdle()
 
-            // Then
-            verify(mockTmdbRepository).getTvShowDetailsById(1396)
-
-            viewModel.tmdbDetails.test {
-                val details = awaitItem()
-                assertNotNull(details)
-                assertEquals("Breaking Bad", details?.name)
-                cancelAndIgnoreRemainingEvents()
+            // Then - Verify mock çağrısı
+            runBlocking {
+                verify(mockTmdbRepository).getTvShowDetailsById(1396)
             }
+
+            // Then - TMDB details
+            val details = viewModel.tmdbDetails.value
+            assertNotNull(details)
+            assertEquals("Breaking Bad", details?.name)
         }
 
     /**
@@ -360,8 +367,10 @@ class SeriesDetailViewModelTest {
                         ),
                 )
 
-            whenever(mockContentRepository.getSeriesInfo(seriesId))
-                .thenReturn(Result.Success(emptySeriesInfo))
+            runBlocking {
+                whenever(mockContentRepository.getSeriesInfo(seriesId))
+                    .thenReturn(Result.Success(emptySeriesInfo))
+            }
 
             viewModel = createViewModel()
 
@@ -370,17 +379,11 @@ class SeriesDetailViewModelTest {
             advanceUntilIdle()
 
             // Then
-            viewModel.seasons.test {
-                val seasons = awaitItem()
-                assertTrue(seasons.isEmpty())
-                cancelAndIgnoreRemainingEvents()
-            }
+            val seasons = viewModel.seasons.value
+            assertTrue(seasons.isEmpty())
 
-            viewModel.episodes.test {
-                val episodes = awaitItem()
-                assertTrue(episodes.isEmpty())
-                cancelAndIgnoreRemainingEvents()
-            }
+            val episodes = viewModel.episodes.value
+            assertTrue(episodes.isEmpty())
         }
 
     // ═══════════════════════════════════════════════════════════

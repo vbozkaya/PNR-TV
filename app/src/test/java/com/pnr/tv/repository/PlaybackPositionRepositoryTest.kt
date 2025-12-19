@@ -16,6 +16,7 @@ import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -58,13 +59,13 @@ class PlaybackPositionRepositoryTest {
 
             // Then
             verify(mockPlaybackPositionDao).upsert(
-                PlaybackPositionEntity(
-                    contentId = contentId,
-                    userId = userId,
-                    positionMs = positionMs,
-                    durationMs = durationMs,
-                    lastUpdated = org.mockito.ArgumentMatchers.anyLong(),
-                ),
+                org.mockito.kotlin.argThat { entity ->
+                    entity.contentId == contentId &&
+                        entity.userId == userId &&
+                        entity.positionMs == positionMs &&
+                        entity.durationMs == durationMs &&
+                        entity.lastUpdated > 0
+                },
             )
         }
 
@@ -138,16 +139,11 @@ class PlaybackPositionRepositoryTest {
     @Test
     fun `cleanupOldPlaybackPositions should call dao deleteOlderThan`() =
         runTest {
-            // Given
-            val thirtyDaysAgo = System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000)
-
             // When
             repository.cleanupOldPlaybackPositions()
             advanceUntilIdle()
 
             // Then
-            verify(mockPlaybackPositionDao).deleteOlderThan(
-                org.mockito.ArgumentMatchers.anyLong(),
-            )
+            verify(mockPlaybackPositionDao).deleteOlderThan(any())
         }
 }

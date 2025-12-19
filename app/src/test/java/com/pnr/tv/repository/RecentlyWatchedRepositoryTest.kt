@@ -55,7 +55,11 @@ class RecentlyWatchedRepositoryTest {
 
             // Then
             verify(mockRecentlyWatchedDao).upsert(
-                org.mockito.ArgumentMatchers.any(RecentlyWatchedEntity::class.java),
+                org.mockito.kotlin.argThat { entity ->
+                    entity.channelId == channelId &&
+                        entity.userId == userId &&
+                        entity.watchedAt > 0
+                },
             )
             verify(mockRecentlyWatchedDao).trim(userId, 50)
         }

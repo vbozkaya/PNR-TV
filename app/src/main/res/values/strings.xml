@@ -226,6 +226,7 @@
     <string name="error_offline">Çevrimdışı</string>
     <string name="error_content_info_failed">İçerik bilgisi alınamadı</string>
     <string name="error_video_playback_failed">Video Oynatılamıyor - Sunucu Hatası</string>
+    <string name="error_audio_codec_ac3_not_supported">Bu cihaz AC3 (Dolby Digital) ses formatını desteklemiyor. Lütfen başka bir ses dili seçin.</string>
     
     <!-- Buttons -->
     <string name="btn_retry">Tekrar Dene</string>

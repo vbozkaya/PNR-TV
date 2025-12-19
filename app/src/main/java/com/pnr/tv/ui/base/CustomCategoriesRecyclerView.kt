@@ -55,7 +55,24 @@ class CustomCategoriesRecyclerView
                             val layoutManager = this.layoutManager
                             
                             if (focusedView != null && adapter != null && layoutManager != null) {
-                                val focusedPosition = layoutManager.getPosition(focusedView)
+                                // Güvenli pozisyon alma - view'ın parent'ını kontrol et
+                                var focusedPosition = RecyclerView.NO_POSITION
+                                var parentView: android.view.View? = focusedView
+                                
+                                // RecyclerView'ın direkt child'ını bul
+                                while (parentView != null && parentView.parent != this) {
+                                    parentView = parentView.parent as? android.view.View
+                                }
+                                
+                                if (parentView != null) {
+                                    try {
+                                        focusedPosition = layoutManager.getPosition(parentView)
+                                    } catch (e: ClassCastException) {
+                                        // Layout params uyumsuzluğu - güvenli fallback
+                                        Timber.tag("GRID_UPDATE").w("⚠️ Layout params uyumsuzluğu, pozisyon alınamadı")
+                                    }
+                                }
+                                
                                 val itemCount = adapter.itemCount
                                 
                                 // Son kategorideyse, olayı tüket (navbar'a veya başka yere gitmesin)

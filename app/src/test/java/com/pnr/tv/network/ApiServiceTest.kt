@@ -64,7 +64,7 @@ class ApiServiceTest {
                         "category_id": "1",
                         "added": "2024-01-01",
                         "container_extension": "mp4",
-                        "tmdb_id": 100
+                        "tmdb": "100"
                     }
                 ]
                 """.trimIndent()
@@ -99,7 +99,7 @@ class ApiServiceTest {
                         "stream_id": 1,
                         "name": "Test Channel",
                         "stream_icon": "http://example.com/icon.png",
-                        "category_id": 1
+                        "category_id": "1"
                     }
                 ]
                 """.trimIndent()
@@ -118,7 +118,7 @@ class ApiServiceTest {
             assertEquals(1, result.size)
             assertEquals("Test Channel", result[0].name)
             assertEquals(1, result[0].streamId)
-            assertEquals(1, result[0].categoryId)
+            assertEquals("1", result[0].categoryId)
         }
 
     @Test
@@ -149,7 +149,8 @@ class ApiServiceTest {
             val userInfo = result.extractUserInfo()
             assertNotNull(userInfo)
             assertEquals("testuser", userInfo?.username)
-            assertEquals("testpass", userInfo?.password)
+            // Password API'den dönmüyor, extractUserInfo() boş string döndürüyor
+            assertEquals("", userInfo?.password)
             assertEquals("Active", userInfo?.status)
         }
 
