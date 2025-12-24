@@ -1,0 +1,71 @@
+# Android TV UI Refactoring Task: Player Settings Panel Redesign
+
+Sen uzman bir Android geliştiricisi ve UI tasarımcısısın. Amacımız, `PlayerActivity` içindeki Alt Yazı ve Ses seçim panellerini (`PlayerSettingsPanel`), projenin `DIALOG_GORSEL_OZELLIKLERI.md` dosyasında belirtilen **Modern CardView Tasarım Dili** ile görsel olarak uyumlu hale getirmektir.
+
+Mevcut tasarımda kullanılan "Cyan" (#00D9FF) renklerini ve eski stilleri kaldırıp, yerine aşağıdaki özelliklere sahip modern bir yapı kurmalısın.
+
+## 🎯 Hedeflenen Görsel Standartlar (Referans: DIALOG_GORSEL_OZELLIKLERI.md)
+
+### 1. Renk Paleti ve Arka Plan
+- **Panel Arka Planı:** `#F21A1A1A` (%95 Opaklık Koyu Gri/Siyah).
+  - *Mevcut:* `#E6000000` -> *Değiştirilecek.*
+- **Metin Renkleri:** Saf Beyaz (`#FFFFFF`).
+- **Vurgu/Focus Rengi:** Saf Beyaz (`#FFFFFF`). "Cyan" rengi tamamen kaldırılmalı.
+
+### 2. Panel Yapısı (`player_settings_panel.xml`)
+- Arka plan rengini yukarıdaki hex kodu ile güncelle.
+- Başlık (`txt_subtitle_title`):
+  - Boyut: `22sp` (Dialog başlık standardı).
+  - Stil: `Bold`.
+  - Renk: `#FFFFFF`.
+  - Hizalama: Center (Ortalı) veya tasarım bütünlüğü için mevcut hali (muhtemelen Start), ancak font özellikleri güncellenmeli.
+
+### 3. Liste Elemanları (`item_track_selection.xml`)
+Track (Dil/Ses) seçim satırlarını, Dialog'lardaki **"Buton"** yapısına benzetmeliyiz.
+
+- **Container Shape:**
+  - Köşe Yarıçapı: `8dp`.
+  - Normal Durum Arka Planı: `#1AFFFFFF` (%10 Opaklık Beyaz).
+- **Focus Durumu (Çok Önemli):**
+  - Android TV navigasyonu için focus belirgin olmalı.
+  - Arka Plan: `#1AFFFFFF` (Değişmez).
+  - **Border (Çerçeve):** `1.5dp` kalınlığında, `#FFFFFF` (Beyaz) renk.
+  - *Mevcut Cyan focus yapısını bu beyaz çerçeve yapısıyla değiştir.*
+- **İçerik:**
+  - `RadioButton` rengini (tint) Cyan yerine Beyaz (`#FFFFFF`) yap.
+  - Metin boyutu: `16sp`.
+  - Metin stili: `Bold`.
+
+## 🛠️ Yapılacak Teknik Değişiklikler
+
+Lütfen aşağıdaki dosyaları bu standartlara göre güncelle:
+
+1.  **Layout Dosyaları:**
+    - `app/src/main/res/layout/player_settings_panel.xml`: Arka plan ve başlık stillerini güncelle.
+    - `app/src/main/res/layout/item_track_selection.xml`: Item yapısını "Card/Button" görünümüne çevir. Margin ve Paddingleri `DIALOG_GORSEL_OZELLIKLERI.md`'deki buton standartlarına (Padding: 12dp/24dp) yaklaştır.
+
+2.  **Drawable Kaynakları:**
+    - Eğer yoksa, `button_focus_background.xml` (veya ilgili selector drawable'ını) şu yapıya dönüştür:
+      ```xml
+      <!-- Focus Durumu -->
+      <shape>
+          <solid android:color="#1AFFFFFF"/>
+          <corners android:radius="8dp"/>
+          <stroke android:width="1.5dp" android:color="#FFFFFF"/>
+      </shape>
+      <!-- Normal Durum -->
+      <shape>
+          <solid android:color="#1AFFFFFF"/> <!-- Veya transparent -->
+          <corners android:radius="8dp"/>
+      </shape>
+      ```
+
+3.  **Kod Tarafı (Gerekirse):**
+    - `TrackSelectionAdapter.kt` içinde görseli etkileyen programatik renk atamaları varsa (örn. Cyan rengi kod içinde set ediliyorsa) bunları kaldır veya beyaza çevir.
+
+## ⚠️ Dikkat Edilmesi Gerekenler
+- İşlevselliği bozma (tıklama, seçim, panel açılma/kapanma mantığı aynı kalmalı).
+- Sadece **Görsel (UI/UX)** iyileştirmesi yapıyoruz.
+- "Cyan" (#00D9FF) rengi projede bu panel özelinde artık kullanılmamalıdır.
+
+Lütfen bu yönergeler doğrultusunda kod değişikliklerini uygula.

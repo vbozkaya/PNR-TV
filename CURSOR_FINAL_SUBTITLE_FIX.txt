@@ -1,0 +1,43 @@
+# CRITICAL BUG FIX: Subtitle "Off" Selection Not Working
+
+Sen uzman bir Android geliştiricisisin. `PlayerViewModel.kt` dosyasında tespit edilen ve alt yazının kapanmasını engelleyen kritik bir API kullanım hatasını düzeltmeni istiyorum.
+
+## 🐛 Sorun
+`selectSubtitleTrack` fonksiyonunda, alt yazı kapatılmak istendiğinde (`trackInfo == null` durumu), yanlış API kullanıldığı için alt yazı kapanmıyor.
+Kod şu anda `setRendererDisabled` fonksiyonuna `TRACK_TYPE_TEXT` (değeri 3) gönderiyor. Ancak `setRendererDisabled` fonksiyonu **Renderer Index** bekler (Text Renderer genellikle index 2'dir).
+Bu uyuşmazlık nedeniyle Text Renderer kapanmıyor ve `clearSelectionOverrides` çalıştığı için ExoPlayer "Auto Select" moduna geçip varsayılan alt yazıyı tekrar açıyor.
+
+## 🛠️ Düzeltme Talimatı
+
+Lütfen `app/src/main/java/com/pnr/tv/ui/player/PlayerViewModel.kt` dosyasını aç ve `selectSubtitleTrack` fonksiyonunu bul.
+`if (trackInfo == null)` bloğunun içindeki **hatalı satırı** bul ve **doğrusuyla değiştir**.
+
+**Hatalı Kod (Mevcut):**
+```kotlin
+builder.setRendererDisabled(androidx.media3.common.C.TRACK_TYPE_TEXT, true)
+```
+
+**Doğru Kod (Olması Gereken):**
+```kotlin
+// Renderer Index yerine Track Type ile işlem yapan metod kullanılmalı:
+builder.setTrackTypeDisabled(androidx.media3.common.C.TRACK_TYPE_TEXT, true)
+```
+
+Lütfen **SADECE** bu satır değişikliğini yap. Fonksiyonun geri kalanı (loglar, player.prepare çağrıları vb.) doğru ve kalmalı.
+
+## 📝 Kontrol
+Değişiklikten sonra kod şu şekilde görünmeli:
+```kotlin
+if (trackInfo == null) {
+    // ... loglar ...
+    val builder = currentParameters.buildUpon()
+    
+    // DÜZELTİLEN SATIR:
+    builder.setTrackTypeDisabled(androidx.media3.common.C.TRACK_TYPE_TEXT, true)
+    
+    builder.clearSelectionOverrides(androidx.media3.common.C.TRACK_TYPE_TEXT)
+    // ... devamı ...
+}
+```
+
+Bu değişiklik, ExoPlayer'ın "Text" tipindeki tüm renderer'ları devre dışı bırakmasını ve alt yazının kesin olarak kapanmasını sağlayacaktır.
