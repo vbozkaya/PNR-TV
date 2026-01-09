@@ -3,7 +3,6 @@
     <string name="app_name">PNR TV</string>
     
     <!-- Sayfa Başlıkları -->
-    <string name="page_main">Ana Sayfa</string>
     <string name="page_settings">Ayarlar</string>
     <string name="page_user_management">Kullanıcı Yönetimi</string>
     <string name="page_users_list">Mevcut Kullanıcılar</string>
@@ -21,24 +20,21 @@
     <string name="hint_dns">DNS (URL)</string>
     <string name="btn_save">Kaydet</string>
     <string name="error_fill_fields">Lütfen tüm alanları doldurun</string>
-    <string name="toast_user_saved">Kullanıcı kaydedildi</string>
-    <string name="toast_user_updated">Kullanıcı güncellendi</string>
+    <string name="toast_user_saved">Kullanıcı başarıyla eklendi</string>
+    <string name="toast_user_updated">Kullanıcı başarıyla güncellendi</string>
     <string name="toast_user_deleted">Kullanıcı silindi</string>
-    <string name="toast_select_placeholder">Bu seçenek yakında aktif olacak</string>
     <string name="toast_user_selected">%1$s seçildi</string>
     <string name="label_account_name">Hesap Adı</string>
     <string name="empty_users_list">Henüz kullanıcı eklenmedi</string>
     <string name="cd_edit_user">Kullanıcıyı düzenle</string>
     <string name="cd_delete_user">Kullanıcıyı sil</string>
     <string name="cd_select_user">Kullanıcıyı seç</string>
-    <string name="current_user_section_title">Mevcut Kullanıcı</string>
+    <string name="current_user_section_title">Mevcut Kullanıcı:</string>
     <string name="current_user_placeholder">Seçilmedi</string>
     <string name="dialog_delete_user_title">Kullanıcıyı Sil</string>
     <string name="dialog_delete_user_message">%1$s kullanıcısını silmek istiyor musunuz?</string>
     
     <!-- Butonlar ve Navigasyon -->
-    <string name="btn_back">Geri</string>
-    <string name="btn_home">Ana Sayfa</string>
     <string name="btn_exit">Çıkış</string>
     <string name="btn_update">Güncelle</string>
     
@@ -57,7 +53,6 @@
     <string name="btn_delete_viewer">Sil</string>
     <string name="error_cannot_delete_default_viewer">Varsayılan izleyici silinemez</string>
     <string name="toast_viewer_added">İzleyici eklendi</string>
-    <string name="toast_viewer_deleted">İzleyici silindi</string>
     <string name="dialog_delete_viewer_title">İzleyiciyi Sil</string>
     <string name="dialog_delete_viewer_message">%1$s izleyicisini silmek istiyor musunuz? Tüm favorileri de silinecektir.</string>
     <string name="empty_viewers_list">Henüz izleyici eklenmedi</string>
@@ -65,8 +60,7 @@
     <!-- Favorite Selection -->
     <string name="dialog_select_viewer_title">Favoriye Ekle</string>
     <string name="dialog_select_viewer_message">Hangi izleyici için favoriye eklemek istersiniz?</string>
-    <string name="viewer_favorites_category">%1$s FAVORİLER</string>
-    
+
     <!-- Movie Detail -->
     <string name="movie_director">Yönetmen:</string>
     <string name="movie_genre">Tür:</string>
@@ -82,41 +76,77 @@
     <string name="error_media_load">Medya yüklenirken hata oluştu: %1$s</string>
     <string name="btn_add_favorite">Favoriye Ekle</string>
     <string name="btn_play">Oynat</string>
+    <string name="category_favorites">FAVORİLER</string>
+    <string name="category_viewer_favorites">%1$s FAVORİLER</string>
+    <string name="category_recently_added">SON EKLENENLER</string>
+    <string name="empty_movies_favorites">Henüz favori filminiz yok.</string>
+    <string name="empty_series_favorites">Henüz favori diziniz yok.</string>
     <string name="toast_favorite_added">Favorilere eklendi</string>
-    <string name="description_not_available">Açıklama mevcut değil</string>
+    <string name="toast_favorite_removed">Favorilerden çıkarıldı</string>
+    <string name="toast_premium_required_for_favorites">Favoriler premium özelliğidir. Lütfen premium üyeliğinizi aktifleştirin.</string>
     <string name="error_movie_not_found">Film bulunamadı</string>
     <string name="loading_movie_details">Film detayları yükleniyor...</string>
-    <string name="error_loading_movie">Film yüklenirken hata oluştu</string>
+    <string name="error_loading_movie">Film yüklenirken bir sorun oluştu. Lütfen tekrar deneyin.</string>
+    <string name="error_loading_series">Dizi yüklenirken bir sorun oluştu. Lütfen tekrar deneyin.</string>
+    <string name="error_server_unavailable">Sunucu şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.</string>
     <string name="error_video_playback_failed">Video Oynatılamıyor - Sunucu Hatası</string>
+    <string name="error_video_url_not_found">Video URL bulunamadı</string>
     
     <!-- Content Descriptions for Player -->
     <string name="cd_rewind">Geri sar</string>
     <string name="cd_play">Oynat</string>
-    <string name="cd_pause">Duraklat</string>
     <string name="cd_stop">Durdur</string>
     <string name="cd_fast_forward">İleri sar</string>
     <string name="cd_subtitle">Altyazı</string>
     <string name="cd_audio_track">Ses parçası</string>
     
+    <!-- Player -->
+    <string name="channels">Kanallar</string>
+    
     <!-- Settings -->
     <string name="settings_user_status">Kullanıcı Durumu</string>
     <string name="settings_app_language">Uygulama Dili</string>
+    <string name="settings_premium">Premium Satın Al / Geri Yükle</string>
     <string name="settings_clear_cache">Önbelleği Temizle</string>
+    <string name="toast_premium_restored">Satın alımınız geri yüklendi</string>
+    <string name="toast_premium_activated">Premium Aktif Edildi</string>
     <string name="settings_about_app">Uygulama Hakkında</string>
     
+    <!-- Premium -->
+
     <!-- About App -->
     <string name="about_app_title">Uygulama Hakkında</string>
-    <string name="about_app_description">PNR TV, Android TV platformu için geliştirilmiş bir IPTV (İnternet Protokolü Televizyonu) uygulamasıdır. Kullanıcıların canlı yayınları, filmleri ve dizileri izlemesine olanak tanır.</string>
+    <string name="about_app_info_title">Uygulama Bilgisi</string>
+    <string name="about_app_name_label">Uygulama Adı: PNR TV</string>
+    <string name="about_app_version_label">Sürüm: Versiyon %1$s (Build %2$d)</string>
+    <string name="about_app_version">Versiyon %1$s (Build %2$d)</string>
+    <string name="about_app_description">PNR TV - Akıllı Medya Oynatıcı, Android TV platformu için özel olarak geliştirilmiş profesyonel bir medya oynatıcı uygulamasıdır. Video içerikleriniz için akıcı, sezgisel ve sinematik bir deneyim sunar; oynatma listelerinizi kolayca yönetmenizi ve oynatmanızı sağlar. PNR TV bir içerik sağlayıcı değil, yalnızca bir oynatıcıdır; bu nedenle herhangi bir medya içeriği, TV kanalı veya çalma listesi barındırmaz.</string>
+    <string name="about_legal_title">Önemli Yasal Bilgilendirme</string>
+    <string name="about_legal_no_content">İçerik Sağlanmaz: Uygulamamız herhangi bir üçüncü taraf IPTV sağlayıcısıyla bağlantılı değildir ve içerisinde hazır içerik bulunmamaktadır.</string>
+    <string name="about_legal_user_responsibility">Kullanıcı Sorumluluğu: Kullanıcılar, izlemek istedikleri içerikleri yasal servis sağlayıcılarından kendileri temin etmelidir.</string>
+    <string name="about_legal_copyright">Telif Hakları: PNR TV, telif hakkı sahibinin izni olmadan telifli materyallerin yayınlanmasını desteklemez ve onaylamaz.</string>
     <string name="about_features_title">Özellikler</string>
-    <string name="about_features">• Filmler (VOD): Film kategorileri, detaylar ve oynatma\n• Diziler: Dizi kategorileri, sezonlar, bölümler ve oynatma\n• Canlı Yayınlar: Canlı TV kanalları ve kategorileri\n• Çoklu Kullanıcı: Birden fazla IPTV hesabı yönetimi\n• İzleyici Profilleri: Her kullanıcı için ayrı izleyici profilleri\n• Favoriler: Favori kanalları kaydetme\n• Son İzlenenler: Son izlenen içerikleri takip etme\n• Kaldığınız Yerden Devam: Oynatma pozisyonu kaydetme</string>
+    <string name="about_features">Canlı Yayınlar: Canlı TV kanalları ve kategorileri için tam destek.\n\nFilmler &amp; Diziler (VOD): Film kategorileri, sezon/bölüm detayları ve yüksek kaliteli oynatma.\n\nÇoklu Kullanıcı &amp; Profiller: Birden fazla medya servis hesabını yönetme ve her kullanıcı için ayrı izleyici profilleri oluşturma.\n\nAkıllı Takip: Favori içerikleri kaydetme, son izlenenleri takip etme ve oynatma pozisyonunu kaydederek kaldığın yerden devam etme.</string>
+    <string name="about_premium_features_title">Premium Avantajlar</string>
+    <string name="about_premium_features">Reklamsız Deneyim: Tamamen kesintisiz izleme.\n\nGelişmiş Denetim: Yetişkin içerik kontrolü, akıllı arama ve filtreleme seçenekleri.\n\nProfil Yönetimi: Kişiselleştirilmiş kullanıcı durumları ve izleyici profilleri.</string>
     <string name="about_thanks_title">Teşekkürler</string>
-    <string name="about_thanks">The Movie Database (TMDB) - Film ve dizi verileri için\nAndroid TV Leanback Library - TV UI bileşenleri için\nTüm açık kaynak kütüphane geliştiricilerine</string>
+    <string name="about_thanks">Veri Sağlayıcı: Film ve dizi verileri için The Movie Database (TMDB) platformuna teşekkür ederiz.\n\nArayüz: TV kullanıcı arayüzü bileşenleri için Android TV Leanback Library kullanılmıştır.\n\nTopluluk: Tüm açık kaynak kütüphane geliştiricilerine katkılarından dolayı teşekkür ederiz.</string>
     <string name="about_contact_title">İletişim</string>
-    <string name="about_contact_message">İş birliği, görüş ve önerileriniz için lütfen bize mail atınız: tvpnrtv@gmail.com</string>
-    <string name="about_contact_email">tvpnrtv@gmail.com</string>
-    <string name="about_contact_email_subject">PNR TV - İletişim</string>
-    
+    <string name="about_contact_message">İş birliği, görüş ve önerileriniz için: tvpnrtv@gmail.com</string>
+
     <!-- Dialog -->
     <string name="ok">Tamam</string>
+    <string name="toast_cache_cleared">Önbellek temizlendi</string>
+    
+    <!-- Resume Playback Dialog -->
+    <string name="dialog_resume_playback_title">Kaldığı Yerden Devam Et</string>
+    <string name="btn_resume_from_position">Kaldığı Yerden Devam Et</string>
+    <string name="btn_start_from_beginning">Baştan Başla</string>
+    <string name="msg_preparing_content">İçerikleriniz hazırlanıyor, lütfen bekleyin...</string>
+    
+    <!-- Player Loading Messages -->
+    <string name="player_loading_preparing">İçerik hazırlanıyor...</string>
+    <string name="player_loading_fetching_url">Kanal adresi alınıyor...</string>
+    <string name="player_loading_buffering">Yayın yükleniyor...</string>
 </resources>
 

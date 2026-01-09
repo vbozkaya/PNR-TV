@@ -3,7 +3,6 @@
     <string name="app_name">PNR TV</string>
     
     <!-- Títulos de Página -->
-    <string name="page_main">Inicio</string>
     <string name="page_settings">Configuración</string>
     <string name="page_user_management">Gestión de Usuarios</string>
     <string name="page_users_list">Usuarios Actuales</string>
@@ -16,17 +15,13 @@
     <string name="category_favorites">FAVORITOS</string>
     <string name="category_viewer_favorites">%1$s FAVORITOS</string>
     <string name="category_recently_added">RECIÉN AGREGADOS</string>
-    <string name="category_recently_watched">Recientemente Vistos</string>
-    <string name="category_all_series">TODAS LAS SERIES</string>
-    <string name="label_seasons">Temporadas</string>
-    <string name="empty_favorites">Aún no tienes canales favoritos.</string>
-    <string name="empty_recently_watched">No se encontró ningún canal visto recientemente.</string>
+    <string name="msg_preparing_content">Preparando su contenido, por favor espere...</string>
+    <string name="empty_movies_favorites">Aún no tienes películas favoritas.</string>
+    <string name="empty_series_favorites">Aún no tienes series favoritas.</string>
     <string name="toast_favorite_added">Agregado a favoritos</string>
     <string name="toast_favorite_removed">Eliminado de favoritos</string>
+    <string name="toast_premium_required_for_favorites">Los favoritos son una función premium. Por favor, active su membresía premium.</string>
     <string name="no_episodes_found">No se encontraron episodios para esta temporada</string>
-    <string name="error_title">Error</string>
-    <string name="retry">Reintentar</string>
-    <string name="cancel">Cancelar</string>
     <string name="ok">OK</string>
     
     <!-- Descripciones de Contenido (Accesibilidad) -->
@@ -34,9 +29,7 @@
     <string name="cd_navbar_back">Volver</string>
     <string name="cd_navbar_home">Ir a inicio</string>
     <string name="cd_loading">Cargando</string>
-    <string name="cd_episode_watched">Visto</string>
-    <string name="add_to_favorites">Agregar a favoritos</string>
-    
+
     <!-- Página Agregar Usuario -->
     <string name="hint_account_name">Nombre de Cuenta (cualquier nombre)</string>
     <string name="hint_username">Nombre de Usuario</string>
@@ -44,24 +37,21 @@
     <string name="hint_dns">DNS (URL)</string>
     <string name="btn_save">Guardar</string>
     <string name="error_fill_fields">Por favor complete todos los campos</string>
-    <string name="toast_user_saved">Usuario guardado</string>
-    <string name="toast_user_updated">Usuario actualizado</string>
+    <string name="toast_user_saved">Usuario agregado exitosamente</string>
+    <string name="toast_user_updated">Usuario actualizado exitosamente</string>
     <string name="toast_user_deleted">Usuario eliminado</string>
-    <string name="toast_select_placeholder">Esta opción estará disponible pronto</string>
     <string name="toast_user_selected">%1$s seleccionado</string>
     <string name="label_account_name">Nombre de Cuenta</string>
     <string name="empty_users_list">Aún no se han agregado usuarios</string>
     <string name="cd_edit_user">Editar usuario</string>
     <string name="cd_delete_user">Eliminar usuario</string>
     <string name="cd_select_user">Seleccionar usuario</string>
-    <string name="current_user_section_title">Usuario Actual</string>
+    <string name="current_user_section_title">Usuario Actual:</string>
     <string name="current_user_placeholder">No seleccionado</string>
     <string name="dialog_delete_user_title">Eliminar Usuario</string>
     <string name="dialog_delete_user_message">¿Desea eliminar el usuario %1$s?</string>
     
     <!-- Botones y Navegación -->
-    <string name="btn_back">Atrás</string>
-    <string name="btn_home">Inicio</string>
     <string name="btn_filter">Filtro</string>
     <string name="search_hint">Buscar Contenido</string>
     <string name="btn_exit">Salir</string>
@@ -93,6 +83,11 @@
     <!-- Mensajes de Carga -->
     <string name="loading_content">El contenido se está actualizando y procesando...</string>
     <string name="loading_completed">Actualización Completada</string>
+    <string name="added_content_title">Contenido Agregado</string>
+    <string name="added_content_movies">Películas: %1$d</string>
+    <string name="added_content_series">Series: %1$d</string>
+    <string name="data_required_warning">Por Favor Use el Botón de Actualización Arriba para Actualizar Su Base de Datos Primero</string>
+    <string name="user_required_warning">Por Favor Agregue un Usuario Primero</string>
     
     <!-- Mensajes de Error -->
     <string name="error_unknown">Error desconocido</string>
@@ -107,7 +102,6 @@
     <string name="error_user_not_selected">Usuario No Seleccionado</string>
     <string name="error_user_invalid_credentials">Credenciales de Usuario Inválidas</string>
     <string name="error_server_error">Error del Servidor</string>
-    <string name="error_content_info_failed">No Se Pudo Cargar la Información del Contenido</string>
     <string name="error_no_internet">Sin Conexión a Internet</string>
     <string name="error_video_playback_failed">No Se Puede Reproducir el Video - Error del Servidor</string>
     <string name="error_timeout">La conexión expiró. Por favor, inténtelo de nuevo.</string>
@@ -116,44 +110,28 @@
     <string name="error_offline">Sin conexión a Internet. Mostrando datos de la caché.</string>
     <string name="error_retry_failed">El reintento falló. Por favor, verifique su conexión a Internet.</string>
     
+    <!-- Mensajes de Error Amigables para el Usuario -->
+    <string name="error_server_unavailable">El servidor no está disponible en este momento. Por favor, inténtelo más tarde.</string>
+    <string name="error_loading_series">Ocurrió un problema al cargar la serie. Por favor, inténtelo de nuevo.</string>
+    
     <!-- Mensajes de Error Cortos -->
-    <string name="error_categories_short">No se pudieron cargar las categorías</string>
-    <string name="error_movies_short">No se pudieron cargar las películas</string>
-    <string name="error_series_short">No se pudieron cargar las series</string>
     <string name="error_live_streams_short">No se pudieron cargar las transmisiones en vivo</string>
     <string name="btn_retry">Reintentar</string>
-    <string name="toast_retrying">Reintentando...</string>
-    <string name="toast_retry_success">Conexión exitosa</string>
-    <string name="toast_retry_failed">Reintento falló</string>
     <string name="error_categories_load_failed">Error al cargar categorías: %1$s</string>
     <string name="error_movies_load_failed">Error al cargar películas: %1$s</string>
     <string name="error_series_load_failed">Error al cargar series: %1$s</string>
-    <string name="error_categories_load">Error al cargar categorías: %1$s</string>
-    <string name="error_movies_load">Error al cargar películas: %1$s</string>
-    <string name="error_series_load">Error al cargar series: %1$s</string>
     <string name="error_image_preload">Error de precarga de imagen: %1$s</string>
     
     <!-- Nombres de Categoría -->
-    <string name="category_all_movies">TODAS LAS PELÍCULAS</string>
-    
+
     <!-- Información de Estado de Usuario -->
-    <string name="status_label">Estado: %1$s</string>
-    <string name="expiry_date_label">Fecha de Vencimiento: %1$s</string>
-    <string name="connection_label">Conexión: %1$s/%2$s</string>
-    <string name="trial_label">Prueba: %1$s</string>
     <string name="yes">Sí</string>
     <string name="no">No</string>
     
     <!-- Etiquetas de Contenido -->
-    <string name="movie_label">Película: %1$s</string>
-    <string name="series_label">Serie: %1$s</string>
-    <string name="description_not_available">Descripción no disponible.</string>
-    <string name="episode_number_format">Episodio %1$d</string>
-    
+
     <!-- Reproductor -->
-    <string name="subtitles">Subtítulos</string>
-    <string name="audio_language">Idioma de Audio</string>
-    
+
     <!-- Gestión de Espectadores -->
     <string name="page_viewers">Espectadores</string>
     <string name="hint_viewer_name">Nombre del Espectador</string>
@@ -161,7 +139,6 @@
     <string name="btn_delete_viewer">Eliminar</string>
     <string name="error_cannot_delete_default_viewer">No se puede eliminar el espectador predeterminado</string>
     <string name="toast_viewer_added">Espectador agregado</string>
-    <string name="toast_viewer_deleted">Espectador eliminado</string>
     <string name="dialog_delete_viewer_title">Eliminar Espectador</string>
     <string name="dialog_delete_viewer_message">¿Desea eliminar el espectador %1$s? Todos los favoritos también se eliminarán.</string>
     <string name="empty_viewers_list">Aún no se han agregado espectadores</string>
@@ -169,8 +146,7 @@
     <!-- Selección de Favoritos -->
     <string name="dialog_select_viewer_title">Agregar a Favoritos</string>
     <string name="dialog_select_viewer_message">¿Para qué espectador desea agregar a favoritos?</string>
-    <string name="viewer_favorites_category">%1$s FAVORITOS</string>
-    
+
     <!-- Detalle de Película -->
     <string name="movie_director">Director:</string>
     <string name="movie_genre">Género:</string>
@@ -191,20 +167,33 @@
     <!-- Configuración -->
     <string name="settings_user_status">Estado de Usuario</string>
     <string name="settings_app_language">Idioma de la Aplicación</string>
+    <string name="settings_premium">Comprar Premium / Restaurar</string>
     <string name="settings_clear_cache">Limpiar Caché y Todos los Datos</string>
+    <string name="toast_premium_restored">Su compra ha sido restaurada</string>
+    <string name="toast_premium_activated">Premium Activado</string>
     <string name="settings_about_app">Acerca de la Aplicación</string>
     
+    <!-- Premium -->
+
     <!-- Acerca de la Aplicación -->
     <string name="about_app_title">Acerca de la Aplicación</string>
-    <string name="about_app_description">PNR TV es una aplicación IPTV (Televisión por Protocolo de Internet) desarrollada exclusivamente para la plataforma Android TV. Permite a los usuarios ver transmisiones en vivo, películas y series.</string>
+    <string name="about_app_info_title">Información de la Aplicación</string>
+    <string name="about_app_name_label">Nombre de la Aplicación: PNR TV</string>
+    <string name="about_app_version_label">Versión: Versión %1$s (Build %2$d)</string>
+    <string name="about_app_version">Versión %1$s (Build %2$d)</string>
+    <string name="about_app_description">PNR TV - Reproductor de Medios Inteligente es una aplicación profesional de reproductor de medios optimizada específicamente para interfaces de Android TV. Ofrece una experiencia fluida, intuitiva y cinematográfica para tu contenido de video, permitiéndote gestionar y reproducir tus listas de reproducción con facilidad. PNR TV no es un proveedor de contenido, sino solo un reproductor; por lo tanto, no aloja ningún contenido multimedia, canales de TV o listas de reproducción.</string>
+    <string name="about_legal_title">Aviso Legal Importante</string>
+    <string name="about_legal_no_content">No se Proporciona Contenido: Nuestra aplicación no está afiliada con ningún proveedor de IPTV de terceros y no contiene contenido listo para usar.</string>
+    <string name="about_legal_user_responsibility">Responsabilidad del Usuario: Los usuarios deben obtener el contenido que desean ver de proveedores de servicios legales por sí mismos.</string>
+    <string name="about_legal_copyright">Derechos de Autor: PNR TV no apoya ni aprueba la publicación de materiales con derechos de autor sin el permiso del titular de los derechos de autor.</string>
     <string name="about_features_title">Características</string>
-    <string name="about_features">• Películas (VOD): Categorías de películas, detalles y reproducción\n• Series: Categorías de series, temporadas, episodios y reproducción\n• Transmisiones en Vivo: Canales de TV en vivo y categorías\n• Múltiples Usuarios: Gestión de múltiples cuentas IPTV\n• Perfiles de Espectador: Perfiles de espectador separados para cada usuario\n• Favoritos: Guardar canales favoritos\n• Recientemente Vistos: Rastrear contenido visto recientemente\n• Reanudar Reproducción: Guardar posición de reproducción</string>
+    <string name="about_features">Transmisiones en Vivo: Soporte completo para canales de TV en vivo y categorías.\n\nPelículas &amp; Series (VOD): Categorías de películas, detalles de temporada/episodio y reproducción de alta calidad.\n\nMúltiples Usuarios &amp; Perfiles: Gestionar múltiples cuentas de servicio de medios y crear perfiles de espectador separados para cada usuario.\n\nSeguimiento Inteligente: Guardar contenido favorito, rastrear recientemente visto y reanudar desde donde lo dejaste guardando la posición de reproducción.</string>
+    <string name="about_premium_features_title">Ventajas Premium</string>
+    <string name="about_premium_features">Experiencia sin Anuncios: Visualización completamente ininterrumpida.\n\nControl Avanzado: Control de contenido para adultos, opciones de búsqueda y filtrado inteligente.\n\nGestión de Perfiles: Estados de usuario personalizados y perfiles de espectador.</string>
     <string name="about_thanks_title">Agradecimientos</string>
-    <string name="about_thanks">The Movie Database (TMDB) - Por datos de películas y series\nAndroid TV Leanback Library - Por componentes de UI de TV\nTodos los desarrolladores de bibliotecas de código abierto</string>
+    <string name="about_thanks">Proveedor de Datos: Agradecemos a la plataforma The Movie Database (TMDB) por los datos de películas y series.\n\nInterfaz: Se utiliza Android TV Leanback Library para los componentes de interfaz de usuario de TV.\n\nComunidad: Agradecemos a todos los desarrolladores de bibliotecas de código abierto por sus contribuciones.</string>
     <string name="about_contact_title">Contacto</string>
-    <string name="about_contact_message">Para colaboración, comentarios y sugerencias, por favor envíenos un correo electrónico: tvpnrtv@gmail.com</string>
-    <string name="about_contact_email">tvpnrtv@gmail.com</string>
-    <string name="about_contact_email_subject">PNR TV - Contacto</string>
+    <string name="about_contact_message">Para colaboración, comentarios y sugerencias: tvpnrtv@gmail.com</string>
     <string name="dialog_select_language_title">Seleccionar Idioma</string>
     <string name="dialog_clear_cache_title">Limpiar Todos los Datos</string>
     <string name="dialog_clear_cache_message">Todos los datos (usuarios, favoritos, historial de visualización, contenido, etc.) se eliminarán y la aplicación se abrirá como si estuviera recién instalada. Esta acción no se puede deshacer. ¿Desea continuar?</string>
@@ -214,10 +203,10 @@
     <string name="player_subtitles_title">Subtítulos</string>
     <string name="player_audio_language_title">Idioma de Audio</string>
     <string name="player_subtitles_off">Desactivado</string>
+    <string name="channels">Canales</string>
     
     <!-- Episodio y Temporada -->
     <string name="episode_format">Episodio %1$d</string>
-    <string name="season_format">Temporada %1$d</string>
     <string name="season_format_with_episodes">Temporada %1$d (%2$d)</string>
     
     <!-- Idiomas -->
@@ -228,6 +217,8 @@
     <string name="language_hindi">Hindi</string>
     <string name="language_portuguese">Portugués</string>
     <string name="language_french">Francés</string>
+    <string name="language_japanese">Japonés</string>
+    <string name="language_thai">Tailandés</string>
     
     <!-- Mensajes de Error Adicionales -->
     <string name="error_video_url_not_found">URL de video no encontrada</string>
@@ -240,26 +231,19 @@
     <string name="save">Guardar</string>
     
     <!-- Prefijo de Usuario Actual -->
-    <string name="current_user_prefix">Usuario Actual:</string>
-    
+
     <!-- Descripciones de Contenido del Reproductor -->
     <string name="cd_rewind">Rebobinar</string>
     <string name="cd_play">Reproducir</string>
-    <string name="cd_pause">Pausar</string>
     <string name="cd_stop">Detener</string>
     <string name="cd_fast_forward">Avance Rápido</string>
     <string name="cd_subtitle">Subtítulo</string>
     <string name="cd_audio_track">Idioma de Audio</string>
     
     <!-- Prefijos del Diálogo de Estado del Usuario -->
-    <string name="status_prefix">Estado:</string>
-    <string name="expiry_date_prefix">Fecha de Vencimiento:</string>
-    <string name="connection_prefix">Conexión:</string>
-    <string name="trial_prefix">Prueba:</string>
-    
+
     <!-- Selección de Pista -->
-    <string name="track_language_turkish">Turco</string>
-    
+
     <!-- Valores Desconocidos/Predeterminados -->
     <string name="unknown">Desconocido</string>
     
@@ -288,5 +272,10 @@
     <string name="category_kids">Infantil</string>
     <string name="category_tv_movie">Película de TV</string>
     <string name="category_all">Todos</string>
+    
+    <!-- Resume Playback Dialog -->
+    <string name="dialog_resume_playback_title">Reanudar Reproducción</string>
+    <string name="btn_resume_from_position">Reanudar desde Posición</string>
+    <string name="btn_start_from_beginning">Empezar desde el Principio</string>
 </resources>
 

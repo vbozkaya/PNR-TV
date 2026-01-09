@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 
+    NOTE: This is a Japanese translation file. 
+    Many strings are still in English and need to be translated to Japanese.
+    -->
+    
+    <string name="app_name">PNR TV</string>
+    
+    <!-- Page Titles -->
+    <string name="page_settings">設定</string>
+    <string name="page_user_management">ユーザー管理</string>
+    <string name="page_users_list">現在のユーザー</string>
+    <string name="page_add_user">新しいユーザーを追加</string>
+    <string name="page_live_streams">ライブストリーム</string>
+    <string name="page_movies">映画</string>
+    <string name="page_movie_details">映画の詳細</string>
+    <string name="page_series">シリーズ</string>
+    <string name="page_series_details">シリーズの詳細</string>
+    <string name="category_favorites">お気に入り</string>
+    <string name="category_viewer_favorites">%1$sのお気に入り</string>
+    <string name="category_recently_added">最近追加された</string>
+    <!-- Empty State Messages -->
+    <string name="empty_movies_favorites">お気に入りの映画がまだありません。</string>
+    <string name="empty_series_favorites">お気に入りのシリーズがまだありません。</string>
+    <string name="empty_movies">このカテゴリに映画が見つかりませんでした。</string>
+    <string name="empty_series">このカテゴリにシリーズが見つかりませんでした。</string>
+    <string name="empty_live_streams">このカテゴリにチャンネルが見つかりませんでした。</string>
+    <string name="empty_category_content">このカテゴリにコンテンツが見つかりませんでした。</string>
+    <string name="msg_preparing_content">コンテンツを準備しています。お待ちください...</string>
+    <string name="toast_favorite_added">お気に入りに追加しました</string>
+    <string name="toast_favorite_removed">お気に入りから削除しました</string>
+    <string name="toast_premium_required_for_favorites">お気に入りはプレミアム機能です。プレミアムメンバーシップを有効にしてください。</string>
+    <string name="no_episodes_found">このシーズンにエピソードが見つかりませんでした</string>
+    <string name="ok">OK</string>
+    
+    <!-- Content Descriptions (Accessibility) -->
+    <string name="cd_series_poster">シリーズのポスター</string>
+    <string name="cd_navbar_back">戻る</string>
+    <string name="cd_navbar_home">ホームに戻る</string>
+    <string name="cd_loading">読み込み中</string>
+
+    <!-- Add User Page -->
+    <string name="hint_account_name">アカウント名（任意の名前）</string>
+    <string name="hint_username">ユーザー名</string>
+    <string name="hint_password">パスワード</string>
+    <string name="hint_dns">DNS（URL）</string>
+    <string name="btn_save">保存</string>
+    <string name="error_fill_fields">すべてのフィールドを入力してください</string>
+    <string name="toast_user_saved">ユーザーが正常に追加されました</string>
+    <string name="toast_user_updated">ユーザーが正常に更新されました</string>
+    <string name="toast_user_deleted">ユーザーを削除しました</string>
+    <string name="toast_user_selected">%1$sが選択されました</string>
+    <string name="label_account_name">アカウント名</string>
+    <string name="empty_users_list">まだユーザーが追加されていません</string>
+    <string name="cd_edit_user">ユーザーを編集</string>
+    <string name="cd_delete_user">ユーザーを削除</string>
+    <string name="cd_select_user">ユーザーを選択</string>
+    <string name="current_user_section_title">現在のユーザー：</string>
+    <string name="current_user_placeholder">選択されていません</string>
+    <string name="dialog_delete_user_title">ユーザーを削除</string>
+    <string name="dialog_delete_user_message">ユーザー%1$sを削除しますか？</string>
+    
+    <!-- Buttons and Navigation -->
+    <string name="btn_filter">フィルター</string>
+    <string name="search_hint">コンテンツを検索</string>
+    <string name="btn_exit">終了</string>
+    
+    <!-- Sort Dialog -->
+    <string name="dialog_sort_title">並べ替えオプション</string>
+    <string name="sort_a_to_z">AからZへ並べ替え</string>
+    <string name="sort_z_to_a">ZからAへ並べ替え</string>
+    <string name="sort_rating_high_to_low">評価の高い順に並べ替え</string>
+    <string name="sort_rating_low_to_high">評価の低い順に並べ替え</string>
+    <string name="sort_date_new_to_old">日付の新しい順に並べ替え</string>
+    <string name="sort_date_old_to_new">日付の古い順に並べ替え</string>
+    <string name="btn_update">更新</string>
+    <string name="btn_play">再生</string>
+    <string name="btn_add_favorite">お気に入りに追加</string>
+    
+    <!-- Dialog Messages -->
+    <string name="dialog_exit_title">終了</string>
+    <string name="dialog_exit_message">アプリケーションを終了してもよろしいですか？</string>
+    <string name="dialog_yes">はい</string>
+    <string name="dialog_no">いいえ</string>
+    <string name="dialog_cancel">キャンセル</string>
+    <string name="dialog_ok">OK</string>
+    
+    <!-- User Information -->
+    <string name="current_user_label">現在のユーザー：%1$s</string>
+    <string name="current_user_none">現在のユーザー：-</string>
+    
+    <!-- Loading Messages -->
+    <string name="loading_content">コンテンツを更新・処理しています...</string>
+    <string name="loading_completed">更新が完了しました</string>
+    <string name="added_content_title">追加されたコンテンツ</string>
+    <string name="added_content_movies">映画：%1$d</string>
+    <string name="added_content_series">シリーズ：%1$d</string>
+    <string name="data_required_warning">まず上記の更新ボタンを使用してデータベースを更新してください</string>
+    <string name="user_required_warning">まずユーザーを追加してください</string>
+    
+    <!-- Error Messages -->
+    <string name="error_unknown">エラーが発生しました。もう一度お試しください。</string>
+    <string name="error_with_message">エラー：%1$s</string>
+    <string name="error_user_not_found">ユーザー情報が見つからないか、DNS情報が不足しています</string>
+    <string name="error_network_connection">インターネット接続を確認して、もう一度お試しください。</string>
+    <string name="error_network_generic">ネットワークエラーが発生しました（コード：%1$d）。もう一度お試しください。</string>
+    <string name="error_unexpected">予期しないエラーが発生しました：%1$s</string>
+    
+    <!-- User-Friendly Error Messages -->
+    <string name="error_server_unavailable">サーバーは現在利用できません。後でもう一度お試しください。</string>
+    
+    <!-- Main Screen Update Error Messages -->
+    <string name="error_user_not_exists">ユーザーなし</string>
+    <string name="error_user_not_selected">ユーザーが選択されていません</string>
+    <string name="error_user_invalid_credentials">無効なユーザー認証情報</string>
+    <string name="error_server_error">サーバーエラー</string>
+    <string name="error_no_internet">インターネット接続がありません</string>
+    <string name="error_timeout">接続がタイムアウトしました。もう一度お試しください。</string>
+    <string name="error_timeout_connect">サーバーに接続できません。接続がタイムアウトしました。</string>
+    <string name="error_timeout_read">サーバーからデータを受信しているときにタイムアウトが発生しました。もう一度お試しください。</string>
+    <string name="error_video_playback_failed">ビデオを再生できません - サーバーエラー</string>
+    
+    <!-- Short Error Messages -->
+    <string name="error_live_streams_short">ライブストリームを読み込めませんでした</string>
+    <string name="error_offline">インターネット接続がありません。キャッシュからデータを表示しています。</string>
+    <string name="error_retry_failed">再試行に失敗しました。インターネット接続を確認してください。</string>
+    <string name="btn_retry">再試行</string>
+    <string name="error_categories_load_failed">カテゴリの読み込みに失敗しました：%1$s</string>
+    <string name="error_movies_load_failed">映画の読み込みに失敗しました：%1$s</string>
+    <string name="error_series_load_failed">シリーズの読み込みに失敗しました：%1$s</string>
+    <string name="error_image_preload">画像のプリロードエラー：%1$s</string>
+    
+    <!-- Category Names -->
+
+    <!-- User Status Information -->
+    <string name="yes">はい</string>
+    <string name="no">いいえ</string>
+    
+    <!-- Content Labels -->
+
+    <!-- Player -->
+
+    <!-- Viewer Management -->
+    <string name="page_viewers">視聴者</string>
+    <string name="hint_viewer_name">視聴者名</string>
+    <string name="btn_add_viewer">視聴者を追加</string>
+    <string name="btn_delete_viewer">削除</string>
+    <string name="error_cannot_delete_default_viewer">デフォルトの視聴者は削除できません</string>
+    <string name="toast_viewer_added">視聴者が追加されました</string>
+    <string name="dialog_delete_viewer_title">視聴者を削除</string>
+    <string name="dialog_delete_viewer_message">視聴者%1$sを削除しますか？すべてのお気に入りも削除されます。</string>
+    <string name="empty_viewers_list">まだ視聴者が追加されていません</string>
+    
+    <!-- Favorite Selection -->
+    <string name="dialog_select_viewer_title">お気に入りに追加</string>
+    <string name="dialog_select_viewer_message">どの視聴者にお気に入りを追加しますか？</string>
+
+    <!-- Movie Detail -->
+    <string name="movie_director">監督：</string>
+    <string name="movie_genre">ジャンル：</string>
+    <string name="movie_cast">キャスト：</string>
+    <string name="movie_overview_label">概要：</string>
+    <string name="no_overview">概要なし</string>
+    
+    <!-- Series Detail -->
+    <string name="series_creator">作成者：</string>
+    <string name="series_genre">ジャンル：</string>
+    <string name="series_cast">キャスト：</string>
+    <string name="series_overview_label">概要：</string>
+    <string name="error_media_load">メディアの読み込みエラー：%1$s</string>
+    <string name="error_movie_not_found">映画が見つかりませんでした</string>
+    <string name="loading_movie_details">映画の詳細を読み込んでいます...</string>
+    <string name="error_loading_movie">映画の読み込み中に問題が発生しました。もう一度お試しください。</string>
+    <string name="error_loading_series">シリーズの読み込み中に問題が発生しました。もう一度お試しください。</string>
+    
+    <!-- Settings -->
+    <string name="settings_user_status">ユーザーステータス</string>
+    <string name="settings_app_language">アプリの言語</string>
+    <string name="settings_premium">プレミアムを購入/復元</string>
+    <string name="settings_premium_on">オン</string>
+    <string name="settings_premium_off">オフ</string>
+    <string name="settings_adult_content">アダルトコンテンツ</string>
+    <string name="settings_adult_content_on">オン</string>
+    <string name="settings_adult_content_off">オフ</string>
+    <string name="settings_clear_cache">キャッシュとすべてのデータをクリア</string>
+    <string name="settings_about_app">アプリについて</string>
+    
+    <!-- Billing Error Messages -->
+    <string name="error_billing_connecting">課金システムに接続しています。お待ちください...</string>
+    <string name="error_billing_not_connected">課金システムはまだ準備できていません。もう一度お試しください。</string>
+    <string name="error_billing_error">課金システムエラー。もう一度お試しください。</string>
+    <string name="toast_premium_restored">購入が復元されました</string>
+    <string name="toast_premium_activated">プレミアムが有効化されました</string>
+    
+    <!-- Premium -->
+
+    <!-- About App -->
+    <string name="about_app_title">アプリについて</string>
+    <string name="about_app_info_title">アプリ情報</string>
+    <string name="about_app_name_label">アプリ名: PNR TV</string>
+    <string name="about_app_version_label">バージョン: バージョン%1$s（ビルド%2$d）</string>
+    <string name="about_app_version">バージョン%1$s（ビルド%2$d）</string>
+    <string name="about_app_description">PNR TV - スマートメディアプレーヤーは、Android TVインターフェース向けに最適化されたプロフェッショナルなメディアプレーヤーアプリケーションです。ビデオコンテンツにスムーズで直感的、シネマティックな体験を提供し、プレイリストを簡単に管理・再生できます。PNR TVはコンテンツプロバイダーではなく、単なるプレーヤーです。したがって、メディアコンテンツ、TVチャンネル、またはプレイリストをホストしていません。</string>
+    <string name="about_legal_title">重要な法的通知</string>
+    <string name="about_legal_no_content">コンテンツは提供されません: 当社のアプリケーションは、サードパーティのIPTVプロバイダーと提携しておらず、既成のコンテンツは含まれていません。</string>
+    <string name="about_legal_user_responsibility">ユーザーの責任: ユーザーは、視聴したいコンテンツを合法的なサービスプロバイダーから自分で取得する必要があります。</string>
+    <string name="about_legal_copyright">著作権: PNR TVは、著作権者の許可なく著作権で保護された資料の公開をサポートまたは承認していません。</string>
+    <string name="about_features_title">機能</string>
+    <string name="about_features">ライブストリーム: ライブTVチャンネルとカテゴリの完全なサポート。\n\n映画&amp;シリーズ（VOD）: 映画カテゴリ、シーズン/エピソードの詳細、高品質な再生。\n\n複数ユーザー&amp;プロフィール: 複数のメディアサービスアカウントを管理し、各ユーザー用に個別の視聴者プロフィールを作成。\n\nスマートトラッキング: お気に入りのコンテンツを保存し、最近視聴したコンテンツを追跡し、再生位置を保存して中断した場所から再開。</string>
+    <string name="about_premium_features_title">プレミアムの利点</string>
+    <string name="about_premium_features">広告なし体験: 完全に中断のない視聴。\n\n高度な制御: アダルトコンテンツ制御、スマート検索とフィルタリングオプション。\n\nプロフィール管理: パーソナライズされたユーザーステータスと視聴者プロフィール。</string>
+    <string name="about_thanks_title">謝辞</string>
+    <string name="about_thanks">データプロバイダー: 映画とシリーズのデータについて、The Movie Database (TMDB)プラットフォームに感謝いたします。\n\nインターフェース: TVユーザーインターフェースコンポーネントには、Android TV Leanback Libraryが使用されています。\n\nコミュニティ: すべてのオープンソースライブラリ開発者の貢献に感謝いたします。</string>
+    <string name="about_contact_title">お問い合わせ</string>
+    <string name="about_contact_message">コラボレーション、フィードバック、ご提案については: tvpnrtv@gmail.com</string>
+    <string name="dialog_select_language_title">言語を選択</string>
+    <string name="dialog_clear_cache_title">すべてのデータをクリア</string>
+    <string name="dialog_clear_cache_message">すべてのデータ（ユーザー、お気に入り、視聴履歴、コンテンツなど）が削除され、アプリは新規インストール時のように開きます。この操作は元に戻せません。続行しますか？</string>
+    <string name="toast_cache_cleared">すべてのデータがクリアされました</string>
+    
+    <!-- Player -->
+    <string name="player_subtitles_title">字幕</string>
+    <string name="player_audio_language_title">音声言語</string>
+    <string name="player_subtitles_off">オフ</string>
+    <string name="channels">チャンネル</string>
+    
+    <!-- Episode and Season -->
+    <string name="episode_format">エピソード%1$d</string>
+    <string name="season_format_with_episodes">シーズン%1$d（%2$d）</string>
+    
+    <!-- Languages -->
+    <string name="language_turkish">トルコ語</string>
+    <string name="language_english">英語</string>
+    <string name="language_spanish">スペイン語</string>
+    <string name="language_indonesian">インドネシア語</string>
+    <string name="language_hindi">ヒンディー語</string>
+    <string name="language_portuguese">ポルトガル語</string>
+    <string name="language_french">フランス語</string>
+    <string name="language_japanese">日本語</string>
+    <string name="language_thai">タイ語</string>
+    
+    <!-- Additional Error Messages -->
+    <string name="error_video_url_not_found">ビデオURLが見つかりませんでした</string>
+    <string name="default_viewer_name">デフォルト</string>
+    
+    <!-- General Symbols and Placeholders -->
+    <string name="data_unavailable">-</string>
+    <string name="bullet_symbol">•</string>
+    <string name="star_symbol">⭐</string>
+    <string name="save">保存</string>
+    
+    <!-- Current User Prefix -->
+
+    <!-- Player Content Descriptions -->
+    <string name="cd_rewind">巻き戻し</string>
+    <string name="cd_play">再生</string>
+    <string name="cd_stop">停止</string>
+    <string name="cd_fast_forward">早送り</string>
+    <string name="cd_subtitle">字幕</string>
+    <string name="cd_audio_track">音声言語</string>
+    
+    <!-- User Status Dialog Prefixes -->
+
+    <!-- Track Selection -->
+
+    <!-- Unknown/Default Values -->
+    <string name="unknown">不明</string>
+    
+    <!-- Category Names (Movie/Series Categories) -->
+    <string name="category_action">アクション</string>
+    <string name="category_adventure">アドベンチャー</string>
+    <string name="category_animation">アニメーション</string>
+    <string name="category_comedy">コメディ</string>
+    <string name="category_crime">犯罪</string>
+    <string name="category_documentary">ドキュメンタリー</string>
+    <string name="category_drama">ドラマ</string>
+    <string name="category_family">家族</string>
+    <string name="category_fantasy">ファンタジー</string>
+    <string name="category_horror">ホラー</string>
+    <string name="category_music">ミュージック</string>
+    <string name="category_mystery">ミステリー</string>
+    <string name="category_romance">ロマンス</string>
+    <string name="category_science_fiction">SF</string>
+    <string name="category_thriller">スリラー</string>
+    <string name="category_war">戦争</string>
+    <string name="category_western">西部劇</string>
+    <string name="category_sports">スポーツ</string>
+    <string name="category_reality">リアリティ</string>
+    <string name="category_talk_show">トークショー</string>
+    <string name="category_news">ニュース</string>
+    <string name="category_kids">キッズ</string>
+    <string name="category_tv_movie">TV映画</string>
+    <string name="category_all">すべて</string>
+    
+    <!-- Resume Playback Dialog -->
+    <string name="dialog_resume_playback_title">再生を再開</string>
+    <string name="btn_resume_from_position">中断した位置から再開</string>
+    <string name="btn_start_from_beginning">最初から開始</string>
+    
+    <!-- Player Loading Messages -->
+    <string name="player_loading_preparing">コンテンツを準備しています...</string>
+    <string name="player_loading_fetching_url">チャンネルアドレスを取得しています...</string>
+    <string name="player_loading_buffering">ストリームを読み込んでいます...</string>
+</resources>

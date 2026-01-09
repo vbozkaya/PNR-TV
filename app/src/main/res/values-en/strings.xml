@@ -3,7 +3,6 @@
     <string name="app_name">PNR TV</string>
     
     <!-- Page Titles -->
-    <string name="page_main">Home</string>
     <string name="page_settings">Settings</string>
     <string name="page_user_management">User Management</string>
     <string name="page_users_list">Current Users</string>
@@ -16,17 +15,18 @@
     <string name="category_favorites">FAVORITES</string>
     <string name="category_viewer_favorites">%1$s FAVORITES</string>
     <string name="category_recently_added">RECENTLY ADDED</string>
-    <string name="category_recently_watched">Recently Watched</string>
-    <string name="category_all_series">ALL SERIES</string>
-    <string name="label_seasons">Seasons</string>
-    <string name="empty_favorites">You don\'t have any favorite channels yet.</string>
-    <string name="empty_recently_watched">No recently watched channel found.</string>
+    <!-- Empty State Messages -->
+    <string name="empty_movies_favorites">You don\'t have any favorite movies yet.</string>
+    <string name="empty_series_favorites">You don\'t have any favorite series yet.</string>
+    <string name="empty_movies">No movies found in this category.</string>
+    <string name="empty_series">No series found in this category.</string>
+    <string name="empty_live_streams">No channels found in this category.</string>
+    <string name="empty_category_content">No content found in this category.</string>
+    <string name="msg_preparing_content">Preparing your content, please wait...</string>
     <string name="toast_favorite_added">Added to favorites</string>
     <string name="toast_favorite_removed">Removed from favorites</string>
+    <string name="toast_premium_required_for_favorites">Favorites is a premium feature. Please activate your premium membership.</string>
     <string name="no_episodes_found">No episodes found for this season</string>
-    <string name="error_title">Error</string>
-    <string name="retry">Retry</string>
-    <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
     
     <!-- Content Descriptions (Accessibility) -->
@@ -34,9 +34,7 @@
     <string name="cd_navbar_back">Go back</string>
     <string name="cd_navbar_home">Go to home</string>
     <string name="cd_loading">Loading</string>
-    <string name="cd_episode_watched">Watched</string>
-    <string name="add_to_favorites">Add to favorites</string>
-    
+
     <!-- Add User Page -->
     <string name="hint_account_name">Account Name (any name)</string>
     <string name="hint_username">Username</string>
@@ -44,24 +42,21 @@
     <string name="hint_dns">DNS (URL)</string>
     <string name="btn_save">Save</string>
     <string name="error_fill_fields">Please fill all fields</string>
-    <string name="toast_user_saved">User saved</string>
-    <string name="toast_user_updated">User updated</string>
+    <string name="toast_user_saved">User added successfully</string>
+    <string name="toast_user_updated">User updated successfully</string>
     <string name="toast_user_deleted">User deleted</string>
-    <string name="toast_select_placeholder">This option will be available soon</string>
     <string name="toast_user_selected">%1$s selected</string>
     <string name="label_account_name">Account Name</string>
     <string name="empty_users_list">No users added yet</string>
     <string name="cd_edit_user">Edit user</string>
     <string name="cd_delete_user">Delete user</string>
     <string name="cd_select_user">Select user</string>
-    <string name="current_user_section_title">Current User</string>
+    <string name="current_user_section_title">Current User:</string>
     <string name="current_user_placeholder">Not selected</string>
     <string name="dialog_delete_user_title">Delete User</string>
     <string name="dialog_delete_user_message">Do you want to delete user %1$s?</string>
     
     <!-- Buttons and Navigation -->
-    <string name="btn_back">Back</string>
-    <string name="btn_home">Home</string>
     <string name="btn_filter">Filter</string>
     <string name="search_hint">Search Content</string>
     <string name="btn_exit">Exit</string>
@@ -93,21 +88,28 @@
     <!-- Loading Messages -->
     <string name="loading_content">Content is being updated and processed...</string>
     <string name="loading_completed">Update Completed</string>
+    <string name="added_content_title">Added Content</string>
+    <string name="added_content_movies">Movies: %1$d</string>
+    <string name="added_content_series">Series: %1$d</string>
+    <string name="data_required_warning">Please Use the Update Button Above to Update Your Database First</string>
+    <string name="user_required_warning">Please Add a User First</string>
     
     <!-- Error Messages -->
-    <string name="error_unknown">Unknown error</string>
+    <string name="error_unknown">An error occurred. Please try again.</string>
     <string name="error_with_message">Error: %1$s</string>
     <string name="error_user_not_found">User information not found or DNS information is missing</string>
-    <string name="error_network_connection">Network connection error</string>
-    <string name="error_network_generic">Network error: %1$d %2$s</string>
-    <string name="error_unexpected">Unexpected error: %1$s</string>
+    <string name="error_network_connection">Please check your internet connection and try again.</string>
+    <string name="error_network_generic">Network error occurred (Code: %1$d). Please try again.</string>
+    <string name="error_unexpected">An unexpected error occurred: %1$s</string>
+    
+    <!-- User-Friendly Error Messages -->
+    <string name="error_server_unavailable">Server is currently unavailable. Please try again later.</string>
     
     <!-- Main Screen Update Error Messages -->
     <string name="error_user_not_exists">No User</string>
     <string name="error_user_not_selected">User Not Selected</string>
     <string name="error_user_invalid_credentials">Invalid User Credentials</string>
     <string name="error_server_error">Server Error</string>
-    <string name="error_content_info_failed">Content Information Failed to Load</string>
     <string name="error_no_internet">No Internet Connection</string>
     <string name="error_timeout">Connection timed out. Please try again.</string>
     <string name="error_timeout_connect">Cannot connect to server. Connection timed out.</string>
@@ -115,45 +117,25 @@
     <string name="error_video_playback_failed">Video Cannot Be Played - Server Error</string>
     
     <!-- Short Error Messages -->
-    <string name="error_categories_short">Categories could not be loaded</string>
-    <string name="error_movies_short">Movies could not be loaded</string>
-    <string name="error_series_short">Series could not be loaded</string>
     <string name="error_live_streams_short">Live streams could not be loaded</string>
     <string name="error_offline">No internet connection. Showing data from cache.</string>
     <string name="error_retry_failed">Retry failed. Please check your internet connection.</string>
     <string name="btn_retry">Retry</string>
-    <string name="toast_retrying">Retrying...</string>
-    <string name="toast_retry_success">Connection successful</string>
-    <string name="toast_retry_failed">Retry failed</string>
     <string name="error_categories_load_failed">Failed to load categories: %1$s</string>
     <string name="error_movies_load_failed">Failed to load movies: %1$s</string>
     <string name="error_series_load_failed">Failed to load series: %1$s</string>
-    <string name="error_categories_load">Error loading categories: %1$s</string>
-    <string name="error_movies_load">Error loading movies: %1$s</string>
-    <string name="error_series_load">Error loading series: %1$s</string>
     <string name="error_image_preload">Image preload error: %1$s</string>
     
     <!-- Category Names -->
-    <string name="category_all_movies">ALL MOVIES</string>
-    
+
     <!-- User Status Information -->
-    <string name="status_label">Status: %1$s</string>
-    <string name="expiry_date_label">Expiry Date: %1$s</string>
-    <string name="connection_label">Connection: %1$s/%2$s</string>
-    <string name="trial_label">Trial: %1$s</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     
     <!-- Content Labels -->
-    <string name="movie_label">Movie: %1$s</string>
-    <string name="series_label">Series: %1$s</string>
-    <string name="description_not_available">Description not available.</string>
-    <string name="episode_number_format">Episode %1$d</string>
-    
+
     <!-- Player -->
-    <string name="subtitles">Subtitles</string>
-    <string name="audio_language">Audio Language</string>
-    
+
     <!-- Viewer Management -->
     <string name="page_viewers">Viewers</string>
     <string name="hint_viewer_name">Viewer Name</string>
@@ -161,7 +143,6 @@
     <string name="btn_delete_viewer">Delete</string>
     <string name="error_cannot_delete_default_viewer">Default viewer cannot be deleted</string>
     <string name="toast_viewer_added">Viewer added</string>
-    <string name="toast_viewer_deleted">Viewer deleted</string>
     <string name="dialog_delete_viewer_title">Delete Viewer</string>
     <string name="dialog_delete_viewer_message">Do you want to delete viewer %1$s? All favorites will also be deleted.</string>
     <string name="empty_viewers_list">No viewers added yet</string>
@@ -169,8 +150,7 @@
     <!-- Favorite Selection -->
     <string name="dialog_select_viewer_title">Add to Favorites</string>
     <string name="dialog_select_viewer_message">Which viewer do you want to add to favorites for?</string>
-    <string name="viewer_favorites_category">%1$s FAVORITES</string>
-    
+
     <!-- Movie Detail -->
     <string name="movie_director">Director:</string>
     <string name="movie_genre">Genre:</string>
@@ -186,25 +166,49 @@
     <string name="error_media_load">Error loading media: %1$s</string>
     <string name="error_movie_not_found">Movie not found</string>
     <string name="loading_movie_details">Loading movie details...</string>
-    <string name="error_loading_movie">Error loading movie</string>
+    <string name="error_loading_movie">A problem occurred while loading the movie. Please try again.</string>
+    <string name="error_loading_series">A problem occurred while loading the series. Please try again.</string>
     
     <!-- Settings -->
     <string name="settings_user_status">User Status</string>
     <string name="settings_app_language">App Language</string>
+    <string name="settings_premium">Buy Premium / Restore</string>
+    <string name="settings_premium_on">On</string>
+    <string name="settings_premium_off">Off</string>
+    <string name="settings_adult_content">Adult Content</string>
+    <string name="settings_adult_content_on">On</string>
+    <string name="settings_adult_content_off">Off</string>
     <string name="settings_clear_cache">Clear Cache and All Data</string>
     <string name="settings_about_app">About App</string>
     
+    <!-- Billing Error Messages -->
+    <string name="error_billing_connecting">Billing system is connecting, please wait...</string>
+    <string name="error_billing_not_connected">Billing system is not ready yet. Please try again.</string>
+    <string name="error_billing_error">Billing system error. Please try again.</string>
+    <string name="toast_premium_restored">Your purchase has been restored</string>
+    <string name="toast_premium_activated">Premium Activated</string>
+    
+    <!-- Premium -->
+
     <!-- About App -->
     <string name="about_app_title">About App</string>
-    <string name="about_app_description">PNR TV is an IPTV (Internet Protocol Television) application developed exclusively for the Android TV platform. It allows users to watch live streams, movies, and series.</string>
+    <string name="about_app_info_title">App Information</string>
+    <string name="about_app_name_label">App Name: PNR TV</string>
+    <string name="about_app_version_label">Version: Version %1$s (Build %2$d)</string>
+    <string name="about_app_version">Version %1$s (Build %2$d)</string>
+    <string name="about_app_description">PNR TV - Smart Media Player is a professional media player application optimized specifically for Android TV interfaces. It delivers a smooth, intuitive, and cinematic experience for your video content, allowing you to manage and play your playlists with ease. PNR TV is not a content provider, but only a player; therefore, it does not host any media content, TV channels, or playlists.</string>
+    <string name="about_legal_title">Important Legal Notice</string>
+    <string name="about_legal_no_content">No Content Provided: Our application is not affiliated with any third-party IPTV provider and does not contain ready-made content.</string>
+    <string name="about_legal_user_responsibility">User Responsibility: Users must obtain the content they wish to watch from legal service providers themselves.</string>
+    <string name="about_legal_copyright">Copyright: PNR TV does not support or approve the publication of copyrighted materials without the permission of the copyright holder.</string>
     <string name="about_features_title">Features</string>
-    <string name="about_features">• Movies (VOD): Movie categories, details, and playback\n• Series: Series categories, seasons, episodes, and playback\n• Live Streams: Live TV channels and categories\n• Multiple Users: Management of multiple IPTV accounts\n• Viewer Profiles: Separate viewer profiles for each user\n• Favorites: Save favorite channels\n• Recently Watched: Track recently watched content\n• Resume Playback: Save playback position</string>
+    <string name="about_features">Live Streams: Full support for live TV channels and categories.\n\nMovies &amp; Series (VOD): Movie categories, season/episode details and high-quality playback.\n\nMultiple Users &amp; Profiles: Manage multiple media service accounts and create separate viewer profiles for each user.\n\nSmart Tracking: Save favorite content, track recently watched, and resume from where you left off by saving playback position.</string>
+    <string name="about_premium_features_title">Premium Advantages</string>
+    <string name="about_premium_features">Ad-free Experience: Completely uninterrupted viewing.\n\nAdvanced Control: Adult content control, smart search and filtering options.\n\nProfile Management: Personalized user statuses and viewer profiles.</string>
     <string name="about_thanks_title">Thanks</string>
-    <string name="about_thanks">The Movie Database (TMDB) - For movie and series data\nAndroid TV Leanback Library - For TV UI components\nAll open source library developers</string>
+    <string name="about_thanks">Data Provider: We thank The Movie Database (TMDB) platform for movie and series data.\n\nInterface: Android TV Leanback Library is used for TV user interface components.\n\nCommunity: We thank all open source library developers for their contributions.</string>
     <string name="about_contact_title">Contact</string>
-    <string name="about_contact_message">For collaboration, feedback and suggestions, please email us: tvpnrtv@gmail.com</string>
-    <string name="about_contact_email">tvpnrtv@gmail.com</string>
-    <string name="about_contact_email_subject">PNR TV - Contact</string>
+    <string name="about_contact_message">For collaboration, feedback and suggestions: tvpnrtv@gmail.com</string>
     <string name="dialog_select_language_title">Select Language</string>
     <string name="dialog_clear_cache_title">Clear All Data</string>
     <string name="dialog_clear_cache_message">All data (users, favorites, watch history, content, etc.) will be deleted and the app will open as if newly installed. This action cannot be undone. Do you want to continue?</string>
@@ -214,10 +218,10 @@
     <string name="player_subtitles_title">Subtitles</string>
     <string name="player_audio_language_title">Audio Language</string>
     <string name="player_subtitles_off">Off</string>
+    <string name="channels">Channels</string>
     
     <!-- Episode and Season -->
     <string name="episode_format">Episode %1$d</string>
-    <string name="season_format">Season %1$d</string>
     <string name="season_format_with_episodes">Season %1$d (%2$d)</string>
     
     <!-- Languages -->
@@ -228,6 +232,8 @@
     <string name="language_hindi">Hindi</string>
     <string name="language_portuguese">Portuguese</string>
     <string name="language_french">French</string>
+    <string name="language_japanese">Japanese</string>
+    <string name="language_thai">Thai</string>
     
     <!-- Additional Error Messages -->
     <string name="error_video_url_not_found">Video URL not found</string>
@@ -240,26 +246,19 @@
     <string name="save">Save</string>
     
     <!-- Current User Prefix -->
-    <string name="current_user_prefix">Current User:</string>
-    
+
     <!-- Player Content Descriptions -->
     <string name="cd_rewind">Rewind</string>
     <string name="cd_play">Play</string>
-    <string name="cd_pause">Pause</string>
     <string name="cd_stop">Stop</string>
     <string name="cd_fast_forward">Fast Forward</string>
     <string name="cd_subtitle">Subtitle</string>
     <string name="cd_audio_track">Audio Language</string>
     
     <!-- User Status Dialog Prefixes -->
-    <string name="status_prefix">Status:</string>
-    <string name="expiry_date_prefix">Expiry Date:</string>
-    <string name="connection_prefix">Connection:</string>
-    <string name="trial_prefix">Trial:</string>
-    
+
     <!-- Track Selection -->
-    <string name="track_language_turkish">Turkish</string>
-    
+
     <!-- Unknown/Default Values -->
     <string name="unknown">Unknown</string>
     
@@ -288,5 +287,15 @@
     <string name="category_kids">Kids</string>
     <string name="category_tv_movie">TV Movie</string>
     <string name="category_all">All</string>
+    
+    <!-- Resume Playback Dialog -->
+    <string name="dialog_resume_playback_title">Resume Playback</string>
+    <string name="btn_resume_from_position">Resume from Position</string>
+    <string name="btn_start_from_beginning">Start from Beginning</string>
+    
+    <!-- Player Loading Messages -->
+    <string name="player_loading_preparing">Preparing content...</string>
+    <string name="player_loading_fetching_url">Fetching channel address...</string>
+    <string name="player_loading_buffering">Loading stream...</string>
 </resources>
 

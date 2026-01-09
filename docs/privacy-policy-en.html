@@ -101,6 +101,18 @@
             background: #e3f2fd;
             border-radius: 3px;
         }
+        
+        .important {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .important strong {
+            color: #856404;
+        }
     </style>
 </head>
 <body>
@@ -109,164 +121,94 @@
             <a href="privacy-policy.html">Türkçe</a>
         </div>
         
-        <h1>PNR TV Privacy Policy</h1>
+        <h1>PNR TV - Privacy Policy</h1>
         <p class="last-updated">Last Updated: December 2025</p>
         
         <h2>1. Introduction</h2>
         <p>
             PNR TV - Smart Media Player ("we", "our", "app") is committed to protecting the privacy of our users. 
-            This privacy policy describes our data collection, use, and protection practices.
-        </p>
-        <p>
-            By using this application, you agree to the practices described in this privacy policy.
+            This policy describes our data collection, use, and protection processes. 
+            By using the application, you agree to the terms stated herein.
         </p>
         
-        <h2>2. Data Collected</h2>
+        <h2>2. Data Collection and Storage</h2>
         
-        <h3>2.1. User Accounts</h3>
+        <h3>2.1. User Account Information</h3>
         <p>
-            The app stores the following information locally on your device to connect to your media service provider or playlist source:
+            The application stores the information necessary to connect to your service provider (Username, Password, Server URL/DNS) 
+            only locally on your device.
         </p>
-        <ul>
-            <li><strong>Username:</strong> Your media service account username</li>
-            <li><strong>Password:</strong> Your media service account password (stored encrypted)</li>
-            <li><strong>Server URL/DNS:</strong> Media server address or playlist URL (stored encrypted)</li>
-            <li><strong>Account Name:</strong> Name you use to identify your account</li>
-        </ul>
-        <p>
-            <strong>Important:</strong> All sensitive data (passwords and server information) is encrypted using 
-            Android's secure encryption mechanism and stored only on your device. This information is never 
-            sent to our servers or third parties.
-        </p>
-        
-        <h3>2.2. Usage Data</h3>
-        <p>The app stores the following data locally to improve user experience:</p>
-        <ul>
-            <li><strong>Favorites:</strong> Your favorite channels and content</li>
-            <li><strong>Recently Watched:</strong> Record of recently watched content</li>
-            <li><strong>Playback Positions:</strong> Resume positions for watched content</li>
-            <li><strong>Viewer Profiles:</strong> Separate viewer profiles for each user account</li>
-        </ul>
-        <p>
-            This data is stored only on your device and is never sent to our servers.
-        </p>
-        
-        <h3>2.3. Analytics and Crash Reporting</h3>
-        <p>
-            The app uses Firebase Analytics and Firebase Crashlytics for debugging and performance improvement. 
-            These services may collect the following information:
-        </p>
-        <ul>
-            <li><strong>Device Information:</strong> Device model, Android version, manufacturer information</li>
-            <li><strong>App Information:</strong> App version, build type</li>
-            <li><strong>Crash Reports:</strong> App crashes and errors (does not contain personal information)</li>
-            <li><strong>Usage Statistics:</strong> General usage metrics (anonymized)</li>
-        </ul>
-        <p>
-            <strong>Important:</strong> Firebase services do not collect usernames, passwords, DNS, or other 
-            personal information (PII). All data is anonymized and used for aggregate statistical purposes.
-        </p>
-        
-        <h3>2.4. Third-Party Services</h3>
-        <p>
-            The app uses The Movie Database (TMDB) API to provide movie and series information. 
-            Requests sent to TMDB only contain content search and detail information; your personal information 
-            is not sent.
-        </p>
-        
-        <h2>3. Data Usage</h2>
-        <p>Collected data is used for the following purposes:</p>
-        <ul>
-            <li>Connecting to your media service provider or playlist source and playing content</li>
-            <li>Storing your favorites and watch history</li>
-            <li>Enabling resume from where you left off</li>
-            <li>Detecting and fixing app errors</li>
-            <li>Improving app performance</li>
-        </ul>
-        
-        <h2>4. Data Storage and Security</h2>
-        
-        <h3>4.1. Local Data Storage</h3>
-        <p>
-            All user data (account information, favorites, watch history) is stored only on your device 
-            in Android Room database. This data:
-        </p>
-        <ul>
-            <li>Sensitive information (passwords, DNS) is stored encrypted.</li>
-            <li>Is never sent over the internet.</li>
-            <li>Remains on your device until you delete it.</li>
-        </ul>
-        
-        <h3>4.2. Data Security</h3>
-        <p>
-            We take the following measures to ensure the security of your data:
-        </p>
-        <ul>
-            <li>Sensitive data is encrypted using Android Security Crypto.</li>
-            <li>Secure connections are ensured through network security configuration.</li>
-            <li>Code obfuscation is applied with ProGuard.</li>
-            <li>PII (Personally Identifiable Information) protection is active in Firebase services.</li>
-        </ul>
-        
-        <h2>5. Data Sharing</h2>
-        <p>
-            <strong>No personal data is shared with third parties.</strong> The app:
-        </p>
-        <ul>
-            <li>Never sends your user accounts, passwords, or server information to any server</li>
-            <li>Firebase Analytics and Crashlytics only collect anonymous usage statistics and error reports</li>
-            <li>TMDB API is only used for content search and detail information</li>
-        </ul>
-        
-        <h2>6. Data Deletion</h2>
-        <p>
-            All your data is stored on your device and under your control:
-        </p>
-        <ul>
-            <li>You can delete user accounts from app settings.</li>
-            <li>You can clear cache from app settings.</li>
-            <li>All data is deleted when you uninstall the app from your device.</li>
-        </ul>
-        
-        <h2>7. Children's Privacy</h2>
-        <p>
-            Our app does not knowingly collect data from children under 13 years of age. If we discover that 
-            we have collected data from a child under 13, we will immediately delete that data.
-        </p>
-        
-        <h2>8. Privacy Policy Changes</h2>
-        <p>
-            We may update this privacy policy from time to time. Changes take effect when published on this page. 
-            We may send notifications within the app for significant changes.
-        </p>
-        <p>
-            You can see the most current version by checking the "Last Updated" date at the top of this page.
-        </p>
-        
-        <h2>9. Contact</h2>
-        <div class="contact-info">
+        <div class="important">
             <p>
-                If you have questions about this privacy policy, please contact us:
-            </p>
-            <p>
-                <strong>GitHub:</strong> <a href="https://github.com/yourusername/pnr-tv" target="_blank">Project Page</a>
+                <strong>IMPORTANT:</strong> Passwords and server information are stored using Android's secure encryption mechanism. 
+                This information is never sent to our servers or third parties.
             </p>
         </div>
         
-        <h2>10. Legal Disclaimer</h2>
+        <h3>2.2. Usage and Experience Data</h3>
         <p>
-            PNR TV does not supply or include any media or content. The app is purely a media player that 
-            allows users to play content sources they provide themselves (e.g., playlists, network streams).
+            To personalize the user experience; data such as Favorites, Recently Watched, Playback Positions, and 
+            Viewer Profiles are kept on your device. This data is completely private to you and is not transmitted externally.
         </p>
+        
+        <h3>2.3. Analytics and Performance Reporting</h3>
         <p>
-            PNR TV has no affiliation with any third-party content provider. Users must provide their own 
-            content from their own storage or playlists.
+            Firebase Analytics and Firebase Crashlytics are used for debugging and performance improvement.
         </p>
+        <p><strong>Data Collected:</strong> Device model, Android version, and anonymous error reports.</p>
         <p>
-            We do not endorse the streaming of copyright-protected material without permission of the copyright 
-            holder. The user is solely responsible for the copyright compliance, legality, and compliance with 
-            the legislation of their country regarding the content they watch or access.
+            <strong>Privacy:</strong> These services absolutely do not collect personal information (PII) such as usernames, passwords, or DNS.
         </p>
+        
+        <h2>3. Third-Party Services</h2>
+        <p>
+            The application uses The Movie Database (TMDB) API to provide visual data and content details. 
+            Requests sent to TMDB only contain content searches; no personal data is shared.
+        </p>
+        
+        <h2>4. Data Security and Encryption</h2>
+        <p>Industry-standard security measures are implemented to protect your data:</p>
+        <ul>
+            <li><strong>Android Security Crypto:</strong> Sensitive data is encrypted within the device.</li>
+            <li><strong>ProGuard:</strong> Application security is enhanced through code obfuscation.</li>
+            <li><strong>Local Database:</strong> All data is stored in Android Room database without being sent over the internet.</li>
+        </ul>
+        
+        <h2>5. Data Control and Deletion</h2>
+        <p>
+            All your data is under your control. You can delete your accounts or clear the cache from the application settings. 
+            When the application is removed from the device, all data stored on the device is permanently deleted.
+        </p>
+        
+        <h2>6. Legal Notice and Disclaimer</h2>
+        
+        <h3>No Content</h3>
+        <p>
+            PNR TV does not provide any media or content. The application is only a player.
+        </p>
+        
+        <h3>User Responsibility</h3>
+        <p>
+            The user is solely responsible for the copyright compliance and compliance with local regulations of the content being watched.
+        </p>
+        
+        <h3>Independence</h3>
+        <p>
+            PNR TV has no connection with any third-party content provider.
+        </p>
+        
+        <h2>7. Contact</h2>
+        <div class="contact-info">
+            <p>
+                You can contact us for questions about this policy:
+            </p>
+            <p>
+                <strong>Email:</strong> <a href="mailto:tvpnrtv@gmail.com">tvpnrtv@gmail.com</a>
+            </p>
+            <p>
+                <strong>GitHub:</strong> <a href="https://vbozkaya.github.io/PNR-TV/" target="_blank">https://vbozkaya.github.io/PNR-TV/</a>
+            </p>
+        </div>
         
         <hr style="margin: 40px 0; border: none; border-top: 1px solid #e0e0e0;">
         
@@ -276,6 +218,3 @@
     </div>
 </body>
 </html>
-
-
-

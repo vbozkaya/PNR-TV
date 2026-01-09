@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 
+    NOTE: This is a Thai translation file. 
+    All strings are translated to Thai (ภาษาไทย).
+    -->
+    
+    <string name="app_name">PNR TV</string>
+    
+    <!-- Page Titles -->
+    <string name="page_settings">การตั้งค่า</string>
+    <string name="page_user_management">การจัดการผู้ใช้</string>
+    <string name="page_users_list">ผู้ใช้ปัจจุบัน</string>
+    <string name="page_add_user">เพิ่มผู้ใช้ใหม่</string>
+    <string name="page_live_streams">ถ่ายทอดสด</string>
+    <string name="page_movies">ภาพยนตร์</string>
+    <string name="page_movie_details">รายละเอียดภาพยนตร์</string>
+    <string name="page_series">ซีรีส์</string>
+    <string name="page_series_details">รายละเอียดซีรีส์</string>
+    <string name="category_favorites">รายการโปรด</string>
+    <string name="category_viewer_favorites">รายการโปรดของ%1$s</string>
+    <string name="category_recently_added">เพิ่มล่าสุด</string>
+    <!-- Empty State Messages -->
+    <string name="empty_movies_favorites">คุณยังไม่มีภาพยนตร์โปรด</string>
+    <string name="empty_series_favorites">คุณยังไม่มีซีรีส์โปรด</string>
+    <string name="empty_movies">ไม่พบภาพยนตร์ในหมวดหมู่นี้</string>
+    <string name="empty_series">ไม่พบซีรีส์ในหมวดหมู่นี้</string>
+    <string name="empty_live_streams">ไม่พบช่องในหมวดหมู่นี้</string>
+    <string name="empty_category_content">ไม่พบเนื้อหาในหมวดหมู่นี้</string>
+    <string name="msg_preparing_content">กำลังเตรียมเนื้อหาของคุณ โปรดรอสักครู่...</string>
+    <string name="toast_favorite_added">เพิ่มในรายการโปรดแล้ว</string>
+    <string name="toast_favorite_removed">ลบออกจากรายการโปรดแล้ว</string>
+    <string name="toast_premium_required_for_favorites">รายการโปรดเป็นฟีเจอร์พรีเมียม กรุณาเปิดใช้งานสมาชิกพรีเมียมของคุณ</string>
+    <string name="no_episodes_found">ไม่พบตอนสำหรับฤดูกาลนี้</string>
+    <string name="ok">ตกลง</string>
+    
+    <!-- Content Descriptions (Accessibility) -->
+    <string name="cd_series_poster">โปสเตอร์ซีรีส์</string>
+    <string name="cd_navbar_back">ย้อนกลับ</string>
+    <string name="cd_navbar_home">ไปที่หน้าแรก</string>
+    <string name="cd_loading">กำลังโหลด</string>
+    <string name="cd_error_icon">ไอคอนข้อผิดพลาด</string>
+    <string name="cd_empty_state_icon">ไอคอนสถานะว่าง</string>
+
+    <!-- Add User Page -->
+    <string name="hint_account_name">ชื่อบัญชี (ชื่อใดก็ได้)</string>
+    <string name="hint_username">ชื่อผู้ใช้</string>
+    <string name="hint_password">รหัสผ่าน</string>
+    <string name="hint_dns">DNS (URL)</string>
+    <string name="btn_save">บันทึก</string>
+    <string name="error_fill_fields">กรุณากรอกข้อมูลในทุกช่อง</string>
+    <string name="toast_user_saved">เพิ่มผู้ใช้สำเร็จ</string>
+    <string name="toast_user_updated">อัปเดตผู้ใช้สำเร็จ</string>
+    <string name="toast_user_deleted">ลบผู้ใช้แล้ว</string>
+    <string name="toast_user_selected">เลือก%1$sแล้ว</string>
+    <string name="label_account_name">ชื่อบัญชี</string>
+    <string name="empty_users_list">ยังไม่ได้เพิ่มผู้ใช้</string>
+    <string name="cd_edit_user">แก้ไขผู้ใช้</string>
+    <string name="cd_delete_user">ลบผู้ใช้</string>
+    <string name="cd_select_user">เลือกผู้ใช้</string>
+    <string name="current_user_section_title">ผู้ใช้ปัจจุบัน:</string>
+    <string name="current_user_placeholder">ยังไม่ได้เลือก</string>
+    <string name="dialog_delete_user_title">ลบผู้ใช้</string>
+    <string name="dialog_delete_user_message">คุณต้องการลบผู้ใช้%1$sหรือไม่?</string>
+    
+    <!-- Buttons and Navigation -->
+    <string name="btn_filter">กรอง</string>
+    <string name="search_hint">ค้นหาเนื้อหา</string>
+    <string name="btn_exit">ออก</string>
+    
+    <!-- Sort Dialog -->
+    <string name="dialog_sort_title">ตัวเลือกการเรียงลำดับ</string>
+    <string name="sort_a_to_z">เรียงลำดับ A ถึง Z</string>
+    <string name="sort_z_to_a">เรียงลำดับ Z ถึง A</string>
+    <string name="sort_rating_high_to_low">เรียงตามคะแนนสูงไปต่ำ</string>
+    <string name="sort_rating_low_to_high">เรียงตามคะแนนต่ำไปสูง</string>
+    <string name="sort_date_new_to_old">เรียงตามวันที่ใหม่ไปเก่า</string>
+    <string name="sort_date_old_to_new">เรียงตามวันที่เก่าไปใหม่</string>
+    <string name="btn_update">อัปเดต</string>
+    <string name="btn_play">เล่น</string>
+    <string name="btn_add_favorite">เพิ่มในรายการโปรด</string>
+    
+    <!-- Dialog Messages -->
+    <string name="dialog_exit_title">ออก</string>
+    <string name="dialog_exit_message">คุณแน่ใจหรือไม่ว่าต้องการออกจากแอปพลิเคชัน?</string>
+    <string name="dialog_yes">ใช่</string>
+    <string name="dialog_no">ไม่</string>
+    <string name="dialog_cancel">ยกเลิก</string>
+    <string name="dialog_ok">ตกลง</string>
+    
+    <!-- User Information -->
+    <string name="current_user_label">ผู้ใช้ปัจจุบัน: %1$s</string>
+    <string name="current_user_none">ผู้ใช้ปัจจุบัน: -</string>
+    
+    <!-- Loading Messages -->
+    <string name="loading_content">กำลังอัปเดตและประมวลผลเนื้อหา...</string>
+    <string name="loading_completed">อัปเดตเสร็จสมบูรณ์</string>
+    <string name="added_content_title">เนื้อหาที่เพิ่มแล้ว</string>
+    <string name="added_content_movies">ภาพยนตร์: %1$d</string>
+    <string name="added_content_series">ซีรีส์: %1$d</string>
+    <string name="data_required_warning">กรุณาใช้ปุ่มอัปเดตด้านบนเพื่ออัปเดตฐานข้อมูลของคุณก่อน</string>
+    <string name="user_required_warning">กรุณาเพิ่มผู้ใช้ก่อน</string>
+    
+    <!-- Error Messages -->
+    <string name="error_unknown">เกิดข้อผิดพลาด กรุณาลองอีกครั้ง</string>
+    <string name="error_with_message">ข้อผิดพลาด: %1$s</string>
+    <string name="error_user_not_found">ไม่พบข้อมูลผู้ใช้หรือข้อมูล DNS หายไป</string>
+    <string name="error_network_connection">กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองอีกครั้ง</string>
+    <string name="error_network_generic">เกิดข้อผิดพลาดเครือข่าย (รหัส: %1$d) กรุณาลองอีกครั้ง</string>
+    <string name="error_unexpected">เกิดข้อผิดพลาดที่ไม่คาดคิด: %1$s</string>
+    
+    <!-- User-Friendly Error Messages -->
+    <string name="error_server_unavailable">เซิร์ฟเวอร์ไม่พร้อมใช้งานในขณะนี้ กรุณาลองอีกครั้งในภายหลัง</string>
+    
+    <!-- Main Screen Update Error Messages -->
+    <string name="error_user_not_exists">ไม่มีผู้ใช้</string>
+    <string name="error_user_not_selected">ยังไม่ได้เลือกผู้ใช้</string>
+    <string name="error_user_invalid_credentials">ข้อมูลผู้ใช้ไม่ถูกต้อง</string>
+    <string name="error_user_verification_failed">การยืนยันตัวตนผู้ใช้ล้มเหลว กรุณาตรวจสอบข้อมูลของคุณหรือตรวจสอบว่าเซิร์ฟเวอร์เข้าถึงได้</string>
+    <string name="error_server_error">ข้อผิดพลาดเซิร์ฟเวอร์</string>
+    <string name="error_no_internet">ไม่มีการเชื่อมต่ออินเทอร์เน็ต</string>
+    <string name="error_timeout">การเชื่อมต่อหมดเวลา กรุณาลองอีกครั้ง</string>
+    <string name="error_timeout_connect">ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ การเชื่อมต่อหมดเวลา</string>
+    <string name="error_timeout_read">หมดเวลาขณะรับข้อมูลจากเซิร์ฟเวอร์ กรุณาลองอีกครั้ง</string>
+    <string name="error_video_playback_failed">ไม่สามารถเล่นวิดีโอได้ - ข้อผิดพลาดเซิร์ฟเวอร์</string>
+    <string name="error_audio_codec_ac3_not_supported">อุปกรณ์นี้ไม่รองรับรูปแบบเสียง AC3 (Dolby Digital) กรุณาเลือกภาษาพูดอื่น</string>
+    
+    <!-- Short Error Messages -->
+    <string name="error_live_streams_short">ไม่สามารถโหลดถ่ายทอดสดได้</string>
+    <string name="error_offline">ไม่มีการเชื่อมต่ออินเทอร์เน็ต กำลังแสดงข้อมูลจากแคช</string>
+    <string name="error_retry_failed">ลองใหม่อีกครั้งล้มเหลว กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</string>
+    <string name="btn_retry">ลองอีกครั้ง</string>
+    <string name="error_categories_load_failed">โหลดหมวดหมู่ล้มเหลว: %1$s</string>
+    <string name="error_movies_load_failed">โหลดภาพยนตร์ล้มเหลว: %1$s</string>
+    <string name="error_series_load_failed">โหลดซีรีส์ล้มเหลว: %1$s</string>
+    <string name="error_image_preload">ข้อผิดพลาดการโหลดภาพล่วงหน้า: %1$s</string>
+    
+    <!-- Category Names -->
+
+    <!-- User Status Information -->
+    <string name="yes">ใช่</string>
+    <string name="no">ไม่</string>
+    
+    <!-- Content Labels -->
+
+    <!-- Player -->
+
+    <!-- Viewer Management -->
+    <string name="page_viewers">ผู้ชม</string>
+    <string name="hint_viewer_name">ชื่อผู้ชม</string>
+    <string name="btn_add_viewer">เพิ่มผู้ชม</string>
+    <string name="btn_delete_viewer">ลบ</string>
+    <string name="error_cannot_delete_default_viewer">ไม่สามารถลบผู้ชมเริ่มต้นได้</string>
+    <string name="toast_viewer_added">เพิ่มผู้ชมแล้ว</string>
+    <string name="dialog_delete_viewer_title">ลบผู้ชม</string>
+    <string name="dialog_delete_viewer_message">คุณต้องการลบผู้ชม%1$sหรือไม่? รายการโปรดทั้งหมดจะถูกลบด้วย</string>
+    <string name="empty_viewers_list">ยังไม่ได้เพิ่มผู้ชม</string>
+    
+    <!-- Favorite Selection -->
+    <string name="dialog_select_viewer_title">เพิ่มในรายการโปรด</string>
+    <string name="dialog_select_viewer_message">คุณต้องการเพิ่มรายการโปรดสำหรับผู้ชมคนไหน?</string>
+
+    <!-- Movie Detail -->
+    <string name="movie_director">ผู้กำกับ:</string>
+    <string name="movie_genre">ประเภท:</string>
+    <string name="movie_cast">นักแสดง:</string>
+    <string name="movie_overview_label">ภาพรวม:</string>
+    <string name="no_overview">ไม่มีภาพรวม</string>
+    
+    <!-- Series Detail -->
+    <string name="series_creator">ผู้สร้าง:</string>
+    <string name="series_genre">ประเภท:</string>
+    <string name="series_cast">นักแสดง:</string>
+    <string name="series_overview_label">ภาพรวม:</string>
+    <string name="error_media_load">ข้อผิดพลาดในการโหลดสื่อ: %1$s</string>
+    <string name="error_movie_not_found">ไม่พบภาพยนตร์</string>
+    <string name="loading_movie_details">กำลังโหลดรายละเอียดภาพยนตร์...</string>
+    <string name="error_loading_movie">เกิดปัญหาขณะโหลดภาพยนตร์ กรุณาลองอีกครั้ง</string>
+    <string name="error_loading_series">เกิดปัญหาขณะโหลดซีรีส์ กรุณาลองอีกครั้ง</string>
+    
+    <!-- Settings -->
+    <string name="settings_user_status">สถานะผู้ใช้</string>
+    <string name="settings_app_language">ภาษาของแอป</string>
+    <string name="settings_premium">ซื้อพรีเมียม / คืนค่า</string>
+    <string name="settings_premium_on">เปิด</string>
+    <string name="settings_premium_off">ปิด</string>
+    <string name="settings_adult_content">เนื้อหาผู้ใหญ่</string>
+    <string name="settings_adult_content_on">เปิด</string>
+    <string name="settings_adult_content_off">ปิด</string>
+    <string name="settings_clear_cache">ล้างแคชและข้อมูลทั้งหมด</string>
+    <string name="settings_about_app">เกี่ยวกับแอป</string>
+    
+    <!-- Billing Error Messages -->
+    <string name="error_billing_connecting">ระบบการเรียกเก็บเงินกำลังเชื่อมต่อ กรุณารอสักครู่...</string>
+    <string name="error_billing_not_connected">ระบบการเรียกเก็บเงินยังไม่พร้อม กรุณาลองอีกครั้ง</string>
+    <string name="error_billing_error">ข้อผิดพลาดระบบการเรียกเก็บเงิน กรุณาลองอีกครั้ง</string>
+    <string name="toast_premium_restored">การซื้อของคุณได้รับการคืนค่าแล้ว</string>
+    <string name="toast_premium_activated">เปิดใช้งานพรีเมียมแล้ว</string>
+    
+    <!-- Premium -->
+
+    <!-- About App -->
+    <string name="about_app_title">เกี่ยวกับแอป</string>
+    <string name="about_app_info_title">ข้อมูลแอป</string>
+    <string name="about_app_name_label">ชื่อแอป: PNR TV</string>
+    <string name="about_app_version_label">เวอร์ชัน: เวอร์ชัน%1$s (Build %2$d)</string>
+    <string name="about_app_version">เวอร์ชัน%1$s (Build %2$d)</string>
+    <string name="about_app_description">PNR TV - Smart Media Player เป็นแอปพลิเคชันโปรแกรมเล่นสื่อระดับมืออาชีพที่ปรับให้เหมาะกับ Android TV โดยเฉพาะ มอบประสบการณ์การดูวิดีโอที่ลื่นไหล ใช้งานง่าย และเหมือนภาพยนตร์ ช่วยให้คุณจัดการและเล่นเพลย์ลิสต์ได้อย่างง่ายดาย PNR TV ไม่ใช่ผู้ให้บริการเนื้อหา แต่เป็นเพียงโปรแกรมเล่นเท่านั้น ดังนั้นจึงไม่ได้โฮสต์เนื้อหาสื่อ ช่องทีวี หรือเพลย์ลิสต์ใดๆ</string>
+    <string name="about_legal_title">ประกาศทางกฎหมายที่สำคัญ</string>
+    <string name="about_legal_no_content">ไม่มีการให้เนื้อหา: แอปพลิเคชันของเราไม่ได้เชื่อมโยงกับผู้ให้บริการ IPTV บุคคลที่สามใดๆ และไม่มีเนื้อหาสำเร็จรูป</string>
+    <string name="about_legal_user_responsibility">ความรับผิดชอบของผู้ใช้: ผู้ใช้ต้องรับเนื้อหาที่ต้องการดูจากผู้ให้บริการที่ถูกกฎหมายด้วยตนเอง</string>
+    <string name="about_legal_copyright">ลิขสิทธิ์: PNR TV ไม่สนับสนุนหรืออนุมัติการเผยแพร่เนื้อหาที่มีลิขสิทธิ์โดยไม่ได้รับอนุญาตจากเจ้าของลิขสิทธิ์</string>
+    <string name="about_features_title">ฟีเจอร์</string>
+    <string name="about_features">ถ่ายทอดสด: รองรับช่องทีวีสดและหมวดหมู่อย่างเต็มรูปแบบ\n\nภาพยนตร์ &amp; ซีรีส์ (VOD): หมวดหมู่ภาพยนตร์ รายละเอียดฤดูกาล/ตอน และการเล่นคุณภาพสูง\n\nผู้ใช้หลายคน &amp; โปรไฟล์: จัดการบัญชีบริการสื่อหลายบัญชีและสร้างโปรไฟล์ผู้ชมแยกสำหรับแต่ละผู้ใช้\n\nการติดตามอัจฉริยะ: บันทึกเนื้อหาที่ชื่นชอบ ติดตามที่ดูล่าสุด และเล่นต่อจากจุดที่ค้างไว้โดยบันทึกตำแหน่งการเล่น</string>
+    <string name="about_premium_features_title">ข้อได้เปรียบพรีเมียม</string>
+    <string name="about_premium_features">ประสบการณ์ไร้โฆษณา: ดูโดยไม่มีสิ่งรบกวน\n\nการควบคุมขั้นสูง: การควบคุมเนื้อหาผู้ใหญ่ ตัวเลือกการค้นหาและกรองอัจฉริยะ\n\nการจัดการโปรไฟล์: สถานะผู้ใช้ที่ปรับแต่งเองและโปรไฟล์ผู้ชม</string>
+    <string name="about_thanks_title">ขอบคุณ</string>
+    <string name="about_thanks">ผู้ให้บริการข้อมูล: เราขอขอบคุณแพลตฟอร์ม The Movie Database (TMDB) สำหรับข้อมูลภาพยนตร์และซีรีส์\n\nอินเทอร์เฟซ: ใช้ Android TV Leanback Library สำหรับคอมโพเนนต์อินเทอร์เฟซผู้ใช้ทีวี\n\nชุมชน: เราขอขอบคุณนักพัฒนาไลบรารีโอเพนซอร์สทั้งหมดสำหรับการมีส่วนร่วมของพวกเขา</string>
+    <string name="about_contact_title">ติดต่อ</string>
+    <string name="about_contact_message">สำหรับการร่วมมือ ข้อเสนอแนะ และข้อเสนอแนะ: tvpnrtv@gmail.com</string>
+    <string name="dialog_select_language_title">เลือกภาษา</string>
+    <string name="dialog_clear_cache_title">ล้างข้อมูลทั้งหมด</string>
+    <string name="dialog_clear_cache_message">ข้อมูลทั้งหมด (ผู้ใช้, รายการโปรด, ประวัติการดู, เนื้อหา ฯลฯ) จะถูกลบและแอปจะเปิดเหมือนติดตั้งใหม่ การกระทำนี้ไม่สามารถยกเลิกได้ คุณต้องการดำเนินการต่อหรือไม่?</string>
+    <string name="toast_cache_cleared">ล้างข้อมูลทั้งหมดแล้ว</string>
+    
+    <!-- Player -->
+    <string name="player_subtitles_title">คำบรรยาย</string>
+    <string name="player_audio_language_title">ภาษาพูด</string>
+    <string name="player_subtitles_off">ปิด</string>
+    <string name="channels">ช่อง</string>
+    
+    <!-- Episode and Season -->
+    <string name="episode_format">ตอนที่%1$d</string>
+    <string name="season_format_with_episodes">ฤดูกาลที่%1$d (%2$d)</string>
+    
+    <!-- Languages -->
+    <string name="language_turkish">ตุรกี</string>
+    <string name="language_english">อังกฤษ</string>
+    <string name="language_spanish">สเปน</string>
+    <string name="language_indonesian">อินโดนีเซีย</string>
+    <string name="language_hindi">ฮินดี</string>
+    <string name="language_portuguese">โปรตุเกส</string>
+    <string name="language_french">ฝรั่งเศส</string>
+    <string name="language_japanese">ญี่ปุ่น</string>
+    <string name="language_thai">ไทย</string>
+    
+    <!-- Additional Error Messages -->
+    <string name="error_video_url_not_found">ไม่พบ URL วิดีโอ</string>
+    <string name="default_viewer_name">เริ่มต้น</string>
+    
+    <!-- General Symbols and Placeholders -->
+    <string name="data_unavailable">-</string>
+    <string name="bullet_symbol">•</string>
+    <string name="star_symbol">⭐</string>
+    <string name="save">บันทึก</string>
+    
+    <!-- Current User Prefix -->
+
+    <!-- Player Content Descriptions -->
+    <string name="cd_rewind">ย้อนกลับ</string>
+    <string name="cd_play">เล่น</string>
+    <string name="cd_stop">หยุด</string>
+    <string name="cd_fast_forward">เลื่อนไปข้างหน้า</string>
+    <string name="cd_subtitle">คำบรรยาย</string>
+    <string name="cd_audio_track">ภาษาพูด</string>
+    
+    <!-- User Status Dialog Prefixes -->
+
+    <!-- Track Selection -->
+
+    <!-- Unknown/Default Values -->
+    <string name="unknown">ไม่ทราบ</string>
+    
+    <!-- Category Names (Movie/Series Categories) -->
+    <string name="category_action">แอคชั่น</string>
+    <string name="category_adventure">ผจญภัย</string>
+    <string name="category_animation">แอนิเมชัน</string>
+    <string name="category_comedy">คอมedy</string>
+    <string name="category_crime">อาชญากรรม</string>
+    <string name="category_documentary">สารคดี</string>
+    <string name="category_drama">ดราม่า</string>
+    <string name="category_family">ครอบครัว</string>
+    <string name="category_fantasy">แฟนตาซี</string>
+    <string name="category_horror">สยองขวัญ</string>
+    <string name="category_music">ดนตรี</string>
+    <string name="category_mystery">ลึกลับ</string>
+    <string name="category_romance">โรแมนติก</string>
+    <string name="category_science_fiction">วิทยาศาสตร์</string>
+    <string name="category_thriller">ระทึกขวัญ</string>
+    <string name="category_war">สงคราม</string>
+    <string name="category_western">คาวบอย</string>
+    <string name="category_sports">กีฬา</string>
+    <string name="category_reality">เรียลลิตี้</string>
+    <string name="category_talk_show">ทอล์คโชว์</string>
+    <string name="category_news">ข่าว</string>
+    <string name="category_kids">เด็ก</string>
+    <string name="category_tv_movie">ภาพยนตร์ทีวี</string>
+    <string name="category_all">ทั้งหมด</string>
+    
+    <!-- Resume Playback Dialog -->
+    <string name="dialog_resume_playback_title">เล่นต่อ</string>
+    <string name="btn_resume_from_position">เล่นต่อจากตำแหน่ง</string>
+    <string name="btn_start_from_beginning">เริ่มตั้งแต่ต้น</string>
+    
+    <!-- Player Loading Messages -->
+    <string name="player_loading_preparing">กำลังเตรียมเนื้อหา...</string>
+    <string name="player_loading_fetching_url">กำลังดึงที่อยู่ช่อง...</string>
+    <string name="player_loading_buffering">กำลังโหลดสตรีม...</string>
+</resources>

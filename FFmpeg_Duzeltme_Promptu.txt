@@ -1,0 +1,34 @@
+Android Geliştirici Asistanı (Cursor) için Görev: FFmpeg Kütüphanesini Kesin Olarak Entegre Etme
+
+--- DURUM ---
+Önceki adımda `app/build.gradle` dosyasına FFmpeg kütüphanesi (`com.github.UnnoTed...`) eklendi ancak derleme hatası (veya repo bulunamaması) nedeniyle yorum satırına alındı.
+Şu an projede yazılımsal dekoder (FFmpeg) aktif değil ve siyah ekran sorunu devam ediyor.
+
+--- GÖREV ---
+Lütfen FFmpeg kütüphanesini projeye başarılı bir şekilde dahil et ve derle. Bu süreçte karşına çıkan hataları (dependency resolution, repo missing vb.) proaktif olarak çöz.
+
+--- ADIMLAR ---
+
+1.  **Repository Kontrolü:**
+    `settings.gradle` (veya `build.gradle` proje seviyesi) dosyasını kontrol et. `dependencyResolutionManagement` -> `repositories` bloğunda `maven { url 'https://jitpack.io' }` olduğundan emin ol. Yoksa ekle. JitPack olmadan GitHub kütüphaneleri çalışmaz.
+
+2.  **Kütüphaneyi Aktifleştir:**
+    `app/build.gradle` dosyasındaki şu satırın başındaki yorum işaretlerini (`//`) kaldır:
+    `// implementation 'com.github.UnnoTed:Extension-FFmpeg-For-Media3:1.4.0'`
+    
+    Aktif hale getir:
+    `implementation 'com.github.UnnoTed:Extension-FFmpeg-For-Media3:1.4.0'`
+
+3.  **Gradle Sync ve Derleme:**
+    Projeyi senkronize et (Sync).
+    
+4.  **HATA YÖNETİMİ (Burayı Dikkatli Uygula):**
+    -   Eğer `UnnoTed` kütüphanesi hala hata veriyorsa (401, Not Found vb.), LÜTFEN ALTERNATİF BİR FFmpeg KÜTÜPHANESİ DENE.
+    -   Öneri Alternatif 1: Media3 için resmi olmayan ama çalışan başka bir fork bul.
+    -   Öneri Alternatif 2: Eğer Media3 extension bulunamazsa, `com.arthenica:mobile-ffmpeg-full:4.4` gibi genel bir FFmpeg wrapper ekle. (Ancak bu durumda PlayerViewModel'de Media3 renderer'ı yerine bu kütüphaneyi kullanacak ekstra kod yazman gerekebilir, bu son çare olsun).
+    -   **Öncelik:** Media3 ile uyumlu çalışan (`ExtensionRenderer` olarak eklenebilen) bir kütüphane bulmaktır.
+
+5.  **PlayerViewModel Kontrolü:**
+    Kütüphane başarılı bir şekilde eklendikten sonra `PlayerViewModel.kt` dosyasında `DefaultRenderersFactory`'nin `EXTENSION_RENDERER_MODE_PREFER` (veya `ON`) modunda olduğundan emin ol.
+
+Lütfen bu görevi tamamla ve projeyi derlenebilir, çalışabilir hale getir.

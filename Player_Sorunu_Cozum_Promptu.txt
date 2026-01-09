@@ -1,0 +1,77 @@
+Android Geliştirici Asistanı için Görev Tanımı: ExoPlayer Yüksek Çözünürlük ve Codec Sorunlarının Giderilmesi
+
+Aşağıdaki bilgiler ışığında, projede yaşanan video oynatma sorunlarını (HEVC, Dolby Vision, 4K/8K hataları) çözmek için gerekli kod değişikliklerini yapmanı istiyorum.
+
+--- MEVCUT DURUM VE SORUN ---
+Kullanıcı, Android TV uygulamasında ExoPlayer (Media3) kullanıyor.
+1. H.264 (AVC) videolar sorunsuz oynuyor.
+2. Ancak HEVC (H.265) ve Dolby Vision (Profil 5/7/8) formatındaki yüksek çözünürlüklü (4K, 8K) videolar oynatılırken şu hatalar alınıyor:
+   - Error Code: DECODING_FAILED (4003)
+   - Error Code: DECODER_INIT_FAILED (4001)
+   - Hata Mesajı: "format_supported=NO_EXCEEDS_CAPABILITIES"
+   - Log: "MediaCodecVideoRenderer error... NO_EXCEEDS_CAPABILITIES"
+
+Bu hatalar, ExoPlayer'ın varsayılan olarak "Güvenli Mod"da çalışmasından kaynaklanıyor. ExoPlayer, cihazın donanım özelliklerini sorguluyor ve cihaz (veya TV) "Ben bu çözünürlüğü veya bu bitrate'i resmi olarak desteklemiyorum" derse, ExoPlayer videoyu oynatmayı reddediyor ve hata fırlatıyor.
+
+Oysa ki; aynı cihazda VLC, MX Player gibi diğer uygulamalar aynı videoları sorunsuz oynatabiliyor. Bunun sebebi, o uygulamaların bu limitleri görmezden gelmesi (Force Play) veya yazılımsal dekoder (FFmpeg) kullanmasıdır.
+
+--- HEDEF ---
+ExoPlayer'ın, cihazın "desteklemiyorum" dediği durumlarda bile videoyu oynatmaya zorlanmasını (Force Play) sağlamalıyız. Çoğu Android TV cihazı, yeteneklerini eksik raporlar ama zorlandığında videoyu donanım üzerinden oynatabilir.
+
+--- YAPILACAK İŞLEM ---
+`app/src/main/java/com/pnr/tv/ui/player/PlayerViewModel.kt` dosyasını aç ve `initializeExoPlayer` metodunu aşağıdaki stratejiye göre güncelle:
+
+1. **TrackSelector Ayarlarını Değiştir:**
+   `DefaultTrackSelector` oluşturulurken `Parameters` ayarlarını güncelle. Şu iki kritik ayarı `true` yap:
+   - `setExceedRendererCapabilitiesIfNecessary(true)`: Cihazın "dekoderim bunu çözemez" dediği durumlarda bile render etmeye çalış.
+   - `setExceedVideoConstraintsIfNecessary(true)`: Cihazın "ekranım bu boyutu desteklemiyor" (örn: 8K) dediği durumlarda bile oynat.
+
+2. **RenderersFactory Ayarı (Mevcut):**
+   Mevcut kodda zaten `setEnableDecoderFallback(true)` var, bu kalmalı.
+
+--- KOD REFERANSI (PlayerViewModel.kt) ---
+
+Mevcut `initializeExoPlayer` fonksiyonunu şu mantıkla güncelle:
+
+```kotlin
+private fun initializeExoPlayer() {
+    if (player == null) {
+        // 1. ADIM: TrackSelector ayarlarını "Zorla Oynat" moduna al
+        val trackSelector = DefaultTrackSelector(context)
+        trackSelector.parameters = trackSelector.buildUponParameters()
+            // KRİTİK AYARLAR: Cihaz limitlerini aşsa bile oynatmayı dene
+            .setExceedRendererCapabilitiesIfNecessary(true) 
+            .setExceedVideoConstraintsIfNecessary(true)
+            // İsteğe bağlı: Ses tünellemeyi aktif et (Android TV'lerde performansı artırır)
+            .setTunnelingEnabled(true) 
+            .build()
+
+        // 2. ADIM: LoadControl (Mevcut ayarlar korunabilir veya iyileştirilebilir)
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(
+                PlayerConstants.MIN_BUFFER_DURATION.toInt(),
+                PlayerConstants.DEFAULT_BUFFER_DURATION.toInt(),
+                PlayerConstants.MIN_BUFFER_DURATION.toInt(),
+                PlayerConstants.MIN_BUFFER_DURATION.toInt(),
+            )
+            .build()
+
+        // 3. ADIM: RenderersFactory (Extension renderer varsa öncelik ver)
+        val renderersFactory = androidx.media3.exoplayer.DefaultRenderersFactory(context)
+            .setEnableDecoderFallback(true) // Yazılımsal dekodere düşmeye izin ver
+            .setExtensionRendererMode(androidx.media3.exoplayer.DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER) // Varsa FFmpeg kullan
+
+        player = ExoPlayer.Builder(context)
+            .setRenderersFactory(renderersFactory)
+            .setTrackSelector(trackSelector)
+            .setLoadControl(loadControl)
+            .build()
+            .apply {
+                addListener(playerListener)
+                playWhenReady = true
+            }
+    }
+}
+```
+
+Lütfen bu değişiklikleri `PlayerViewModel.kt` dosyasına uygula. Başka bir değişiklik yapma.

@@ -3,7 +3,6 @@
     <string name="app_name">PNR TV</string>
     
     <!-- Judul Halaman -->
-    <string name="page_main">Beranda</string>
     <string name="page_settings">Pengaturan</string>
     <string name="page_user_management">Manajemen Pengguna</string>
     <string name="page_users_list">Pengguna Saat Ini</string>
@@ -16,17 +15,13 @@
     <string name="category_favorites">FAVORIT</string>
     <string name="category_viewer_favorites">%1$s FAVORIT</string>
     <string name="category_recently_added">BARU DITAMBAHKAN</string>
-    <string name="category_recently_watched">Baru Ditonton</string>
-    <string name="category_all_series">SEMUA SERIAL</string>
-    <string name="label_seasons">Musim</string>
-    <string name="empty_favorites">Anda belum memiliki saluran favorit.</string>
-    <string name="empty_recently_watched">Tidak ada saluran yang baru ditonton ditemukan.</string>
+    <string name="msg_preparing_content">Mempersiapkan konten Anda, harap tunggu...</string>
+    <string name="empty_movies_favorites">Anda belum memiliki film favorit.</string>
+    <string name="empty_series_favorites">Anda belum memiliki serial favorit.</string>
     <string name="toast_favorite_added">Ditambahkan ke favorit</string>
     <string name="toast_favorite_removed">Dihapus dari favorit</string>
+    <string name="toast_premium_required_for_favorites">Favorit adalah fitur premium. Silakan aktifkan keanggotaan premium Anda.</string>
     <string name="no_episodes_found">Tidak ada episode ditemukan untuk musim ini</string>
-    <string name="error_title">Kesalahan</string>
-    <string name="retry">Coba Lagi</string>
-    <string name="cancel">Batal</string>
     <string name="ok">OK</string>
     
     <!-- Deskripsi Konten (Aksesibilitas) -->
@@ -34,9 +29,7 @@
     <string name="cd_navbar_back">Kembali</string>
     <string name="cd_navbar_home">Ke beranda</string>
     <string name="cd_loading">Memuat</string>
-    <string name="cd_episode_watched">Ditonton</string>
-    <string name="add_to_favorites">Tambahkan ke favorit</string>
-    
+
     <!-- Halaman Tambah Pengguna -->
     <string name="hint_account_name">Nama Akun (nama apa saja)</string>
     <string name="hint_username">Nama Pengguna</string>
@@ -44,24 +37,21 @@
     <string name="hint_dns">DNS (URL)</string>
     <string name="btn_save">Simpan</string>
     <string name="error_fill_fields">Harap isi semua bidang</string>
-    <string name="toast_user_saved">Pengguna disimpan</string>
-    <string name="toast_user_updated">Pengguna diperbarui</string>
+    <string name="toast_user_saved">Pengguna berhasil ditambahkan</string>
+    <string name="toast_user_updated">Pengguna berhasil diperbarui</string>
     <string name="toast_user_deleted">Pengguna dihapus</string>
-    <string name="toast_select_placeholder">Opsi ini akan segera tersedia</string>
     <string name="toast_user_selected">%1$s dipilih</string>
     <string name="label_account_name">Nama Akun</string>
     <string name="empty_users_list">Belum ada pengguna ditambahkan</string>
     <string name="cd_edit_user">Edit pengguna</string>
     <string name="cd_delete_user">Hapus pengguna</string>
     <string name="cd_select_user">Pilih pengguna</string>
-    <string name="current_user_section_title">Pengguna Saat Ini</string>
+    <string name="current_user_section_title">Pengguna Saat Ini:</string>
     <string name="current_user_placeholder">Tidak dipilih</string>
     <string name="dialog_delete_user_title">Hapus Pengguna</string>
     <string name="dialog_delete_user_message">Apakah Anda ingin menghapus pengguna %1$s?</string>
     
     <!-- Tombol dan Navigasi -->
-    <string name="btn_back">Kembali</string>
-    <string name="btn_home">Beranda</string>
     <string name="btn_filter">Filter</string>
     <string name="search_hint">Cari Konten</string>
     <string name="btn_exit">Keluar</string>
@@ -93,6 +83,11 @@
     <!-- Pesan Pemuatan -->
     <string name="loading_content">Konten sedang diperbarui dan diproses...</string>
     <string name="loading_completed">Pembaruan Selesai</string>
+    <string name="added_content_title">Konten yang Ditambahkan</string>
+    <string name="added_content_movies">Film: %1$d</string>
+    <string name="added_content_series">Serial: %1$d</string>
+    <string name="data_required_warning">Harap Gunakan Tombol Pembaruan di Atas untuk Memperbarui Database Anda Terlebih Dahulu</string>
+    <string name="user_required_warning">Harap Tambahkan Pengguna Terlebih Dahulu</string>
     
     <!-- Pesan Kesalahan -->
     <string name="error_unknown">Kesalahan tidak diketahui</string>
@@ -107,7 +102,6 @@
     <string name="error_user_not_selected">Pengguna Tidak Dipilih</string>
     <string name="error_user_invalid_credentials">Kredensial Pengguna Tidak Valid</string>
     <string name="error_server_error">Kesalahan Server</string>
-    <string name="error_content_info_failed">Gagal Memuat Informasi Konten</string>
     <string name="error_no_internet">Tidak Ada Koneksi Internet</string>
     <string name="error_video_playback_failed">Video Tidak Dapat Diputar - Kesalahan Server</string>
     <string name="error_timeout">Koneksi berakhir waktu. Silakan coba lagi.</string>
@@ -116,44 +110,28 @@
     <string name="error_offline">Tidak ada koneksi Internet. Menampilkan data dari cache.</string>
     <string name="error_retry_failed">Percobaan ulang gagal. Silakan periksa koneksi Internet Anda.</string>
     
+    <!-- Pesan Kesalahan Ramah Pengguna -->
+    <string name="error_server_unavailable">Server saat ini tidak tersedia. Silakan coba lagi nanti.</string>
+    <string name="error_loading_series">Terjadi masalah saat memuat serial. Silakan coba lagi.</string>
+    
     <!-- Pesan Kesalahan Pendek -->
-    <string name="error_categories_short">Kategori tidak dapat dimuat</string>
-    <string name="error_movies_short">Film tidak dapat dimuat</string>
-    <string name="error_series_short">Serial tidak dapat dimuat</string>
     <string name="error_live_streams_short">Siaran langsung tidak dapat dimuat</string>
     <string name="btn_retry">Coba Lagi</string>
-    <string name="toast_retrying">Mencoba lagi...</string>
-    <string name="toast_retry_success">Koneksi berhasil</string>
-    <string name="toast_retry_failed">Percobaan ulang gagal</string>
     <string name="error_categories_load_failed">Gagal memuat kategori: %1$s</string>
     <string name="error_movies_load_failed">Gagal memuat film: %1$s</string>
     <string name="error_series_load_failed">Gagal memuat serial: %1$s</string>
-    <string name="error_categories_load">Kesalahan memuat kategori: %1$s</string>
-    <string name="error_movies_load">Kesalahan memuat film: %1$s</string>
-    <string name="error_series_load">Kesalahan memuat serial: %1$s</string>
     <string name="error_image_preload">Kesalahan pra-pemuatan gambar: %1$s</string>
     
     <!-- Nama Kategori -->
-    <string name="category_all_movies">SEMUA FILM</string>
-    
+
     <!-- Informasi Status Pengguna -->
-    <string name="status_label">Status: %1$s</string>
-    <string name="expiry_date_label">Tanggal Kedaluwarsa: %1$s</string>
-    <string name="connection_label">Koneksi: %1$s/%2$s</string>
-    <string name="trial_label">Uji Coba: %1$s</string>
     <string name="yes">Ya</string>
     <string name="no">Tidak</string>
     
     <!-- Label Konten -->
-    <string name="movie_label">Film: %1$s</string>
-    <string name="series_label">Serial: %1$s</string>
-    <string name="description_not_available">Deskripsi tidak tersedia.</string>
-    <string name="episode_number_format">Episode %1$d</string>
-    
+
     <!-- Pemutar -->
-    <string name="subtitles">Subtitle</string>
-    <string name="audio_language">Bahasa Audio</string>
-    
+
     <!-- Manajemen Penonton -->
     <string name="page_viewers">Penonton</string>
     <string name="hint_viewer_name">Nama Penonton</string>
@@ -161,7 +139,6 @@
     <string name="btn_delete_viewer">Hapus</string>
     <string name="error_cannot_delete_default_viewer">Penonton default tidak dapat dihapus</string>
     <string name="toast_viewer_added">Penonton ditambahkan</string>
-    <string name="toast_viewer_deleted">Penonton dihapus</string>
     <string name="dialog_delete_viewer_title">Hapus Penonton</string>
     <string name="dialog_delete_viewer_message">Apakah Anda ingin menghapus penonton %1$s? Semua favorit juga akan dihapus.</string>
     <string name="empty_viewers_list">Belum ada penonton ditambahkan</string>
@@ -169,8 +146,7 @@
     <!-- Seleksi Favorit -->
     <string name="dialog_select_viewer_title">Tambahkan ke Favorit</string>
     <string name="dialog_select_viewer_message">Untuk penonton mana Anda ingin menambahkan ke favorit?</string>
-    <string name="viewer_favorites_category">%1$s FAVORIT</string>
-    
+
     <!-- Detail Film -->
     <string name="movie_director">Sutradara:</string>
     <string name="movie_genre">Genre:</string>
@@ -191,20 +167,33 @@
     <!-- Pengaturan -->
     <string name="settings_user_status">Status Pengguna</string>
     <string name="settings_app_language">Bahasa Aplikasi</string>
+    <string name="settings_premium">Beli Premium / Pulihkan</string>
     <string name="settings_clear_cache">Hapus Cache dan Semua Data</string>
+    <string name="toast_premium_restored">Pembelian Anda telah dipulihkan</string>
+    <string name="toast_premium_activated">Premium Diaktifkan</string>
     <string name="settings_about_app">Tentang Aplikasi</string>
     
+    <!-- Premium -->
+
     <!-- Tentang Aplikasi -->
     <string name="about_app_title">Tentang Aplikasi</string>
-    <string name="about_app_description">PNR TV adalah aplikasi IPTV (Televisi Protokol Internet) yang dikembangkan khusus untuk platform Android TV. Memungkinkan pengguna untuk menonton siaran langsung, film, dan serial.</string>
+    <string name="about_app_info_title">Informasi Aplikasi</string>
+    <string name="about_app_name_label">Nama Aplikasi: PNR TV</string>
+    <string name="about_app_version_label">Versi: Versi %1$s (Build %2$d)</string>
+    <string name="about_app_version">Versi %1$s (Build %2$d)</string>
+    <string name="about_app_description">PNR TV - Pemutar Media Cerdas adalah aplikasi pemutar media profesional yang dioptimalkan khusus untuk antarmuka Android TV. Menawarkan pengalaman yang mulus, intuitif, dan sinematik untuk konten video Anda, memungkinkan Anda mengelola dan memutar daftar putar Anda dengan mudah. PNR TV bukan penyedia konten, tetapi hanya pemutar; oleh karena itu, tidak menghosting konten media, saluran TV, atau daftar putar apa pun.</string>
+    <string name="about_legal_title">Pemberitahuan Hukum Penting</string>
+    <string name="about_legal_no_content">Tidak Ada Konten yang Disediakan: Aplikasi kami tidak berafiliasi dengan penyedia IPTV pihak ketiga mana pun dan tidak berisi konten siap pakai.</string>
+    <string name="about_legal_user_responsibility">Tanggung Jawab Pengguna: Pengguna harus memperoleh konten yang ingin mereka tonton dari penyedia layanan hukum sendiri.</string>
+    <string name="about_legal_copyright">Hak Cipta: PNR TV tidak mendukung atau menyetujui publikasi materi berhak cipta tanpa izin pemegang hak cipta.</string>
     <string name="about_features_title">Fitur</string>
-    <string name="about_features">• Film (VOD): Kategori film, detail, dan pemutaran\n• Serial: Kategori serial, musim, episode, dan pemutaran\n• Siaran Langsung: Saluran TV langsung dan kategori\n• Beberapa Pengguna: Manajemen beberapa akun IPTV\n• Profil Penonton: Profil penonton terpisah untuk setiap pengguna\n• Favorit: Simpan saluran favorit\n• Baru Ditonton: Lacak konten yang baru ditonton\n• Lanjutkan Pemutaran: Simpan posisi pemutaran</string>
+    <string name="about_features">Siaran Langsung: Dukungan penuh untuk saluran TV langsung dan kategori.\n\nFilm &amp; Serial (VOD): Kategori film, detail musim/episode dan pemutaran berkualitas tinggi.\n\nBeberapa Pengguna &amp; Profil: Kelola beberapa akun layanan media dan buat profil penonton terpisah untuk setiap pengguna.\n\nPelacakan Cerdas: Simpan konten favorit, lacak yang baru ditonton, dan lanjutkan dari tempat Anda berhenti dengan menyimpan posisi pemutaran.</string>
+    <string name="about_premium_features_title">Keuntungan Premium</string>
+    <string name="about_premium_features">Pengalaman Tanpa Iklan: Menonton sepenuhnya tanpa gangguan.\n\nKontrol Lanjutan: Kontrol konten dewasa, opsi pencarian dan filter cerdas.\n\nManajemen Profil: Status pengguna yang dipersonalisasi dan profil penonton.</string>
     <string name="about_thanks_title">Terima Kasih</string>
-    <string name="about_thanks">The Movie Database (TMDB) - Untuk data film dan serial\nAndroid TV Leanback Library - Untuk komponen UI TV\nSemua pengembang perpustakaan open source</string>
+    <string name="about_thanks">Penyedia Data: Kami berterima kasih kepada platform The Movie Database (TMDB) untuk data film dan serial.\n\nAntarmuka: Android TV Leanback Library digunakan untuk komponen antarmuka pengguna TV.\n\nKomunitas: Kami berterima kasih kepada semua pengembang perpustakaan open source atas kontribusi mereka.</string>
     <string name="about_contact_title">Kontak</string>
-    <string name="about_contact_message">Untuk kolaborasi, umpan balik, dan saran, silakan kirim email kepada kami: tvpnrtv@gmail.com</string>
-    <string name="about_contact_email">tvpnrtv@gmail.com</string>
-    <string name="about_contact_email_subject">PNR TV - Kontak</string>
+    <string name="about_contact_message">Untuk kolaborasi, umpan balik, dan saran: tvpnrtv@gmail.com</string>
     <string name="dialog_select_language_title">Pilih Bahasa</string>
     <string name="dialog_clear_cache_title">Hapus Semua Data</string>
     <string name="dialog_clear_cache_message">Semua data (pengguna, favorit, riwayat tontonan, konten, dll.) akan dihapus dan aplikasi akan terbuka seperti baru diinstal. Tindakan ini tidak dapat dibatalkan. Apakah Anda ingin melanjutkan?</string>
@@ -214,10 +203,10 @@
     <string name="player_subtitles_title">Subtitle</string>
     <string name="player_audio_language_title">Bahasa Audio</string>
     <string name="player_subtitles_off">Mati</string>
+    <string name="channels">Saluran</string>
     
     <!-- Episode dan Musim -->
     <string name="episode_format">Episode %1$d</string>
-    <string name="season_format">Musim %1$d</string>
     <string name="season_format_with_episodes">Musim %1$d (%2$d)</string>
     
     <!-- Bahasa -->
@@ -228,6 +217,8 @@
     <string name="language_hindi">Hindi</string>
     <string name="language_portuguese">Portugis</string>
     <string name="language_french">Prancis</string>
+    <string name="language_japanese">Jepang</string>
+    <string name="language_thai">Thai</string>
     
     <!-- Pesan Kesalahan Tambahan -->
     <string name="error_video_url_not_found">URL video tidak ditemukan</string>
@@ -240,26 +231,19 @@
     <string name="save">Simpan</string>
     
     <!-- Awalan Pengguna Saat Ini -->
-    <string name="current_user_prefix">Pengguna Saat Ini:</string>
-    
+
     <!-- Deskripsi Konten Pemutar -->
     <string name="cd_rewind">Putar Mundur</string>
     <string name="cd_play">Putar</string>
-    <string name="cd_pause">Jeda</string>
     <string name="cd_stop">Berhenti</string>
     <string name="cd_fast_forward">Putar Cepat</string>
     <string name="cd_subtitle">Subtitle</string>
     <string name="cd_audio_track">Bahasa Audio</string>
     
     <!-- Awalan Dialog Status Pengguna -->
-    <string name="status_prefix">Status:</string>
-    <string name="expiry_date_prefix">Tanggal Kedaluwarsa:</string>
-    <string name="connection_prefix">Koneksi:</string>
-    <string name="trial_prefix">Uji Coba:</string>
-    
+
     <!-- Pemilihan Trek -->
-    <string name="track_language_turkish">Turki</string>
-    
+
     <!-- Nilai Tidak Dikenal/Default -->
     <string name="unknown">Tidak Dikenal</string>
     
@@ -288,5 +272,10 @@
     <string name="category_kids">Anak-anak</string>
     <string name="category_tv_movie">Film TV</string>
     <string name="category_all">Semua</string>
+    
+    <!-- Resume Playback Dialog -->
+    <string name="dialog_resume_playback_title">Lanjutkan Pemutaran</string>
+    <string name="btn_resume_from_position">Lanjutkan dari Posisi</string>
+    <string name="btn_start_from_beginning">Mulai dari Awal</string>
 </resources>
 

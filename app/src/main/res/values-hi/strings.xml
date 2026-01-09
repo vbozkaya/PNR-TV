@@ -3,7 +3,6 @@
     <string name="app_name">PNR TV</string>
     
     <!-- पृष्ठ शीर्षक -->
-    <string name="page_main">होम</string>
     <string name="page_settings">सेटिंग्स</string>
     <string name="page_user_management">उपयोगकर्ता प्रबंधन</string>
     <string name="page_users_list">वर्तमान उपयोगकर्ता</string>
@@ -16,17 +15,13 @@
     <string name="category_favorites">पसंदीदा</string>
     <string name="category_viewer_favorites">%1$s पसंदीदा</string>
     <string name="category_recently_added">हाल ही में जोड़े गए</string>
-    <string name="category_recently_watched">हाल ही में देखे गए</string>
-    <string name="category_all_series">सभी सीरीज़</string>
-    <string name="label_seasons">सीज़न</string>
-    <string name="empty_favorites">आपके पास अभी तक कोई पसंदीदा चैनल नहीं है।</string>
-    <string name="empty_recently_watched">हाल ही में देखा गया कोई चैनल नहीं मिला।</string>
+    <string name="msg_preparing_content">आपकी सामग्री तैयार की जा रही है, कृपया प्रतीक्षा करें...</string>
+    <string name="empty_movies_favorites">आपके पास अभी तक कोई पसंदीदा फिल्में नहीं हैं।</string>
+    <string name="empty_series_favorites">आपके पास अभी तक कोई पसंदीदा सीरीज़ नहीं हैं।</string>
     <string name="toast_favorite_added">पसंदीदा में जोड़ा गया</string>
     <string name="toast_favorite_removed">पसंदीदा से हटाया गया</string>
+    <string name="toast_premium_required_for_favorites">पसंदीदा एक प्रीमियम सुविधा है। कृपया अपनी प्रीमियम सदस्यता सक्रिय करें।</string>
     <string name="no_episodes_found">इस सीज़न के लिए कोई एपिसोड नहीं मिला</string>
-    <string name="error_title">त्रुटि</string>
-    <string name="retry">पुनः प्रयास करें</string>
-    <string name="cancel">रद्द करें</string>
     <string name="ok">ठीक</string>
     
     <!-- सामग्री विवरण (पहुंच) -->
@@ -34,9 +29,7 @@
     <string name="cd_navbar_back">वापस जाएं</string>
     <string name="cd_navbar_home">होम पर जाएं</string>
     <string name="cd_loading">लोड हो रहा है</string>
-    <string name="cd_episode_watched">देखा गया</string>
-    <string name="add_to_favorites">पसंदीदा में जोड़ें</string>
-    
+
     <!-- उपयोगकर्ता जोड़ें पृष्ठ -->
     <string name="hint_account_name">खाता नाम (कोई भी नाम)</string>
     <string name="hint_username">उपयोगकर्ता नाम</string>
@@ -44,24 +37,21 @@
     <string name="hint_dns">DNS (URL)</string>
     <string name="btn_save">सहेजें</string>
     <string name="error_fill_fields">कृपया सभी फ़ील्ड भरें</string>
-    <string name="toast_user_saved">उपयोगकर्ता सहेजा गया</string>
-    <string name="toast_user_updated">उपयोगकर्ता अपडेट किया गया</string>
+    <string name="toast_user_saved">उपयोगकर्ता सफलतापूर्वक जोड़ा गया</string>
+    <string name="toast_user_updated">उपयोगकर्ता सफलतापूर्वक अपडेट किया गया</string>
     <string name="toast_user_deleted">उपयोगकर्ता हटाया गया</string>
-    <string name="toast_select_placeholder">यह विकल्प जल्द ही उपलब्ध होगा</string>
     <string name="toast_user_selected">%1$s चुना गया</string>
     <string name="label_account_name">खाता नाम</string>
     <string name="empty_users_list">अभी तक कोई उपयोगकर्ता नहीं जोड़ा गया</string>
     <string name="cd_edit_user">उपयोगकर्ता संपादित करें</string>
     <string name="cd_delete_user">उपयोगकर्ता हटाएं</string>
     <string name="cd_select_user">उपयोगकर्ता चुनें</string>
-    <string name="current_user_section_title">वर्तमान उपयोगकर्ता</string>
+    <string name="current_user_section_title">वर्तमान उपयोगकर्ता:</string>
     <string name="current_user_placeholder">चयनित नहीं</string>
     <string name="dialog_delete_user_title">उपयोगकर्ता हटाएं</string>
     <string name="dialog_delete_user_message">क्या आप उपयोगकर्ता %1$s को हटाना चाहते हैं?</string>
     
     <!-- बटन और नेविगेशन -->
-    <string name="btn_back">वापस</string>
-    <string name="btn_home">होम</string>
     <string name="btn_filter">फ़िल्टर</string>
     <string name="search_hint">सामग्री खोजें</string>
     <string name="btn_exit">बाहर निकलें</string>
@@ -93,6 +83,11 @@
     <!-- लोडिंग संदेश -->
     <string name="loading_content">सामग्री अपडेट और प्रसंस्कृत की जा रही है...</string>
     <string name="loading_completed">अपडेट पूर्ण</string>
+    <string name="added_content_title">जोड़ी गई सामग्री</string>
+    <string name="added_content_movies">फिल्में: %1$d</string>
+    <string name="added_content_series">धारावाहिक: %1$d</string>
+    <string name="data_required_warning">कृपया पहले अपने डेटाबेस को अपडेट करने के लिए ऊपर दिए गए अपडेट बटन का उपयोग करें</string>
+    <string name="user_required_warning">कृपया पहले एक उपयोगकर्ता जोड़ें</string>
     
     <!-- त्रुटि संदेश -->
     <string name="error_unknown">अज्ञात त्रुटि</string>
@@ -107,7 +102,6 @@
     <string name="error_user_not_selected">उपयोगकर्ता चयनित नहीं</string>
     <string name="error_user_invalid_credentials">अमान्य उपयोगकर्ता क्रेडेंशियल</string>
     <string name="error_server_error">सर्वर त्रुटि</string>
-    <string name="error_content_info_failed">सामग्री जानकारी लोड करने में विफल</string>
     <string name="error_no_internet">कोई इंटरनेट कनेक्शन नहीं</string>
     <string name="error_video_playback_failed">वीडियो चलाया नहीं जा सकता - सर्वर त्रुटि</string>
     <string name="error_timeout">कनेक्शन समय समाप्त हो गया। कृपया पुनः प्रयास करें।</string>
@@ -115,45 +109,29 @@
     <string name="error_timeout_read">सर्वर से डेटा प्राप्त करते समय समय समाप्त हो गया। कृपया पुनः प्रयास करें।</string>
     <string name="error_offline">कोई इंटरनेट कनेक्शन नहीं। कैश से डेटा दिखाया जा रहा है।</string>
     <string name="error_retry_failed">पुनः प्रयास विफल रहा। कृपया अपना इंटरनेट कनेक्शन जांचें।</string>
+    
+    <!-- उपयोगकर्ता के अनुकूल त्रुटि संदेश -->
+    <string name="error_server_unavailable">सर्वर वर्तमान में उपलब्ध नहीं है। कृपया बाद में पुनः प्रयास करें।</string>
+    <string name="error_loading_series">श्रृंखला लोड करते समय एक समस्या उत्पन्न हुई। कृपया पुनः प्रयास करें।</string>
     <string name="btn_retry">पुनः प्रयास करें</string>
-    <string name="toast_retrying">पुनः प्रयास किया जा रहा है...</string>
-    <string name="toast_retry_success">कनेक्शन सफल</string>
-    <string name="toast_retry_failed">पुनः प्रयास विफल</string>
     <string name="error_categories_load_failed">श्रेणियां लोड करने में विफल: %1$s</string>
     <string name="error_movies_load_failed">फिल्में लोड करने में विफल: %1$s</string>
     <string name="error_series_load_failed">सीरीज़ लोड करने में विफल: %1$s</string>
-    <string name="error_categories_load">श्रेणियां लोड करते समय त्रुटि: %1$s</string>
-    <string name="error_movies_load">फिल्में लोड करते समय त्रुटि: %1$s</string>
-    <string name="error_series_load">सीरीज़ लोड करते समय त्रुटि: %1$s</string>
-    
+
     <!-- संक्षिप्त त्रुटि संदेश -->
-    <string name="error_categories_short">श्रेणियां लोड नहीं हो सकीं</string>
-    <string name="error_movies_short">फिल्में लोड नहीं हो सकीं</string>
-    <string name="error_series_short">सीरीज़ लोड नहीं हो सकीं</string>
     <string name="error_live_streams_short">लाइव स्ट्रीम लोड नहीं हो सके</string>
     <string name="error_image_preload">छवि प्रीलोड त्रुटि: %1$s</string>
     
     <!-- श्रेणी नाम -->
-    <string name="category_all_movies">सभी फिल्में</string>
-    
+
     <!-- उपयोगकर्ता स्थिति जानकारी -->
-    <string name="status_label">स्थिति: %1$s</string>
-    <string name="expiry_date_label">समाप्ति तिथि: %1$s</string>
-    <string name="connection_label">कनेक्शन: %1$s/%2$s</string>
-    <string name="trial_label">ट्रायल: %1$s</string>
     <string name="yes">हाँ</string>
     <string name="no">नहीं</string>
     
     <!-- सामग्री लेबल -->
-    <string name="movie_label">फिल्म: %1$s</string>
-    <string name="series_label">सीरीज़: %1$s</string>
-    <string name="description_not_available">विवरण उपलब्ध नहीं है।</string>
-    <string name="episode_number_format">एपिसोड %1$d</string>
-    
+
     <!-- प्लेयर -->
-    <string name="subtitles">उपशीर्षक</string>
-    <string name="audio_language">ऑडियो भाषा</string>
-    
+
     <!-- दर्शक प्रबंधन -->
     <string name="page_viewers">दर्शक</string>
     <string name="hint_viewer_name">दर्शक नाम</string>
@@ -161,7 +139,6 @@
     <string name="btn_delete_viewer">हटाएं</string>
     <string name="error_cannot_delete_default_viewer">डिफ़ॉल्ट दर्शक हटाया नहीं जा सकता</string>
     <string name="toast_viewer_added">दर्शक जोड़ा गया</string>
-    <string name="toast_viewer_deleted">दर्शक हटाया गया</string>
     <string name="dialog_delete_viewer_title">दर्शक हटाएं</string>
     <string name="dialog_delete_viewer_message">क्या आप दर्शक %1$s को हटाना चाहते हैं? सभी पसंदीदा भी हटा दिए जाएंगे।</string>
     <string name="empty_viewers_list">अभी तक कोई दर्शक नहीं जोड़ा गया</string>
@@ -169,8 +146,7 @@
     <!-- पसंदीदा चयन -->
     <string name="dialog_select_viewer_title">पसंदीदा में जोड़ें</string>
     <string name="dialog_select_viewer_message">आप किस दर्शक के लिए पसंदीदा में जोड़ना चाहते हैं?</string>
-    <string name="viewer_favorites_category">%1$s पसंदीदा</string>
-    
+
     <!-- फिल्म विवरण -->
     <string name="movie_director">निर्देशक:</string>
     <string name="movie_genre">शैली:</string>
@@ -191,20 +167,33 @@
     <!-- सेटिंग्स -->
     <string name="settings_user_status">उपयोगकर्ता स्थिति</string>
     <string name="settings_app_language">एप भाषा</string>
+    <string name="settings_premium">प्रीमियम खरीदें / पुनर्स्थापित करें</string>
     <string name="settings_clear_cache">कैश और सभी डेटा साफ करें</string>
+    <string name="toast_premium_restored">आपकी खरीदारी पुनर्स्थापित कर दी गई है</string>
+    <string name="toast_premium_activated">प्रीमियम सक्रिय किया गया</string>
     <string name="settings_about_app">एप के बारे में</string>
     
+    <!-- Premium -->
+
     <!-- एप के बारे में -->
     <string name="about_app_title">एप के बारे में</string>
-    <string name="about_app_description">PNR TV Android TV प्लेटफॉर्म के लिए विशेष रूप से विकसित एक IPTV (इंटरनेट प्रोटोकॉल टेलीविज़न) एप्लिकेशन है। यह उपयोगकर्ताओं को लाइव स्ट्रीम, फिल्में और सीरीज़ देखने की अनुमति देता है।</string>
+    <string name="about_app_info_title">एप जानकारी</string>
+    <string name="about_app_name_label">एप नाम: PNR TV</string>
+    <string name="about_app_version_label">संस्करण: संस्करण %1$s (बिल्ड %2$d)</string>
+    <string name="about_app_version">संस्करण %1$s (बिल्ड %2$d)</string>
+    <string name="about_app_description">PNR TV - स्मार्ट मीडिया प्लेयर Android TV इंटरफेस के लिए विशेष रूप से अनुकूलित एक पेशेवर मीडिया प्लेयर एप्लिकेशन है। यह आपके वीडियो सामग्री के लिए एक सहज, सहज और सिनेमाई अनुभव प्रदान करता है, जिससे आप अपनी प्लेलिस्ट को आसानी से प्रबंधित और चला सकते हैं। PNR TV एक सामग्री प्रदाता नहीं है, बल्कि केवल एक प्लेयर है; इसलिए, यह किसी भी मीडिया सामग्री, TV चैनल या प्लेलिस्ट को होस्ट नहीं करता है।</string>
+    <string name="about_legal_title">महत्वपूर्ण कानूनी सूचना</string>
+    <string name="about_legal_no_content">कोई सामग्री प्रदान नहीं की गई: हमारा एप्लिकेशन किसी भी तृतीय-पक्ष IPTV प्रदाता से संबद्ध नहीं है और इसमें तैयार सामग्री नहीं है।</string>
+    <string name="about_legal_user_responsibility">उपयोगकर्ता जिम्मेदारी: उपयोगकर्ताओं को वैध सेवा प्रदाताओं से स्वयं देखना चाहने वाली सामग्री प्राप्त करनी चाहिए।</string>
+    <string name="about_legal_copyright">कॉपीराइट: PNR TV कॉपीराइट धारक की अनुमति के बिना कॉपीराइट सामग्री के प्रकाशन का समर्थन या अनुमोदन नहीं करता है।</string>
     <string name="about_features_title">विशेषताएं</string>
-    <string name="about_features">• फिल्में (VOD): फिल्म श्रेणियां, विवरण और प्लेबैक\n• सीरीज़: सीरीज़ श्रेणियां, सीज़न, एपिसोड और प्लेबैक\n• लाइव स्ट्रीम: लाइव TV चैनल और श्रेणियां\n• कई उपयोगकर्ता: कई IPTV खातों का प्रबंधन\n• दर्शक प्रोफाइल: प्रत्येक उपयोगकर्ता के लिए अलग दर्शक प्रोफाइल\n• पसंदीदा: पसंदीदा चैनल सहेजना\n• हाल ही में देखे गए: हाल ही में देखी गई सामग्री को ट्रैक करना\n• प्लेबैक फिर से शुरू करें: प्लेबैक स्थिति सहेजना</string>
+    <string name="about_features">लाइव स्ट्रीम: लाइव TV चैनलों और श्रेणियों के लिए पूर्ण समर्थन।\n\nफिल्में &amp; सीरीज़ (VOD): फिल्म श्रेणियां, सीज़न/एपिसोड विवरण और उच्च गुणवत्ता प्लेबैक।\n\nकई उपयोगकर्ता &amp; प्रोफाइल: कई मीडिया सेवा खातों का प्रबंधन करें और प्रत्येक उपयोगकर्ता के लिए अलग दर्शक प्रोफाइल बनाएं।\n\nस्मार्ट ट्रैकिंग: पसंदीदा सामग्री सहेजें, हाल ही में देखी गई सामग्री को ट्रैक करें, और प्लेबैक स्थिति सहेजकर जहां आपने छोड़ा था वहां से फिर से शुरू करें।</string>
+    <string name="about_premium_features_title">प्रीमियम लाभ</string>
+    <string name="about_premium_features">विज्ञापन-मुक्त अनुभव: पूरी तरह से अबाधित देखना।\n\nउन्नत नियंत्रण: वयस्क सामग्री नियंत्रण, स्मार्ट खोज और फ़िल्टरिंग विकल्प।\n\nप्रोफाइल प्रबंधन: व्यक्तिगत उपयोगकर्ता स्थितियां और दर्शक प्रोफाइल।</string>
     <string name="about_thanks_title">धन्यवाद</string>
-    <string name="about_thanks">The Movie Database (TMDB) - फिल्म और सीरीज़ डेटा के लिए\nAndroid TV Leanback Library - TV UI घटकों के लिए\nसभी ओपन सोर्स लाइब्रेरी डेवलपर्स</string>
+    <string name="about_thanks">डेटा प्रदाता: हम फिल्म और सीरीज़ डेटा के लिए The Movie Database (TMDB) प्लेटफॉर्म का धन्यवाद करते हैं।\n\nइंटरफेस: TV उपयोगकर्ता इंटरफेस घटकों के लिए Android TV Leanback Library का उपयोग किया जाता है।\n\nसमुदाय: हम सभी ओपन सोर्स लाइब्रेरी डेवलपर्स का उनके योगदान के लिए धन्यवाद करते हैं।</string>
     <string name="about_contact_title">संपर्क</string>
-    <string name="about_contact_message">सहयोग, प्रतिक्रिया और सुझावों के लिए, कृपया हमें ईमेल करें: tvpnrtv@gmail.com</string>
-    <string name="about_contact_email">tvpnrtv@gmail.com</string>
-    <string name="about_contact_email_subject">PNR TV - संपर्क</string>
+    <string name="about_contact_message">सहयोग, प्रतिक्रिया और सुझावों के लिए: tvpnrtv@gmail.com</string>
     <string name="dialog_select_language_title">भाषा चुनें</string>
     <string name="dialog_clear_cache_title">सभी डेटा साफ करें</string>
     <string name="dialog_clear_cache_message">सभी डेटा (उपयोगकर्ता, पसंदीदा, देखने का इतिहास, सामग्री, आदि) हटा दिया जाएगा और ऐप नए स्थापित की तरह खुलेगा। यह कार्रवाई पूर्ववत नहीं की जा सकती। क्या आप जारी रखना चाहते हैं?</string>
@@ -214,10 +203,10 @@
     <string name="player_subtitles_title">उपशीर्षक</string>
     <string name="player_audio_language_title">ऑडियो भाषा</string>
     <string name="player_subtitles_off">बंद</string>
+    <string name="channels">चैनल</string>
     
     <!-- एपिसोड और सीज़न -->
     <string name="episode_format">एपिसोड %1$d</string>
-    <string name="season_format">सीज़न %1$d</string>
     <string name="season_format_with_episodes">सीज़न %1$d (%2$d)</string>
     
     <!-- भाषाएं -->
@@ -228,6 +217,8 @@
     <string name="language_hindi">हिंदी</string>
     <string name="language_portuguese">पुर्तगाली</string>
     <string name="language_french">फ्रेंच</string>
+    <string name="language_japanese">जापानी</string>
+    <string name="language_thai">थाई</string>
     
     <!-- अतिरिक्त त्रुटि संदेश -->
     <string name="error_video_url_not_found">वीडियो URL नहीं मिला</string>
@@ -240,26 +231,19 @@
     <string name="save">सहेजें</string>
     
     <!-- वर्तमान उपयोगकर्ता उपसर्ग -->
-    <string name="current_user_prefix">वर्तमान उपयोगकर्ता:</string>
-    
+
     <!-- प्लेयर सामग्री विवरण -->
     <string name="cd_rewind">रिवाइंड</string>
     <string name="cd_play">चलाएं</string>
-    <string name="cd_pause">रोकें</string>
     <string name="cd_stop">रोकें</string>
     <string name="cd_fast_forward">फास्ट फॉरवर्ड</string>
     <string name="cd_subtitle">उपशीर्षक</string>
     <string name="cd_audio_track">ऑडियो भाषा</string>
     
     <!-- उपयोगकर्ता स्थिति संवाद उपसर्ग -->
-    <string name="status_prefix">स्थिति:</string>
-    <string name="expiry_date_prefix">समाप्ति तिथि:</string>
-    <string name="connection_prefix">कनेक्शन:</string>
-    <string name="trial_prefix">ट्रायल:</string>
-    
+
     <!-- ट्रैक चयन -->
-    <string name="track_language_turkish">तुर्की</string>
-    
+
     <!-- अज्ञात/डिफ़ॉल्ट मान -->
     <string name="unknown">अज्ञात</string>
     
@@ -288,5 +272,10 @@
     <string name="category_kids">बच्चे</string>
     <string name="category_tv_movie">टीवी मूवी</string>
     <string name="category_all">सभी</string>
+    
+    <!-- Resume Playback Dialog -->
+    <string name="dialog_resume_playback_title">प्लेबैक फिर से शुरू करें</string>
+    <string name="btn_resume_from_position">स्थिति से फिर से शुरू करें</string>
+    <string name="btn_start_from_beginning">शुरुआत से शुरू करें</string>
 </resources>
 
