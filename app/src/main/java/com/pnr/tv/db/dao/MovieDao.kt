@@ -20,10 +20,23 @@ interface MovieDao {
     fun getByCategoryId(categoryId: String): Flow<List<MovieEntity>>
 
     @Query("SELECT * FROM movies ORDER BY added DESC LIMIT :limit")
-    suspend fun getRecentlyAdded(limit: Int): List<MovieEntity>
+    fun getRecentlyAdded(limit: Int): Flow<List<MovieEntity>>
 
     @Query("SELECT * FROM movies WHERE streamId IN (:movieIds)")
     suspend fun getByIds(movieIds: List<Int>): List<MovieEntity>
+
+    /**
+     * Kategori ID'ye göre film sayısını döndürür (performans optimizasyonu için).
+     * Yetişkin içerik filtresi uygulanmaz, sadece kategori bazında sayım yapar.
+     * Room Map döndüremediği için data class kullanıyoruz.
+     */
+    data class CategoryCount(
+        val categoryId: String,
+        val count: Int,
+    )
+
+    @Query("SELECT categoryId, COUNT(*) as count FROM movies WHERE categoryId IS NOT NULL GROUP BY categoryId")
+    suspend fun getCategoryCounts(): List<CategoryCount>
 
     /**
      * TMDB ID'si olan tüm filmlerin streamId'lerini döndürür
@@ -33,6 +46,9 @@ interface MovieDao {
      */
     @Query("SELECT streamId FROM movies WHERE tmdbId IS NOT NULL")
     suspend fun getMovieIdsWithTmdb(): List<Int>
+
+    @Query("SELECT COUNT(*) FROM movies")
+    suspend fun getCount(): Int
 
     @Query("DELETE FROM movies")
     suspend fun clearAll()

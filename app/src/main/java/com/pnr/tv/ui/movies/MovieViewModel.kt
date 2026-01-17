@@ -2,21 +2,30 @@ package com.pnr.tv.ui.movies
 
 import android.content.Context
 import androidx.lifecycle.viewModelScope
-import com.pnr.tv.ContentConstants
+import com.pnr.tv.core.constants.ContentConstants
+import com.pnr.tv.core.constants.DatabaseConstants
 import com.pnr.tv.R
+import com.pnr.tv.core.constants.UIConstants
 import com.pnr.tv.db.entity.MovieCategoryEntity
 import com.pnr.tv.db.entity.MovieEntity
 import com.pnr.tv.model.CategoryItem
 import com.pnr.tv.model.ContentItem
 import com.pnr.tv.model.ContentType
 import com.pnr.tv.model.SortOrder
-import com.pnr.tv.repository.ContentRepository
+import com.pnr.tv.premium.PremiumManager
+import com.pnr.tv.repository.FavoriteRepository
+import com.pnr.tv.repository.MovieRepository
 import com.pnr.tv.repository.Result
 import com.pnr.tv.repository.ViewerRepository
-import com.pnr.tv.ui.base.BaseViewModel
-import com.pnr.tv.util.SortPreferenceManager
+import com.pnr.tv.core.base.BaseContentViewModel
+import com.pnr.tv.core.base.CategoryBuilder
+import com.pnr.tv.core.base.ContentFavoriteHandler
+import com.pnr.tv.util.validation.AdultContentPreferenceManager
+import com.pnr.tv.util.error.Resource
+import com.pnr.tv.util.ui.SortPreferenceManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -27,10 +36,11 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -42,21 +52,31 @@ import javax.inject.Inject
 class MovieViewModel
     @Inject
     constructor(
-        private val contentRepository: ContentRepository,
-        private val viewerRepository: ViewerRepository,
+        private val movieRepository: MovieRepository,
+        favoriteRepository: FavoriteRepository,
+        private val _viewerRepository: ViewerRepository,
         private val sortPreferenceManager: SortPreferenceManager,
+        private val _adultContentPreferenceManager: AdultContentPreferenceManager,
+        private val _premiumManager: PremiumManager,
+        private val _contentFavoriteHandler: ContentFavoriteHandler,
+        private val _categoryBuilder: CategoryBuilder,
         @ApplicationContext override val context: Context,
-    ) : BaseViewModel() {
+    ) : BaseContentViewModel() {
+        override val favoriteRepository: FavoriteRepository = favoriteRepository
+        override val contentFavoriteHandler: ContentFavoriteHandler = _contentFavoriteHandler
+        override val categoryBuilder: CategoryBuilder = _categoryBuilder
+        override val viewerRepository: ViewerRepository
+            get() = _viewerRepository
+        override val adultContentPreferenceManager: AdultContentPreferenceManager
+            get() = _adultContentPreferenceManager
+        override val premiumManager: PremiumManager
+            get() = _premiumManager
+
         companion object {
             // Sanal kategori ID'leri - Filmler için
             val VIRTUAL_CATEGORY_ID_FAVORITES_MOVIES = ContentConstants.VirtualCategoryIds.FAVORITES_STRING
             val VIRTUAL_CATEGORY_ID_RECENTLY_ADDED_MOVIES = ContentConstants.VirtualCategoryIds.RECENTLY_ADDED_STRING
-            val VIRTUAL_CATEGORY_ID_ALL_MOVIES = ContentConstants.VirtualCategoryIds.ALL_STRING
         }
-
-        private val favoriteIds: Flow<List<Int>> = contentRepository.getAllFavoriteChannelIds()
-
-        private fun getViewerCategoryId(viewerId: Int): String = "viewer_$viewerId"
 
         private val defaultViewerIdFlow: Flow<Int?> =
             viewerRepository.getAllViewers().map { viewers ->
@@ -64,59 +84,12 @@ class MovieViewModel
             }
 
         private val movieCategories: Flow<List<MovieCategoryEntity>> =
-            combine(
-                contentRepository.getMovieCategories(),
-                favoriteIds,
-                viewerRepository.getViewerIdsWithFavorites(),
-                viewerRepository.getAllViewers(),
-            ) { normalCategories, _, viewerIdsWithFavorites, allViewers ->
-                mutableListOf<MovieCategoryEntity>().apply {
-                    add(
-                        MovieCategoryEntity(
-                            VIRTUAL_CATEGORY_ID_RECENTLY_ADDED_MOVIES,
-                            context.getString(R.string.category_recently_added),
-                            ContentConstants.SortOrder.DEFAULT,
-                            ContentConstants.SortOrder.FAVORITES - 1,
-                        ),
-                    )
-
-                    val defaultViewer = allViewers.find { !it.isDeletable }
-                    val defaultViewerHasFavorites = defaultViewer?.let { it.id in viewerIdsWithFavorites } ?: false
-
-                    if (defaultViewerHasFavorites && defaultViewer != null) {
-                        add(
-                            MovieCategoryEntity(
-                                VIRTUAL_CATEGORY_ID_FAVORITES_MOVIES,
-                                context.getString(R.string.category_favorites),
-                                ContentConstants.SortOrder.DEFAULT,
-                                ContentConstants.SortOrder.FAVORITES,
-                            ),
-                        )
+            buildCategories().map { categories ->
+                categories.mapNotNull { category ->
+                    when (category) {
+                        is MovieCategoryEntity -> category
+                        else -> null
                     }
-
-                    viewerIdsWithFavorites.forEach { viewerId ->
-                        val viewer = allViewers.find { it.id == viewerId }
-                        if (viewer != null && viewer.isDeletable) {
-                            add(
-                                MovieCategoryEntity(
-                                    getViewerCategoryId(viewerId),
-                                    context.getString(R.string.category_viewer_favorites, viewer.name.uppercase()),
-                                    ContentConstants.SortOrder.DEFAULT,
-                                    ContentConstants.SortOrder.FAVORITES,
-                                ),
-                            )
-                        }
-                    }
-
-                    add(
-                        MovieCategoryEntity(
-                            VIRTUAL_CATEGORY_ID_ALL_MOVIES,
-                            context.getString(R.string.category_all_movies),
-                            ContentConstants.SortOrder.DEFAULT,
-                            ContentConstants.SortOrder.ALL,
-                        ),
-                    )
-                    addAll(normalCategories)
                 }
             }
 
@@ -131,125 +104,247 @@ class MovieViewModel
         private val _isMoviesLoading = MutableStateFlow(false)
         val isMoviesLoading: StateFlow<Boolean> = _isMoviesLoading.asStateFlow()
 
-        private val _moviesErrorMessage = MutableStateFlow<String?>(null)
-        val moviesErrorMessage: StateFlow<String?> = _moviesErrorMessage.asStateFlow()
-
-        @OptIn(ExperimentalCoroutinesApi::class)
-        private val movies: Flow<List<MovieEntity>> =
-            _selectedMovieCategoryId.asStateFlow().flatMapLatest { categoryId ->
-                val categoryIdString = categoryId as? String ?: VIRTUAL_CATEGORY_ID_ALL_MOVIES
-                Timber.tag("GRID_UPDATE").d("🎬 movies Flow tetiklendi: categoryId=$categoryIdString")
-                when (categoryIdString) {
-                    VIRTUAL_CATEGORY_ID_RECENTLY_ADDED_MOVIES ->
-                        flow {
-                            emit(contentRepository.getRecentlyAddedMovies(20))
-                        }
-                    VIRTUAL_CATEGORY_ID_FAVORITES_MOVIES ->
-                        defaultViewerIdFlow.flatMapLatest { defaultId ->
-                            if (defaultId != null) {
-                                contentRepository.getFavoriteChannelIds(defaultId).flatMapLatest { ids ->
-                                    flow {
-                                        emit(contentRepository.getMoviesByIds(ids))
-                                    }
-                                }
-                            } else {
-                                kotlinx.coroutines.flow.flowOf(emptyList())
-                            }
-                        }
-                    VIRTUAL_CATEGORY_ID_ALL_MOVIES -> contentRepository.getMovies()
-                    else -> {
-                        if (categoryIdString.startsWith("viewer_")) {
-                            val viewerId = categoryIdString.removePrefix("viewer_").toIntOrNull()
-                            if (viewerId != null) {
-                                contentRepository.getFavoriteChannelIds(viewerId).flatMapLatest { ids ->
-                                    flow {
-                                        emit(contentRepository.getMoviesByIds(ids))
-                                    }
-                                }
-                            } else {
-                                kotlinx.coroutines.flow.flowOf(emptyList())
-                            }
-                        } else {
-                            contentRepository.getMoviesByCategoryId(categoryIdString)
-                        }
-                    }
-                }
-            }
+        // Error message artık BaseViewModel'den geliyor
+        val moviesErrorMessage: StateFlow<String?> = errorMessage
 
         private val movieSortOrderFlow: Flow<SortOrder?> = sortPreferenceManager.getSortOrder(ContentType.MOVIES)
 
         // Search query için debounce'lu flow (sadece arama için gecikme)
         @OptIn(FlowPreview::class)
-        private val debouncedMovieSearchQuery: Flow<String> = _movieSearchQuery.asStateFlow().debounce(500)
+        private val debouncedMovieSearchQuery: Flow<String> =
+            _movieSearchQuery.asStateFlow().debounce(
+                UIConstants.DelayDurations.SEARCH_DEBOUNCE_MS,
+            )
+
+        // Önceki veriyi korumak için StateFlow
+        private val _previousMovies = MutableStateFlow<List<MovieEntity>>(emptyList())
+
+        // Arama yapıldığında tüm filmleri, yapılmadığında seçili kategorideki filmleri getir
+        @OptIn(ExperimentalCoroutinesApi::class)
+        private val moviesWithSearch: Flow<List<MovieEntity>> =
+            combine(
+                debouncedMovieSearchQuery.onStart { emit("") },
+                _selectedMovieCategoryId.asStateFlow(),
+            ) { query, categoryId ->
+                // Arama yapılıyorsa (3+ karakter), tüm filmleri al
+                if (query.length >= 3) {
+                    Pair(true, query)
+                } else {
+                    // Arama yapılmıyorsa, seçili kategorideki filmleri al
+                    Pair(false, categoryId as? String)
+                }
+            }.flatMapLatest { (isSearch, value) ->
+                if (isSearch) {
+                    // Arama modu: Tüm filmleri al
+                    movieRepository.getMovies().map { resource ->
+                        when (resource) {
+                            is Resource.Loading -> {
+                                _isMoviesLoading.value = true
+                                emptyList<MovieEntity>()
+                            }
+                            is Resource.Success -> {
+                                _isMoviesLoading.value = false
+                                clearError()
+                                _previousMovies.value = resource.data
+                                resource.data
+                            }
+                            is Resource.Error -> {
+                                _isMoviesLoading.value = false
+                                handleResourceError(resource)
+                                _previousMovies.value
+                            }
+                        }
+                    }
+                } else {
+                    // Normal mod: Seçili kategorideki filmleri al
+                    @Suppress("UNCHECKED_CAST")
+                    val categoryIdString = value as? String
+                    if (categoryIdString == null) {
+                        kotlinx.coroutines.flow.flowOf(_previousMovies.value)
+                    } else {
+                        when (categoryIdString) {
+                            VIRTUAL_CATEGORY_ID_RECENTLY_ADDED_MOVIES ->
+                                movieRepository.getRecentlyAddedMovies(DatabaseConstants.RECENTLY_ADDED_LIMIT)
+                                    .onEach { movies ->
+                                        _previousMovies.value = movies
+                                    }
+                            VIRTUAL_CATEGORY_ID_FAVORITES_MOVIES ->
+                                defaultViewerIdFlow.flatMapLatest { defaultId ->
+                                    if (defaultId != null) {
+                                        favoriteRepository.getFavoriteChannelIds(defaultId).flatMapLatest { ids ->
+                                            flow {
+                                                val movies = movieRepository.getMoviesByIds(ids)
+                                                _previousMovies.value = movies
+                                                emit(movies)
+                                            }
+                                        }
+                                    } else {
+                                        kotlinx.coroutines.flow.flowOf(_previousMovies.value)
+                                    }
+                                }
+                            else -> {
+                                if (categoryIdString.startsWith("viewer_")) {
+                                    val viewerId = categoryIdString.removePrefix("viewer_").toIntOrNull()
+                                    if (viewerId != null) {
+                                        favoriteRepository.getFavoriteChannelIds(viewerId).flatMapLatest { ids ->
+                                            flow {
+                                                val movies = movieRepository.getMoviesByIds(ids)
+                                                _previousMovies.value = movies
+                                                emit(movies)
+                                            }
+                                        }
+                                    } else {
+                                        kotlinx.coroutines.flow.flowOf(_previousMovies.value)
+                                    }
+                                } else {
+                                    movieRepository.getMoviesByCategoryId(categoryIdString).map { resource ->
+                                        when (resource) {
+                                            is Resource.Loading -> {
+                                                _isMoviesLoading.value = true
+                                                emptyList<MovieEntity>()
+                                            }
+                                            is Resource.Success -> {
+                                                _isMoviesLoading.value = false
+                                                clearError()
+                                                _previousMovies.value = resource.data
+                                                resource.data
+                                            }
+                                            is Resource.Error -> {
+                                                _isMoviesLoading.value = false
+                                                handleResourceError(resource)
+                                                _previousMovies.value
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
         // Kategori ve sort değişiklikleri anında yansısın, sadece search query debounce olsun
         val moviesFlow: Flow<List<ContentItem>> =
             combine(
-                movies.onStart { emit(emptyList()) }, // Başlangıç değeri - combine için gerekli
+                moviesWithSearch.onStart { emit(emptyList()) }, // Başlangıç değeri - combine için gerekli
                 movieSortOrderFlow.onStart { emit(null) }, // Başlangıç değeri
                 debouncedMovieSearchQuery.onStart { emit("") }, // Başlangıç değeri
-            ) { items, sortOrder, query ->
+                adultContentPreferenceManager.isAdultContentEnabled().onStart { emit(false) }, // Başlangıç değeri
+            ) { items, sortOrder, query, adultContentEnabled ->
                 val combineStartTime = System.currentTimeMillis()
-                Timber.tag("GRID_UPDATE").d("🔄 moviesFlow combine: items=${items.size}, sort=$sortOrder, query='$query'")
+
                 val sortedItems = applySorting(items, sortOrder)
-                val filteredItems = applySearchFilter(sortedItems, query)
+                val searchFilteredItems = applySearchFilter(sortedItems, query)
+                val adultFilteredItems = applyAdultContentFilter(searchFilteredItems, adultContentEnabled)
                 val combineTime = System.currentTimeMillis() - combineStartTime
-                Timber.tag("GRID_UPDATE").d("✅ moviesFlow sonuç: ${filteredItems.size} item (combine süresi: ${combineTime}ms)")
-                filteredItems
-            }
+                adultFilteredItems
+            }.flowOn(Dispatchers.Default)
 
         init {
-            // İlk kategoriyi seç
-            _selectedMovieCategoryId.value = VIRTUAL_CATEGORY_ID_ALL_MOVIES
+            // Kategori seçimi fragment'ta yapılacak (ilk kategori otomatik seçilecek)
+            _selectedMovieCategoryId.value = null
+            // Verileri ViewModel oluşturulur oluşturulmaz yükle
+            loadMovies()
         }
 
         /**
-         * Filmleri yükler (eğer daha önce yüklenmemişse).
-         * Ana sayfada zaten yüklenmişse, tekrar yüklemez.
+         * Filmleri yükler.
+         * Veriler yalnızca bir kez (ViewModel ilk oluşturulduğunda) yüklenir.
          */
-        fun loadMoviesIfNeeded() {
-            viewModelScope.launch {
-                _moviesErrorMessage.value = null
-                
-                // Önce veritabanında veri olup olmadığını kontrol et
-                val hasData = contentRepository.hasMovies()
-                val hasCategories = contentRepository.hasMovieCategories()
-                
-                if (hasData && hasCategories) {
-                    // Veri zaten var, yükleme yapma
-                    Timber.d("🎬 Filmler zaten yüklü, tekrar yükleme atlanıyor")
-                    _isMoviesLoading.value = false
-                    return@launch
-                }
-                
-                // Veri yok, yükleme yap
-                _isMoviesLoading.value = true
-                Timber.d("🎬 Filmler yükleniyor (veri yok veya eksik)")
+        private fun loadMovies() {
+            loadContentIfNeeded()
+        }
 
-                try {
-                    val categoriesResult = contentRepository.refreshMovieCategories()
-                    if (categoriesResult is Result.Error) {
-                        _moviesErrorMessage.value = context.getString(R.string.error_categories_short)
-                        _isMoviesLoading.value = false
-                        return@launch
+        override val logTag: String = "🎬"
+
+        override val isLoading: MutableStateFlow<Boolean> = _isMoviesLoading
+
+        // Error message artık BaseViewModel'den geliyor, override gerekmiyor
+        override val contentLoadErrorStringId: Int = R.string.error_movies_load_failed
+        override val errorContext: String = "MovieViewModel"
+        override val virtualCategoryIdFavorites: String = VIRTUAL_CATEGORY_ID_FAVORITES_MOVIES
+        override val virtualCategoryIdRecentlyAdded: String = VIRTUAL_CATEGORY_ID_RECENTLY_ADDED_MOVIES
+
+        override suspend fun refreshCategories(): Result<Unit> {
+            return movieRepository.refreshMovieCategories()
+        }
+
+        override suspend fun hasData(): Boolean {
+            return movieRepository.hasMovies()
+        }
+
+        override suspend fun refreshContent(): Result<Unit> {
+            return movieRepository.refreshMovies()
+        }
+
+        override fun getNormalCategories(): Flow<List<CategoryItem>> {
+            return movieRepository.getMovieCategories().map { resource ->
+                when (resource) {
+                    is Resource.Loading -> emptyList()
+                    is Resource.Success -> {
+                        clearError()
+                        resource.data
                     }
-                    val moviesResult = contentRepository.refreshMovies()
-                    if (moviesResult is Result.Error) {
-                        _moviesErrorMessage.value = context.getString(R.string.error_movies_short)
+                    is Resource.Error -> {
+                        handleResourceError(resource)
+                        emptyList()
                     }
-                } catch (e: Exception) {
-                    _moviesErrorMessage.value = context.getString(R.string.error_unknown)
-                } finally {
-                    _isMoviesLoading.value = false
                 }
             }
+        }
+
+        override fun getAllContent(): Flow<List<ContentItem>> {
+            return movieRepository.getMovies().map { resource ->
+                when (resource) {
+                    is Resource.Loading -> emptyList()
+                    is Resource.Success -> {
+                        clearError()
+                        resource.data
+                    }
+                    is Resource.Error -> {
+                        handleResourceError(resource)
+                        emptyList()
+                    }
+                }
+            }
+        }
+
+        override suspend fun getCategoryCounts(): Map<String, Int> {
+            return movieRepository.getCategoryCounts()
+        }
+
+        override fun ContentItem.isAdultContent(): Boolean {
+            return when (this) {
+                is MovieEntity -> this.isAdult == true
+                else -> false
+            }
+        }
+
+        override fun ContentItem.getCategoryId(): String? {
+            return when (this) {
+                is MovieEntity -> this.categoryId
+                else -> null
+            }
+        }
+
+        override fun createVirtualCategoryEntity(
+            categoryId: String,
+            categoryName: String,
+            parentId: Int,
+            sortOrder: Int,
+        ): CategoryItem {
+            return MovieCategoryEntity(
+                categoryId = categoryId,
+                categoryName = categoryName,
+                parentId = parentId,
+                sortOrder = sortOrder,
+            )
         }
 
         /**
          * Kategori seçer (Filmler için).
          */
         fun selectMovieCategory(categoryId: Any) {
-            Timber.tag("GRID_UPDATE").d("🎬 selectMovieCategory: $categoryId")
             _selectedMovieCategoryId.value = categoryId
         }
 
@@ -260,10 +355,7 @@ class MovieViewModel
             contentId: Int,
             viewerId: Int,
         ) {
-            viewModelScope.launch {
-                contentRepository.addFavorite(contentId, viewerId)
-                showToast(context.getString(R.string.toast_favorite_added))
-            }
+            addFavorite(contentId, viewerId)
         }
 
         /**
@@ -273,10 +365,7 @@ class MovieViewModel
             contentId: Int,
             viewerId: Int,
         ) {
-            viewModelScope.launch {
-                contentRepository.removeFavorite(contentId, viewerId)
-                showToast(context.getString(R.string.toast_favorite_removed))
-            }
+            removeFavorite(contentId, viewerId)
         }
 
         /**
@@ -285,7 +374,7 @@ class MovieViewModel
         fun isMovieFavorite(
             contentId: Int,
             viewerId: Int,
-        ): Flow<Boolean> = contentRepository.isFavorite(contentId, viewerId)
+        ): Flow<Boolean> = isFavorite(contentId, viewerId)
 
         /**
          * Film arama sorgusunu günceller.
@@ -307,66 +396,4 @@ class MovieViewModel
          * Mevcut film sıralama tercihini döndürür.
          */
         fun getCurrentMovieSortOrder(): Flow<SortOrder?> = movieSortOrderFlow
-
-        // ==================== Helper Functions ====================
-
-        /**
-         * İçerik listesine arama filtresi uygular.
-         */
-        private fun applySearchFilter(
-            items: List<ContentItem>,
-            query: String,
-        ): List<ContentItem> {
-            if (query.length < 3) {
-                return items
-            }
-
-            val lowerQuery = query.lowercase()
-            return items.filter { item ->
-                item.title.lowercase().contains(lowerQuery)
-            }
-        }
-
-        /**
-         * İçerik listesine sıralama uygular.
-         */
-        private fun applySorting(
-            items: List<ContentItem>,
-            sortOrder: SortOrder?,
-        ): List<ContentItem> {
-            if (sortOrder == null) return items
-
-            return when (sortOrder) {
-                SortOrder.A_TO_Z -> items.sortedBy { it.title.lowercase() }
-                SortOrder.Z_TO_A -> items.sortedByDescending { it.title.lowercase() }
-                SortOrder.RATING_HIGH_TO_LOW ->
-                    items.sortedByDescending { item ->
-                        when (item) {
-                            is MovieEntity -> item.rating ?: 0.0
-                            else -> 0.0
-                        }
-                    }
-                SortOrder.RATING_LOW_TO_HIGH ->
-                    items.sortedBy { item ->
-                        when (item) {
-                            is MovieEntity -> item.rating ?: Double.MAX_VALUE
-                            else -> Double.MAX_VALUE
-                        }
-                    }
-                SortOrder.DATE_NEW_TO_OLD ->
-                    items.sortedByDescending { item ->
-                        when (item) {
-                            is MovieEntity -> item.added
-                            else -> null
-                        }?.toLongOrNull() ?: 0L
-                    }
-                SortOrder.DATE_OLD_TO_NEW ->
-                    items.sortedBy { item ->
-                        when (item) {
-                            is MovieEntity -> item.added
-                            else -> null
-                        }?.toLongOrNull() ?: Long.MAX_VALUE
-                    }
-            }
-        }
     }

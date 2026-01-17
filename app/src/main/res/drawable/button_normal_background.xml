@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Normal (odaklanmamış) buton arka planı -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="8dp" />
+    <solid android:color="#1AFFFFFF" />  <!-- Hafif şeffaf beyaz arka plan -->
+</shape>
+
+
+
+
+
+
+

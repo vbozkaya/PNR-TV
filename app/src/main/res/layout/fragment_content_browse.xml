@@ -27,8 +27,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintWidth_percent="0.208">
 
-        <com.pnr.tv.ui.base.CustomCategoriesRecyclerView
-            android:id="@+id/recycler_categories"
+        <com.pnr.tv.core.base.CustomCategoriesRecyclerView
+            android:id="@+id/categories_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:paddingStart="16dp"
@@ -39,7 +39,9 @@
             android:clipToPadding="false"
             android:focusable="false"
             android:focusableInTouchMode="false"
-            android:descendantFocusability="beforeDescendants" />
+            android:descendantFocusability="beforeDescendants"
+            android:nextFocusRight="@+id/recycler_content"
+            android:nextFocusUp="@+id/categories_recycler_view" />
 
     </FrameLayout>
 
@@ -54,7 +56,7 @@
         app:layout_constraintBottom_toBottomOf="parent" />
 
     <!-- Sağ taraf: İçerik alanı (ekranın 5/6'sı) -->
-    <com.pnr.tv.ui.base.CustomContentRecyclerView
+    <com.pnr.tv.core.base.CustomContentRecyclerView
         android:id="@+id/recycler_content"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -64,6 +66,8 @@
         android:focusable="false"
         android:focusableInTouchMode="false"
         android:descendantFocusability="beforeDescendants"
+        android:nextFocusLeft="@+id/categories_recycler_view"
+        android:nextFocusUp="@+id/categories_recycler_view"
         app:layout_constraintStart_toEndOf="@id/divider"
         app:layout_constraintTop_toBottomOf="@id/navbar"
         app:layout_constraintEnd_toEndOf="parent"

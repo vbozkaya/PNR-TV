@@ -12,6 +12,10 @@ data class TmdbMovieDetailsDto(
     @Json(name = "title") val title: String?,
     @Json(name = "overview") val overview: String?,
     @Json(name = "original_language") val originalLanguage: String?,
+    @Json(name = "poster_path") val posterPath: String?,
+    @Json(name = "backdrop_path") val backdropPath: String?,
+    @Json(name = "vote_average") val voteAverage: Double?,
+    @Json(name = "vote_count") val voteCount: Int?,
     @Json(name = "genres") val genres: List<TmdbGenreDto>?,
     @Json(name = "credits") val credits: TmdbCreditsDto?,
 )

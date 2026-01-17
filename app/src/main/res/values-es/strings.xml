@@ -94,7 +94,7 @@
     <string name="error_with_message">Error: %1$s</string>
     <string name="error_user_not_found">Información de usuario no encontrada o falta información DNS</string>
     <string name="error_network_connection">Error de conexión de red</string>
-    <string name="error_network_generic">Error de red: %1$d %2$s</string>
+    <string name="error_network_generic">Error de red (Código: %1$d). Por favor, inténtelo de nuevo.</string>
     <string name="error_unexpected">Error inesperado: %1$s</string>
     
     <!-- Mensajes de Error de Actualización de Pantalla Principal -->
@@ -277,5 +277,29 @@
     <string name="dialog_resume_playback_title">Reanudar Reproducción</string>
     <string name="btn_resume_from_position">Reanudar desde Posición</string>
     <string name="btn_start_from_beginning">Empezar desde el Principio</string>
+    
+    <!-- Error Messages - Intent Validation -->
+    <string name="error_invalid_intent_data">Datos de intent no válidos</string>
+    
+    <!-- Rating Format -->
+    <string name="rating_format">%1$.1f / 10</string>
+    
+    <!-- Billing Error Messages -->
+    <string name="error_billing_product_not_found">Error: Producto no encontrado (%1$s). Por favor, verifique la configuración de Prueba de Licencia de Play Console.</string>
+    <string name="error_billing_unavailable">Google Play Services no está disponible o no está actualizado</string>
+    <string name="error_billing_service_unavailable">Google Play Services no está disponible temporalmente</string>
+    <string name="error_billing_item_not_owned">Producto no encontrado. Asegúrese de que el producto esté activo en Google Play Console.</string>
+    <string name="error_billing_product_details_failed">No se pudieron recuperar los detalles del producto: %1$s</string>
+    
+    <!-- User Status Placeholder -->
+    <string name="user_status_not_available">-</string>
+    
+    <!-- Connection Format -->
+    <string name="connection_format">%1$s/%2$s</string>
+    
+    <!-- Player Loading Messages -->
+    <string name="player_loading_preparing">Preparando contenido...</string>
+    <string name="player_loading_fetching_url">Obteniendo dirección del canal...</string>
+    <string name="player_loading_buffering">Cargando transmisión...</string>
 </resources>
 

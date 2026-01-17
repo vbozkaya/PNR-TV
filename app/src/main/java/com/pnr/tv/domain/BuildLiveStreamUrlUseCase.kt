@@ -7,6 +7,7 @@ import com.pnr.tv.repository.UserRepository
 import com.pnr.tv.security.DataEncryption
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.firstOrNull
+import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -27,15 +28,34 @@ class BuildLiveStreamUrlUseCase
          * @return Stream URL'si, kullanıcı bilgisi yoksa null
          */
         suspend operator fun invoke(channel: LiveStreamEntity): String? {
-            val user = userRepository.currentUser.firstOrNull() ?: return null
+            val user = userRepository.currentUser.firstOrNull()
+            if (user == null) {
+                Timber.w("❌ BuildLiveStreamUrlUseCase: Kullanıcı seçili değil - channelId=${channel.streamId}")
+                return null
+            }
 
-            // DNS ve password'ü şifre çöz
-            val decryptedDns = DataEncryption.decryptSensitiveData(user.dns, context)
-            val decryptedPassword = DataEncryption.decryptSensitiveData(user.password, context)
+            try {
+                // DNS ve password'ü şifre çöz
+                val decryptedDns = DataEncryption.decryptSensitiveData(user.dns, context)
+                val decryptedPassword = DataEncryption.decryptSensitiveData(user.password, context)
 
-            val baseUrl = decryptedDns.normalizeBaseUrl()
+                if (decryptedDns.isBlank()) {
+                    Timber.w("❌ BuildLiveStreamUrlUseCase: DNS boş - channelId=${channel.streamId}, username=${user.username}")
+                    return null
+                }
 
-            // IPTV stream URL formatı: {baseUrl}/live/{username}/{password}/{streamId}.ts
-            return "$baseUrl/live/${user.username}/$decryptedPassword/${channel.streamId}.ts"
+                val baseUrl = decryptedDns.normalizeBaseUrl()
+
+                // IPTV stream URL formatı: {baseUrl}/live/{username}/{password}/{streamId}.ts
+                val url = "$baseUrl/live/${user.username}/$decryptedPassword/${channel.streamId}.ts"
+                Timber.d("✅ BuildLiveStreamUrlUseCase: URL oluşturuldu - channelId=${channel.streamId}, url=$url")
+                return url
+            } catch (e: Exception) {
+                Timber.e(
+                    e,
+                    "❌ BuildLiveStreamUrlUseCase: URL oluşturulurken hata - channelId=${channel.streamId}, username=${user.username}",
+                )
+                return null
+            }
         }
     }

@@ -11,15 +11,129 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/layoutCurrentUser"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="32dp"
+            android:background="@drawable/bg_current_user_info"
+            android:orientation="vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:focusable="false"
+            android:clickable="false"
+            android:importantForAccessibility="no"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/tvCurrentUser"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/current_user_none"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/btn_exit"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="32dp"
+            android:contentDescription="@string/btn_exit"
+            android:src="@drawable/logout_box_line"
+            android:background="@drawable/focus_border_selector"
+            android:padding="10dp"
+            android:focusable="true"
+            android:clickable="true"
+            android:focusableInTouchMode="true"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <ImageView
+            android:id="@+id/btn_settings"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="16dp"
+            android:contentDescription="@string/page_settings"
+            android:src="@drawable/ic_settings"
+            android:background="@drawable/focus_border_selector"
+            android:padding="10dp"
+            android:focusable="true"
+            android:clickable="true"
+            android:focusableInTouchMode="true"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btn_exit" />
+
+        <ImageView
+            android:id="@+id/btn_users"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="16dp"
+            android:contentDescription="@string/page_user_management"
+            android:src="@drawable/ic_users"
+            android:background="@drawable/focus_border_selector"
+            android:padding="10dp"
+            android:focusable="true"
+            android:clickable="true"
+            android:focusableInTouchMode="true"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btn_settings" />
+
+        <ImageView
+            android:id="@+id/btnUpdate"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="16dp"
+            android:contentDescription="@string/btn_update"
+            android:src="@drawable/refresh_line"
+            android:background="@drawable/focus_border_selector"
+            android:padding="10dp"
+            android:focusable="true"
+            android:clickable="true"
+            android:focusableInTouchMode="true"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btn_users" />
+
+        <!-- Banner Ad - Alt kısımda gösterilir, premium kullanıcılar için gizlenir -->
+        <com.google.android.gms.ads.AdView
+            android:id="@+id/ad_view_banner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            app:adUnitId="ca-app-pub-3940256099942544/6300978111"
+            app:adSize="BANNER"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <!-- Loading Overlay -->
     <FrameLayout
-        android:id="@+id/loading_overlay"
+        android:id="@+id/loadingOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#80000000"
         android:visibility="gone"
         android:clickable="true"
         android:focusable="true"
+        android:focusableInTouchMode="true"
         tools:visibility="visible">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -31,7 +145,6 @@
             android:clipToOutline="true">
 
             <com.airbnb.lottie.LottieAnimationView
-                android:id="@+id/lottie_animation_view"
                 android:layout_width="120dp"
                 android:layout_height="120dp"
                 android:visibility="gone"
@@ -57,6 +170,22 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/txt_added_content"
+                />
+
+            <TextView
+                android:id="@+id/txt_added_content"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:gravity="center"
+                android:visibility="gone"
+                android:minHeight="40dp"
+                app:layout_constraintTop_toBottomOf="@+id/txt_loading_message"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toTopOf="@+id/btn_retry_error"
                 />
 
@@ -70,7 +199,7 @@
                 android:paddingEnd="32dp"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
-                android:background="@drawable/second_focus_selector"
+                android:background="@drawable/focus_border_selector"
                 android:focusable="true"
                 android:clickable="true"
                 android:focusableInTouchMode="true"
@@ -83,102 +212,4 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </FrameLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <LinearLayout
-            android:id="@+id/layout_current_user"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="32dp"
-            android:background="@drawable/bg_current_user_info"
-            android:orientation="vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:focusable="false"
-            android:clickable="false"
-            android:importantForAccessibility="no"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <TextView
-                android:id="@+id/tv_current_user"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/current_user_none"
-                android:textColor="@android:color/white"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <ImageView
-            android:id="@+id/btn_exit"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:layout_marginTop="32dp"
-            android:layout_marginEnd="32dp"
-            android:contentDescription="@string/btn_exit"
-            android:src="@drawable/logout_box_line"
-            android:background="@drawable/second_focus_selector"
-            android:padding="10dp"
-            android:focusable="true"
-            android:clickable="true"
-            android:focusableInTouchMode="true"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <ImageView
-            android:id="@+id/btn_settings"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:layout_marginTop="32dp"
-            android:layout_marginEnd="16dp"
-            android:contentDescription="@string/page_settings"
-            android:src="@drawable/ic_settings"
-            android:background="@drawable/second_focus_selector"
-            android:padding="10dp"
-            android:focusable="true"
-            android:clickable="true"
-            android:focusableInTouchMode="true"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/btn_exit" />
-
-        <ImageView
-            android:id="@+id/btn_users"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:layout_marginTop="32dp"
-            android:layout_marginEnd="16dp"
-            android:contentDescription="@string/page_user_management"
-            android:src="@drawable/ic_users"
-            android:background="@drawable/second_focus_selector"
-            android:padding="10dp"
-            android:focusable="true"
-            android:clickable="true"
-            android:focusableInTouchMode="true"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/btn_settings" />
-
-        <ImageView
-            android:id="@+id/btn_update"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:layout_marginTop="32dp"
-            android:layout_marginEnd="16dp"
-            android:contentDescription="@string/btn_update"
-            android:src="@drawable/refresh_line"
-            android:background="@drawable/second_focus_selector"
-            android:padding="10dp"
-            android:focusable="true"
-            android:clickable="true"
-            android:focusableInTouchMode="true"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/btn_users" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

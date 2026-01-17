@@ -19,4 +19,7 @@ data class TmdbSearchMovieDto(
     @Json(name = "id") val id: Int?,
     @Json(name = "title") val title: String?,
     @Json(name = "original_title") val originalTitle: String?,
+    @Json(name = "poster_path") val posterPath: String?,
+    @Json(name = "backdrop_path") val backdropPath: String?,
+    @Json(name = "vote_average") val voteAverage: Double?,
 )

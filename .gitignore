@@ -91,3 +91,5 @@ lint/tmp/
 
 
 
+.aider*
+.env

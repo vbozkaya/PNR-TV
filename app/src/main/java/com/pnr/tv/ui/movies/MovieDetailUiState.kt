@@ -29,6 +29,8 @@ sealed class MovieDetailUiState {
      * @param genre Film türü (TMDB'den - örn: "Action, Sci-Fi")
      * @param cast Oyuncular listesi (TMDB veya cache'den)
      * @param overview Film açıklaması (TMDB veya orijinal)
+     * @param posterUrl TMDB'den gelen poster görsel URL'i (nullable)
+     * @param rating TMDB'den gelen rating (0-10 arası, nullable)
      */
     data class Success(
         val movie: MovieEntity,
@@ -37,6 +39,8 @@ sealed class MovieDetailUiState {
         val genre: String?,
         val cast: String?,
         val overview: String?,
+        val posterUrl: String? = null,
+        val rating: Double? = null,
     ) : MovieDetailUiState()
 
     /**

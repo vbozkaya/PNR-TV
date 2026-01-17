@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kontrol bar için yarı saydam siyah arka plan - beyaz ekranlarda görünürlük için -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#CC000000" />
+</shape>
+

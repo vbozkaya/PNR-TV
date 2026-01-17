@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="550dp"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    app:cardCornerRadius="16dp"
+    app:cardBackgroundColor="#F21A1A1A"
+    app:cardElevation="8dp"
+    app:cardUseCompatPadding="false">
+    
+    <!-- İçerik container'ı -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="32dp">
+        
+        <!-- Başlık -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/dialog_resume_playback_title"
+            android:textSize="22sp"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="24dp" />
+        
+        <!-- Butonlar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:weightSum="2">
+            
+            <Button
+                android:id="@+id/btnResumeFromPosition"
+                android:layout_width="0dp"
+                android:layout_height="80dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="@string/btn_resume_from_position"
+                android:gravity="center"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:background="@drawable/navyfocus_selector"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:focusable="true"
+                android:clickable="true"
+                android:focusableInTouchMode="true" />
+            
+            <Button
+                android:id="@+id/btnStartFromBeginning"
+                android:layout_width="0dp"
+                android:layout_height="80dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="@string/btn_start_from_beginning"
+                android:gravity="center"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:background="@drawable/second_focus_selector"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:focusable="true"
+                android:clickable="true"
+                android:focusableInTouchMode="true" />
+            
+        </LinearLayout>
+        
+    </LinearLayout>
+    
+</androidx.cardview.widget.CardView>
+

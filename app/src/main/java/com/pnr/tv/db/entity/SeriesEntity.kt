@@ -1,10 +1,14 @@
 package com.pnr.tv.db.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.pnr.tv.model.ContentItem
 
-@Entity(tableName = "series")
+@Entity(
+    tableName = "series",
+    indices = [Index(value = ["categoryId"])],
+)
 data class SeriesEntity(
     @PrimaryKey val streamId: Int,
     val name: String?,
@@ -15,6 +19,7 @@ data class SeriesEntity(
     val categoryId: String?, // Added categoryId
     val added: String?,
     val tmdbId: Int?, // TMDB dizi ID'si
+    val isAdult: Boolean? = null, // Yetişkin içerik işareti
 ) : ContentItem {
     override val id: Int get() = streamId
     override val title: String get() = name ?: ""

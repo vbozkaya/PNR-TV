@@ -10,7 +10,6 @@
     android:minWidth="150dp">
 
     <LinearLayout
-        android:id="@+id/user_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_user_card"
@@ -25,14 +24,14 @@
         android:clickable="true">
 
         <ImageView
-            android:id="@+id/iv_user_icon"
+            android:id="@+id/ivUserIcon"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:contentDescription="@string/page_users_list"
             android:src="@drawable/ic_current_users" />
 
         <TextView
-            android:id="@+id/tv_account_label"
+            android:id="@+id/tvAccountLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -41,7 +40,7 @@
             android:textSize="14sp" />
 
         <TextView
-            android:id="@+id/tv_account_value"
+            android:id="@+id/tvAccountValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
@@ -51,7 +50,6 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/actions_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -60,7 +58,7 @@
         android:paddingBottom="4dp">
 
         <ImageButton
-            android:id="@+id/btn_select_user"
+            android:id="@+id/btnSelectUser"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:background="@drawable/bg_icon_focus"
@@ -72,7 +70,7 @@
             app:tint="@android:color/white" />
 
         <ImageButton
-            android:id="@+id/btn_edit_user"
+            android:id="@+id/btnEditUser"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:layout_marginStart="12dp"
@@ -85,7 +83,7 @@
             app:tint="@android:color/white" />
 
         <ImageButton
-            android:id="@+id/btn_delete_user"
+            android:id="@+id/btnDeleteUser"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:layout_marginStart="12dp"

@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.pnr.tv.R
 import com.pnr.tv.db.entity.ViewerEntity
 import com.pnr.tv.repository.ViewerRepository
-import com.pnr.tv.ui.base.BaseViewModel
+import com.pnr.tv.core.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow

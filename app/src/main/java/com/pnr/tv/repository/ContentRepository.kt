@@ -1,7 +1,9 @@
 package com.pnr.tv.repository
 
 import android.content.Context
-import com.pnr.tv.DatabaseConstants
+import com.pnr.tv.core.constants.DatabaseConstants
+import com.pnr.tv.ui.main.SessionManager
+import com.pnr.tv.db.dao.WatchedEpisodeDao
 import com.pnr.tv.db.entity.LiveStreamCategoryEntity
 import com.pnr.tv.db.entity.LiveStreamEntity
 import com.pnr.tv.db.entity.MovieCategoryEntity
@@ -9,9 +11,11 @@ import com.pnr.tv.db.entity.MovieEntity
 import com.pnr.tv.db.entity.PlaybackPositionEntity
 import com.pnr.tv.db.entity.SeriesCategoryEntity
 import com.pnr.tv.db.entity.SeriesEntity
+import com.pnr.tv.db.entity.WatchedEpisodeEntity
 import com.pnr.tv.di.IptvRetrofit
 import com.pnr.tv.network.dto.AuthenticationResponseDto
 import com.pnr.tv.network.dto.SeriesInfoDto
+import com.pnr.tv.util.error.Resource
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
@@ -37,23 +41,29 @@ class ContentRepository
         private val favoriteRepository: FavoriteRepository,
         private val recentlyWatchedRepository: RecentlyWatchedRepository,
         private val playbackPositionRepository: PlaybackPositionRepository,
-        @IptvRetrofit private val retrofitBuilder: Retrofit.Builder,
+        private val watchedEpisodeDao: WatchedEpisodeDao,
+        private val sessionManager: SessionManager,
+        private val apiServiceManager: ApiServiceManager,
         private val userRepository: UserRepository,
         @ApplicationContext private val context: Context,
     ) {
         // BaseContentRepository'yi composition olarak kullan
         // fetchUserInfo için safeApiCall metoduna ihtiyacımız var
-        private val baseRepository = BaseContentRepository(retrofitBuilder, userRepository, context)
+        private val baseRepository = BaseContentRepository(
+            apiServiceManager = apiServiceManager,
+            userRepository = userRepository,
+            context = context,
+        )
 
         // ==================== Movie Operations ====================
 
-        fun getMovies(): Flow<List<MovieEntity>> = movieRepository.getMovies()
+        fun getMovies(): Flow<Resource<List<MovieEntity>>> = movieRepository.getMovies()
 
-        fun getMoviesByCategoryId(categoryId: String): Flow<List<MovieEntity>> = movieRepository.getMoviesByCategoryId(categoryId)
+        fun getMoviesByCategoryId(categoryId: String): Flow<Resource<List<MovieEntity>>> = movieRepository.getMoviesByCategoryId(categoryId)
 
-        suspend fun getRecentlyAddedMovies(limit: Int): List<MovieEntity> = movieRepository.getRecentlyAddedMovies(limit)
+        fun getRecentlyAddedMovies(limit: Int): Flow<List<MovieEntity>> = movieRepository.getRecentlyAddedMovies(limit)
 
-        fun getMovieCategories(): Flow<List<MovieCategoryEntity>> = movieRepository.getMovieCategories()
+        fun getMovieCategories(): Flow<Resource<List<MovieCategoryEntity>>> = movieRepository.getMovieCategories()
 
         suspend fun refreshMovies(
             skipTmdbSync: Boolean = false,
@@ -64,19 +74,24 @@ class ContentRepository
 
         suspend fun getMoviesByIds(movieIds: List<Int>): List<MovieEntity> = movieRepository.getMoviesByIds(movieIds)
 
+        suspend fun getMovieCategoryCounts(): Map<String, Int> = movieRepository.getCategoryCounts()
+
         suspend fun hasMovies(): Boolean = movieRepository.hasMovies()
 
         suspend fun hasMovieCategories(): Boolean = movieRepository.hasMovieCategories()
 
         // ==================== Series Operations ====================
 
-        fun getSeries(): Flow<List<SeriesEntity>> = seriesRepository.getSeries()
+        fun getSeries(): Flow<Resource<List<SeriesEntity>>> = seriesRepository.getSeries()
 
-        fun getSeriesByCategoryId(categoryId: String): Flow<List<SeriesEntity>> = seriesRepository.getSeriesByCategoryId(categoryId)
+        fun getSeriesByCategoryId(categoryId: String): Flow<Resource<List<SeriesEntity>>> =
+            seriesRepository.getSeriesByCategoryId(
+                categoryId,
+            )
 
-        suspend fun getRecentlyAddedSeries(limit: Int): List<SeriesEntity> = seriesRepository.getRecentlyAddedSeries(limit)
+        fun getRecentlyAddedSeries(limit: Int): Flow<List<SeriesEntity>> = seriesRepository.getRecentlyAddedSeries(limit)
 
-        fun getSeriesCategories(): Flow<List<SeriesCategoryEntity>> = seriesRepository.getSeriesCategories()
+        fun getSeriesCategories(): Flow<Resource<List<SeriesCategoryEntity>>> = seriesRepository.getSeriesCategories()
 
         suspend fun refreshSeries(
             skipTmdbSync: Boolean = false,
@@ -89,23 +104,26 @@ class ContentRepository
 
         suspend fun getSeriesByIds(seriesIds: List<Int>): List<SeriesEntity> = seriesRepository.getSeriesByIds(seriesIds)
 
+        suspend fun getSeriesCategoryCounts(): Map<String, Int> = seriesRepository.getCategoryCounts()
+
         suspend fun hasSeries(): Boolean = seriesRepository.hasSeries()
 
         suspend fun hasSeriesCategories(): Boolean = seriesRepository.hasSeriesCategories()
 
         // ==================== LiveStream Operations ====================
 
-        fun getLiveStreams(): Flow<List<LiveStreamEntity>> = liveStreamRepository.getLiveStreams()
+        fun getLiveStreams(): Flow<Resource<List<LiveStreamEntity>>> = liveStreamRepository.getLiveStreams()
 
-        fun getLiveStreamsByCategoryId(categoryId: Int): Flow<List<LiveStreamEntity>> =
+        fun getLiveStreamsByCategoryId(categoryId: Int): Flow<Resource<List<LiveStreamEntity>>> =
             liveStreamRepository.getLiveStreamsByCategoryId(
                 categoryId,
             )
 
-        suspend fun getLiveStreamsByCategoryIdSync(categoryId: Int): List<LiveStreamEntity> =
-            liveStreamRepository.getLiveStreamsByCategoryId(categoryId).firstOrNull() ?: emptyList()
+        suspend fun getLiveStreamsByCategoryIdSync(categoryId: Int): List<LiveStreamEntity> {
+            return liveStreamRepository.getLiveStreamsByCategoryIdSync(categoryId)
+        }
 
-        fun getLiveStreamCategories(): Flow<List<LiveStreamCategoryEntity>> = liveStreamRepository.getLiveStreamCategories()
+        fun getLiveStreamCategories(): Flow<Resource<List<LiveStreamCategoryEntity>>> = liveStreamRepository.getLiveStreamCategories()
 
         suspend fun refreshLiveStreams(forMainScreenUpdate: Boolean = false): Result<Unit> =
             liveStreamRepository.refreshLiveStreams(forMainScreenUpdate)
@@ -132,6 +150,12 @@ class ContentRepository
             channelId: Int,
             viewerId: Int,
         ) = favoriteRepository.removeFavorite(channelId, viewerId)
+
+        /**
+         * Belirli bir içeriği (channelId) tüm izleyicilerden favorilerden çıkarır.
+         * Toggle favori işlemi için kullanılır.
+         */
+        suspend fun removeFavoriteForAllViewers(channelId: Int) = favoriteRepository.removeFavoriteForAllViewers(channelId)
 
         fun isFavorite(
             channelId: Int,
@@ -165,6 +189,75 @@ class ContentRepository
         suspend fun deletePlaybackPosition(contentId: String) = playbackPositionRepository.deletePlaybackPosition(contentId)
 
         suspend fun cleanupOldPlaybackPositions() = playbackPositionRepository.cleanupOldPlaybackPositions()
+
+        // ==================== Watch Progress Operations ====================
+
+        /**
+         * Bölüm izleme ilerlemesini günceller.
+         * Hem PlaybackPosition hem de WatchedEpisodeEntity'yi günceller.
+         *
+         * @param contentId İçerik ID'si (episode_ prefix'li olabilir)
+         * @param positionMs Mevcut pozisyon (milisaniye)
+         * @param durationMs Toplam süre (milisaniye)
+         * @param episodeId Bölüm ID'si (contentId'den parse edilir veya direkt verilir)
+         * @param seriesId Dizi ID'si (opsiyonel, mevcut kayıt varsa kullanılır)
+         * @param seasonNumber Sezon numarası (opsiyonel, mevcut kayıt varsa kullanılır)
+         * @param episodeNumber Bölüm numarası (opsiyonel, mevcut kayıt varsa kullanılır)
+         */
+        suspend fun updateWatchProgress(
+            contentId: String,
+            positionMs: Long,
+            durationMs: Long,
+            episodeId: String? = null,
+            seriesId: Int? = null,
+            seasonNumber: Int? = null,
+            episodeNumber: Int? = null,
+        ) {
+            // Playback position'ı her zaman kaydet
+            savePlaybackPosition(contentId, positionMs, durationMs)
+
+            // Episode bilgisi yoksa veya duration 0 ise watchProgress güncelleme
+            if (durationMs <= 0) return
+
+            val userId = sessionManager.getCurrentUserId().firstOrNull() ?: return
+
+            // Episode ID'yi parse et (contentId'den "episode_" prefix'ini kaldır)
+            val parsedEpisodeId = episodeId ?: contentId.removePrefix("episode_")
+
+            // Progress yüzdesini hesapla
+            val progressPercentage = ((positionMs.toFloat() / durationMs.toFloat()) * 100).toInt().coerceIn(0, 100)
+
+            try {
+                // Mevcut kaydı kontrol et
+                val existingEntity = watchedEpisodeDao.getWatchedEpisode(parsedEpisodeId, userId)
+
+                if (existingEntity != null) {
+                    // Mevcut kayıt varsa, sadece watchProgress ve timestamp'i güncelle
+                    val updatedEntity =
+                        existingEntity.copy(
+                            watchProgress = progressPercentage,
+                            watchedTimestamp = System.currentTimeMillis(),
+                        )
+                    watchedEpisodeDao.markAsWatched(updatedEntity)
+                } else if (seriesId != null && seasonNumber != null && episodeNumber != null) {
+                    // Yeni kayıt oluştur (tüm bilgiler mevcut)
+                    val newEntity =
+                        WatchedEpisodeEntity(
+                            episodeId = parsedEpisodeId,
+                            userId = userId,
+                            seriesId = seriesId,
+                            seasonNumber = seasonNumber,
+                            episodeNumber = episodeNumber,
+                            watchedTimestamp = System.currentTimeMillis(),
+                            watchProgress = progressPercentage,
+                        )
+                    watchedEpisodeDao.markAsWatched(newEntity)
+                }
+                // Eğer mevcut kayıt yoksa ve episode bilgileri eksikse, sadece playback position kaydedilir
+            } catch (e: Exception) {
+                Timber.e(e, "Watch progress güncellenirken hata: contentId=$contentId, episodeId=$parsedEpisodeId")
+            }
+        }
 
         // ==================== User Info Operations ====================
 

@@ -11,11 +11,9 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import coil.load
-import coil.request.CachePolicy
-import coil.size.Scale
-import coil.size.Size
 import com.pnr.tv.R
+import com.pnr.tv.extensions.calculateCardSize
+import com.pnr.tv.extensions.loadContentImage
 import com.pnr.tv.model.ContentItem
 
 /**
@@ -35,6 +33,18 @@ class ContentAdapter(
     private val gridColumnCount: Int,
     private val onOkButtonLongPress: ((ContentItem) -> Unit)? = null, // Optional: for 3-second OK button press
 ) : ListAdapter<ContentItem, ContentAdapter.ViewHolder>(ContentDiff) {
+    init {
+        // TV performans optimizasyonu: Stable IDs kullanarak RecyclerView'ın sadece değişen satırları güncellemesini sağla
+        // Bu, düşük işlemcili TV cihazlarında flickering'i önler
+        setHasStableIds(true)
+    }
+
+    override fun getItemId(position: Int): Long {
+        // ContentItem'ın id'sini Long'a çevir (stable ID)
+        // Position kullanma - bu flickering'e neden olur
+        return getItem(position).id.toLong()
+    }
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
@@ -146,42 +156,30 @@ class ContentAdapter(
                 },
             )
 
-            // Load image with Coil
-            val imageUrl = item.imageUrl
-            if (!imageUrl.isNullOrBlank()) {
-                // Dinamik boyut hesapla - CardPresenter ile aynı optimizasyon
-                val screenWidth = itemView.context.resources.displayMetrics.widthPixels
-                val cardWidth = (screenWidth / com.pnr.tv.UIConstants.CARD_WIDTH_DIVISOR).toInt()
-                val cardHeight = (cardWidth * 9.0 / 16.0).toInt()
+            // Load image with Coil - helper extension kullan
+            // OPTİMİZASYON: Eğer image zaten yüklenmişse (aynı URL ve drawable mevcut), yeniden yükleme
+            val currentImageUrl = contentImage.tag as? String
+            val shouldReloadImage = currentImageUrl != item.imageUrl || contentImage.drawable == null
 
-                contentImage.load(imageUrl) {
-                    placeholder(R.drawable.placeholder_image)
-                    error(R.drawable.placeholder_image)
-                    crossfade(true)
-                    scale(Scale.FILL)
-                    // Dinamik ve verimli boyut kullan - kart boyutuna göre optimize edilmiş
-                    size(Size(cardWidth, cardHeight))
-                    // Donanım hızlandırmayı etkinleştir - GPU belleği kullanımı için kritik
-                    allowHardware(true)
-                    // RGB565 formatını kullan - daha az bellek kullanır
-                    allowRgb565(true)
-                    // Cache policy optimizasyonları - performans için
-                    memoryCachePolicy(CachePolicy.ENABLED)
-                    diskCachePolicy(CachePolicy.ENABLED)
-                    networkCachePolicy(CachePolicy.ENABLED)
+            if (shouldReloadImage) {
+                val (cardWidth, cardHeight) = contentImage.calculateCardSize()
+
+                // URL yoksa placeholder için özel ayarlar
+                if (item.imageUrl.isNullOrBlank()) {
+                    contentImage.scaleType = ImageView.ScaleType.FIT_START
+                    val topPadding = (8f * itemView.context.resources.displayMetrics.density).toInt()
+                    val bottomPadding = (60f * itemView.context.resources.displayMetrics.density).toInt()
+                    contentImage.setPadding(0, topPadding, 0, bottomPadding)
                 }
-            } else {
-                // Use placeholder if no image URL - üst kısma hizalamak için scaleType değiştir
-                contentImage.scaleType = ImageView.ScaleType.FIT_START
-                // Görseli üst kısma yaklaştırmak için ImageView'ın gravity'sini ayarla
-                // FIT_START sol üst köşeye hizalar, bu yüzden görseli üst kısma yaklaştırır
-                contentImage.load(R.drawable.placeholder_image) {
-                    scale(Scale.FIT) // Orantıyı koru
-                }
-                // Görseli üst kısma yaklaştırmak için ImageView'ın padding'ini ayarla
-                val topPadding = (8f * itemView.context.resources.displayMetrics.density).toInt()
-                val bottomPadding = (60f * itemView.context.resources.displayMetrics.density).toInt()
-                contentImage.setPadding(0, topPadding, 0, bottomPadding)
+
+                contentImage.loadContentImage(
+                    imageUrl = item.imageUrl,
+                    cardWidth = cardWidth,
+                    cardHeight = cardHeight,
+                )
+
+                // Image URL'ini tag olarak kaydet (yeniden yükleme kontrolü için)
+                contentImage.tag = item.imageUrl
             }
 
             // Set up item-specific click listeners
@@ -206,6 +204,8 @@ class ContentAdapter(
                 // Callback yoksa, mevcut handler'ı temizle
                 clearOkButtonHandler()
             }
+
+            // Focus değişikliklerini dinle (listener gerekirse buraya eklenebilir)
         }
 
         /**

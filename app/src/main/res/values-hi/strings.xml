@@ -94,7 +94,7 @@
     <string name="error_with_message">त्रुटि: %1$s</string>
     <string name="error_user_not_found">उपयोगकर्ता जानकारी नहीं मिली या DNS जानकारी गायब है</string>
     <string name="error_network_connection">नेटवर्क कनेक्शन त्रुटि</string>
-    <string name="error_network_generic">नेटवर्क त्रुटि: %1$d %2$s</string>
+    <string name="error_network_generic">नेटवर्क त्रुटि (कोड: %1$d)। कृपया पुनः प्रयास करें।</string>
     <string name="error_unexpected">अप्रत्याशित त्रुटि: %1$s</string>
     
     <!-- मुख्य स्क्रीन अपडेट त्रुटि संदेश -->
@@ -277,5 +277,29 @@
     <string name="dialog_resume_playback_title">प्लेबैक फिर से शुरू करें</string>
     <string name="btn_resume_from_position">स्थिति से फिर से शुरू करें</string>
     <string name="btn_start_from_beginning">शुरुआत से शुरू करें</string>
+    
+    <!-- Error Messages - Intent Validation -->
+    <string name="error_invalid_intent_data">अमान्य इरादा डेटा</string>
+    
+    <!-- Rating Format -->
+    <string name="rating_format">%1$.1f / 10</string>
+    
+    <!-- Billing Error Messages -->
+    <string name="error_billing_product_not_found">त्रुटि: उत्पाद नहीं मिला (%1$s)। कृपया Play Console लाइसेंस परीक्षण सेटिंग्स जांचें।</string>
+    <string name="error_billing_unavailable">Google Play Services उपलब्ध नहीं है या अद्यतन नहीं है</string>
+    <string name="error_billing_service_unavailable">Google Play Services अस्थायी रूप से उपलब्ध नहीं है</string>
+    <string name="error_billing_item_not_owned">उत्पाद नहीं मिला। सुनिश्चित करें कि उत्पाद Google Play Console में सक्रिय है।</string>
+    <string name="error_billing_product_details_failed">उत्पाद विवरण पुनर्प्राप्त नहीं किए जा सके: %1$s</string>
+    
+    <!-- User Status Placeholder -->
+    <string name="user_status_not_available">-</string>
+    
+    <!-- Connection Format -->
+    <string name="connection_format">%1$s/%2$s</string>
+    
+    <!-- Player Loading Messages -->
+    <string name="player_loading_preparing">सामग्री तैयार की जा रही है...</string>
+    <string name="player_loading_fetching_url">चैनल पता प्राप्त किया जा रहा है...</string>
+    <string name="player_loading_buffering">स्ट्रीम लोड हो रही है...</string>
 </resources>
 

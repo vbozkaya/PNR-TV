@@ -76,7 +76,6 @@
         app:layout_constraintBottom_toBottomOf="parent">
 
         <ProgressBar
-            android:id="@+id/loading_progress"
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:indeterminate="true" />
@@ -131,7 +130,6 @@
 
             <!-- Sağ Taraf: Sadece Dizi Bilgileri (Üst Blok) -->
             <LinearLayout
-                android:id="@+id/info_panel"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -159,6 +157,18 @@
                         android:textSize="32sp"
                         android:textStyle="bold"
                         tools:text="Breaking Bad" />
+
+                <!-- Premium yazısı (Favoriler için) -->
+                <TextView
+                    android:id="@+id/tv_favorite_premium"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="(Premium)"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="italic"
+                    android:visibility="gone"
+                    android:layout_marginEnd="8dp" />
 
             <!-- Favorilere Ekle Butonu (Film detay ile aynı) -->
             <ImageButton
@@ -310,7 +320,6 @@
 
             <!-- Alt Bölüm: Sezon ve Bölümler (Poster altından başlar, tam genişlik) -->
             <LinearLayout
-                android:id="@+id/seasons_episodes_panel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"

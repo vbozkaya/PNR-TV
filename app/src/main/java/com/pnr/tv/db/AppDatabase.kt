@@ -45,7 +45,7 @@ import com.pnr.tv.db.entity.WatchedEpisodeEntity
         WatchedEpisodeEntity::class,
         PlaybackPositionEntity::class,
     ],
-    version = 19, // Incremented version from 18 to 19 - Added userId to all user-specific tables for data isolation
+    version = 22, // Incremented version from 21 to 22 - Added categoryId indices to movies, series, and live_streams tables
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {

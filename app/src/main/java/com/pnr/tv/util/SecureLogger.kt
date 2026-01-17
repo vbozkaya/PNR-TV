@@ -20,17 +20,13 @@ object SecureLogger {
 
     /**
      * Hassas bilgileri maskeleyerek loglar
+     * Production'da debug log'lar devre dışı
      */
     fun d(
         message: String,
         tag: String? = null,
     ) {
-        val sanitized = sanitize(message)
-        if (tag != null) {
-            Timber.tag(tag).d(sanitized)
-        } else {
-            Timber.d(sanitized)
-        }
+        // Debug logs disabled for production
     }
 
     fun i(

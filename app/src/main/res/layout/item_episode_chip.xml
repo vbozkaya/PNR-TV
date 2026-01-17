@@ -30,7 +30,6 @@
             android:layout_margin="3dp"
             android:contentDescription="@null"
             android:scaleType="centerCrop"
-            android:src="@drawable/episode_background"
             android:clipToOutline="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

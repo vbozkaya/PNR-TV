@@ -49,7 +49,6 @@ object KeystoreManager {
 
             val storedKey = encryptedPrefs.getString("tmdb_api_key", null)
             if (storedKey != null) {
-                Timber.d("✅ API key EncryptedSharedPreferences'ten alındı")
                 return storedKey
             }
 
@@ -58,7 +57,6 @@ object KeystoreManager {
                 .putString("tmdb_api_key", buildConfigKey)
                 .apply()
 
-            Timber.d("✅ API key şifrelenerek saklandı")
             buildConfigKey
         } catch (e: Exception) {
             Timber.e(e, "❌ Keystore hatası, BuildConfig'den alınıyor")

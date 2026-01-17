@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#1a1a1a"
+    android:padding="16dp">
+
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:id="@+id/button_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+        <Button
+            android:id="@+id/btn_test_crash"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Test Crash (Fatal)"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/btn_test_exception"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Test Non-Fatal Exception"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/btn_test_log"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Test Log Message"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/btn_add_custom_key"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add Custom Key"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/btn_set_user_flow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Set User Flow"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/btn_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Refresh Info"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/btn_clear_logs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Clear Logs"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/btn_send_lifecycle_logs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📊 Lifecycle Loglarını Gönder"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:id="@+id/tv_crashlytics_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Crashlytics Info"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tv_crashlytics_logs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Crashlytics Logs"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+

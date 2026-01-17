@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SeekBar progress drawable - izlenen kısmı kırmızı, geri kalanı gri -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <!-- Arka plan - gri (izlenmemiş kısım) -->
+    <item android:id="@android:id/background">
+        <shape android:shape="rectangle">
+            <solid android:color="#33FFFFFF" />
+            <corners android:radius="4dp" />
+        </shape>
+    </item>
+    
+    <!-- İzlenen kısım - kırmızı (secondaryProgress olarak kullanılacak) -->
+    <!-- Progress çizgisini şeffaf yapıyoruz, sadece izlenen kısmı (kırmızı) görünecek -->
+    <item android:id="@android:id/secondaryProgress">
+        <clip>
+            <shape android:shape="rectangle">
+                <solid android:color="#FF0000" />
+                <corners android:radius="4dp" />
+            </shape>
+        </clip>
+    </item>
+    
+    <!-- Mevcut progress - şeffaf (görünmez, sadece thumb ile gösterilecek) -->
+    <item android:id="@android:id/progress">
+        <clip>
+            <shape android:shape="rectangle">
+                <solid android:color="@android:color/transparent" />
+                <corners android:radius="4dp" />
+            </shape>
+        </clip>
+    </item>
+    
+</layer-list>

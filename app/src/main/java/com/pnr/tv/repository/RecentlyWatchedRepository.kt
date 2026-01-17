@@ -1,7 +1,7 @@
 package com.pnr.tv.repository
 
-import com.pnr.tv.DatabaseConstants
-import com.pnr.tv.SessionManager
+import com.pnr.tv.core.constants.DatabaseConstants
+import com.pnr.tv.ui.main.SessionManager
 import com.pnr.tv.db.dao.RecentlyWatchedDao
 import com.pnr.tv.db.entity.RecentlyWatchedEntity
 import kotlinx.coroutines.ExperimentalCoroutinesApi

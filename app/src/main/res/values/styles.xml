@@ -1,13 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="FullscreenDialogTheme" parent="ThemeOverlay.AppCompat.Dialog.Alert">
-        <item name="android:windowIsTranslucent">false</item>
-        <item name="android:windowFullscreen">true</item>
-        <item name="android:windowCloseOnTouchOutside">false</item>
-    </style>
 
     <!-- ShapeableImageView için oval köşe stili -->
-    <style name="ShapeAppearance.App.CornerSize8dp" parent="">
-        <item name="cornerSize">8dp</item>
+    
+    <!-- Ayarlar sayfasındaki satırlar için ortak stil -->
+    <style name="SettingsRowStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:layout_marginBottom">4dp</item>
+        <item name="android:background">@drawable/second_focus_selector</item>
+        <item name="android:paddingStart">24dp</item>
+        <item name="android:paddingEnd">24dp</item>
+        <item name="android:paddingTop">2dp</item>
+        <item name="android:paddingBottom">2dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusableInTouchMode">true</item>
+    </style>
+    
+    <!-- Ayarlar sayfasındaki satırlar için TextView stili -->
+    <style name="SettingsRowTextStyle">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
     </style>
 </resources>

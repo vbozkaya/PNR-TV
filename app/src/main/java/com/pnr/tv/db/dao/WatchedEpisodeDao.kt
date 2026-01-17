@@ -37,6 +37,15 @@ interface WatchedEpisodeDao {
     ): WatchedEpisodeEntity?
 
     /**
+     * Belirli bir bölüm listesinin izlenme durumlarını tek seferde getir.
+     */
+    @Query("SELECT * FROM watched_episodes WHERE episodeId IN (:episodeIds) AND userId = :userId")
+    suspend fun getWatchedStatusForEpisodes(
+        episodeIds: List<String>,
+        userId: Int,
+    ): List<WatchedEpisodeEntity>
+
+    /**
      * Belirli bir bölümün izlenme durumunu sil.
      */
     @Query("DELETE FROM watched_episodes WHERE episodeId = :episodeId AND userId = :userId")

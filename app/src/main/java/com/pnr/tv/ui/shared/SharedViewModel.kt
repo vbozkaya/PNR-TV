@@ -11,11 +11,16 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.pnr.tv.R
+import com.pnr.tv.di.IptvRetrofit
 import com.pnr.tv.network.dto.AuthenticationResponseDto
-import com.pnr.tv.repository.ContentRepository
+import com.pnr.tv.repository.ApiServiceManager
+import com.pnr.tv.repository.BaseContentRepository
+import com.pnr.tv.repository.LiveStreamRepository
+import com.pnr.tv.repository.MovieRepository
 import com.pnr.tv.repository.Result
+import com.pnr.tv.repository.SeriesRepository
 import com.pnr.tv.repository.UserRepository
-import com.pnr.tv.ui.base.BaseViewModel
+import com.pnr.tv.core.base.BaseViewModel
 import com.pnr.tv.worker.TmdbSyncWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -24,6 +29,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import retrofit2.Retrofit
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -38,9 +44,14 @@ class SharedViewModel
     @Inject
     constructor(
         private val userRepository: UserRepository,
-        private val contentRepository: ContentRepository,
+        private val movieRepository: MovieRepository,
+        private val seriesRepository: SeriesRepository,
+        private val liveStreamRepository: LiveStreamRepository,
+        private val apiServiceManager: ApiServiceManager,
         @ApplicationContext override val context: Context,
     ) : BaseViewModel() {
+        // BaseContentRepository instance for fetchUserInfo
+        private val baseContentRepository = BaseContentRepository(apiServiceManager, userRepository, context)
         val currentUser = userRepository.currentUser.asLiveData()
         val userInfo = MutableLiveData<AuthenticationResponseDto?>()
 
@@ -56,9 +67,16 @@ class SharedViewModel
         private val _updateState = MutableStateFlow(UpdateState.IDLE)
         val updateState: StateFlow<UpdateState> = _updateState.asStateFlow()
 
-        // Hata mesajı için StateFlow (ana güncelleme için)
-        private val _errorMessage = MutableStateFlow<String?>(null)
-        val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+        // Eklenen içerik sayıları için StateFlow
+        data class AddedContentCounts(
+            val moviesCount: Int,
+            val seriesCount: Int,
+        )
+
+        private val _addedContentCounts = MutableStateFlow<AddedContentCounts?>(null)
+        val addedContentCounts: StateFlow<AddedContentCounts?> = _addedContentCounts.asStateFlow()
+
+        // Hata mesajı için BaseViewModel'deki _errorMessage kullanılıyor
 
         /**
          * Tüm içeriği günceller
@@ -76,9 +94,6 @@ class SharedViewModel
                     // Yüklenme başladı
                     _updateState.value = UpdateState.LOADING
                     _errorMessage.value = null
-
-                    Timber.d("🚀 HIZLI GÜNCELLEME BAŞLADI (Sadece IPTV)")
-                    Timber.d("⚠️ Rate limiting ağ katmanında yapılıyor...")
 
                     // IPTV içeriklerini yenile (rate limiting interceptor tarafından yönetiliyor)
                     val refreshResult =
@@ -134,10 +149,29 @@ class SharedViewModel
                     return context.getString(R.string.error_user_not_selected)
                 }
 
+                // Güncelleme öncesi mevcut içerik sayılarını al
+                // Direkt DAO'dan okuma yapıyoruz (Resource wrapper kullanmadan)
+                // Böylece Resource.Loading değeri yerine direkt veriyi alıyoruz
+                val oldMoviesCount =
+                    try {
+                        movieRepository.getMoviesCount()
+                    } catch (e: Exception) {
+                        Timber.e(e, "Eski film sayısı alınamadı")
+                        0
+                    }
+
+                val oldSeriesCount =
+                    try {
+                        seriesRepository.getSeriesCount()
+                    } catch (e: Exception) {
+                        Timber.e(e, "Eski dizi sayısı alınamadı")
+                        0
+                    }
+
                 // Filmleri yenile
                 val moviesResult =
                     try {
-                        contentRepository.refreshMovies(skipTmdbSync = true, forMainScreenUpdate = true)
+                        movieRepository.refreshMovies(skipTmdbSync = true, forMainScreenUpdate = true)
                     } catch (e: Exception) {
                         Timber.e(e, "Filmler yenilenirken hata")
                         Result.Error(message = context.getString(R.string.error_server_error), exception = e)
@@ -149,7 +183,7 @@ class SharedViewModel
                 // Dizileri yenile (rate limiting interceptor tarafından yönetiliyor)
                 val seriesResult =
                     try {
-                        contentRepository.refreshSeries(skipTmdbSync = true, forMainScreenUpdate = true)
+                        seriesRepository.refreshSeries(skipTmdbSync = true, forMainScreenUpdate = true)
                     } catch (e: Exception) {
                         Timber.e(e, "Diziler yenilenirken hata")
                         Result.Error(message = context.getString(R.string.error_server_error), exception = e)
@@ -161,7 +195,7 @@ class SharedViewModel
                 // Canlı yayınları yenile (rate limiting interceptor tarafından yönetiliyor)
                 val liveStreamsResult =
                     try {
-                        contentRepository.refreshLiveStreams(forMainScreenUpdate = true)
+                        liveStreamRepository.refreshLiveStreams(forMainScreenUpdate = true)
                     } catch (e: Exception) {
                         Timber.e(e, "Canlı yayınlar yenilenirken hata")
                         Result.Error(message = context.getString(R.string.error_server_error), exception = e)
@@ -169,6 +203,51 @@ class SharedViewModel
                 if (liveStreamsResult is Result.Error) {
                     return liveStreamsResult.message
                 }
+
+                // Güncelleme sonrası yeni içerik sayılarını al
+                // Direkt DAO'dan COUNT(*) sorgusu ile okuma yapıyoruz (Resource wrapper kullanmadan)
+                // Bu, getAll().firstOrNull()?.size yerine çok daha performanslı ve güvenilir
+                val newMoviesCount =
+                    try {
+                        movieRepository.getMoviesCount()
+                    } catch (e: Exception) {
+                        Timber.e(e, "Yeni film sayısı alınamadı")
+                        0
+                    }
+
+                val newSeriesCount =
+                    try {
+                        seriesRepository.getSeriesCount()
+                    } catch (e: Exception) {
+                        Timber.e(e, "Yeni dizi sayısı alınamadı")
+                        0
+                    }
+
+                // Eklenen içerik sayılarını hesapla ve kaydet
+                val addedMoviesCount =
+                    if (oldMoviesCount == 0) {
+                        // İlk kurulum - tüm içerikler yeni
+                        newMoviesCount
+                    } else {
+                        // Sonraki güncellemeler - sadece yeni eklenenler
+                        maxOf(0, newMoviesCount - oldMoviesCount)
+                    }
+
+                val addedSeriesCount =
+                    if (oldSeriesCount == 0) {
+                        // İlk kurulum - tüm içerikler yeni
+                        newSeriesCount
+                    } else {
+                        // Sonraki güncellemeler - sadece yeni eklenenler
+                        maxOf(0, newSeriesCount - oldSeriesCount)
+                    }
+
+                // Her zaman sayıları set et (0 olsa bile)
+                _addedContentCounts.value =
+                    AddedContentCounts(
+                        moviesCount = addedMoviesCount,
+                        seriesCount = addedSeriesCount,
+                    )
 
                 null
             } catch (e: Exception) {
@@ -192,9 +271,6 @@ class SharedViewModel
                 // Not: Kanal ikonları lazy loading ile otomatik olarak yüklenecek (Coil)
                 _updateState.value = UpdateState.COMPLETED
 
-                Timber.d("✅ HIZLI GÜNCELLEME TAMAMLANDI")
-                Timber.d("🔄 ARKA PLAN TMDB SENKRONIZASYONU BAŞLATILIYOR...")
-
                 // TMDB senkronizasyonunu arka planda başlat
                 scheduleTmdbSync()
             }
@@ -215,6 +291,7 @@ class SharedViewModel
         fun resetUpdateState() {
             _updateState.value = UpdateState.IDLE
             _errorMessage.value = null
+            _addedContentCounts.value = null
         }
 
         /**
@@ -243,17 +320,22 @@ class SharedViewModel
                 ExistingWorkPolicy.REPLACE, // Eski işi iptal et, yenisini başlat
                 workRequest,
             )
-
-            Timber.d("📋 WorkManager görevi oluşturuldu ve kuyruğa eklendi")
         }
 
         fun fetchUserInfo() {
             viewModelScope.launch {
                 try {
-                    val result = contentRepository.fetchUserInfo()
+                    val result = baseContentRepository.fetchUserInfo()
                     when (result) {
                         is Result.Success -> {
                             userInfo.value = result.data
+                        }
+                        is Result.PartialSuccess -> {
+                            // Kısmi başarı - veriyi kullan ama uyarı göster
+                            userInfo.value = result.data
+                            result.errorMessage?.let {
+                                Timber.w("Kullanıcı bilgileri kısmen yüklendi: $it")
+                            }
                         }
                         is Result.Error -> {
                             Timber.e(result.exception, "Kullanıcı bilgileri alınamadı: ${result.message}")

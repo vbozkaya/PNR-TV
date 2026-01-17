@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Focus Durumu - Beyaz border ile -->
+    <item android:state_focused="true">
+        <layer-list>
+            <!-- Normal arka plan -->
+            <item>
+                <shape android:shape="rectangle">
+                    <corners android:radius="8dp" />
+                    <solid android:color="#1AFFFFFF" />
+                </shape>
+            </item>
+            <!-- Focus border -->
+            <item>
+                <shape android:shape="rectangle">
+                    <corners android:radius="8dp" />
+                    <stroke
+                        android:width="2dp"
+                        android:color="@color/category_selected" />
+                    <solid android:color="@android:color/transparent" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+    <!-- Normal Durum -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="8dp" />
+            <solid android:color="#1AFFFFFF" />
+        </shape>
+    </item>
+</selector>
+
+
+
+
+
+

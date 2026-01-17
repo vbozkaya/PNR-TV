@@ -2,21 +2,30 @@ package com.pnr.tv.ui.series
 
 import android.content.Context
 import androidx.lifecycle.viewModelScope
-import com.pnr.tv.ContentConstants
+import com.pnr.tv.core.constants.ContentConstants
+import com.pnr.tv.core.constants.DatabaseConstants
 import com.pnr.tv.R
+import com.pnr.tv.core.constants.UIConstants
 import com.pnr.tv.db.entity.SeriesCategoryEntity
 import com.pnr.tv.db.entity.SeriesEntity
 import com.pnr.tv.model.CategoryItem
 import com.pnr.tv.model.ContentItem
 import com.pnr.tv.model.ContentType
 import com.pnr.tv.model.SortOrder
-import com.pnr.tv.repository.ContentRepository
+import com.pnr.tv.premium.PremiumManager
+import com.pnr.tv.repository.FavoriteRepository
 import com.pnr.tv.repository.Result
+import com.pnr.tv.repository.SeriesRepository
 import com.pnr.tv.repository.ViewerRepository
-import com.pnr.tv.ui.base.BaseViewModel
-import com.pnr.tv.util.SortPreferenceManager
+import com.pnr.tv.core.base.BaseContentViewModel
+import com.pnr.tv.core.base.CategoryBuilder
+import com.pnr.tv.core.base.ContentFavoriteHandler
+import com.pnr.tv.util.validation.AdultContentPreferenceManager
+import com.pnr.tv.util.error.Resource
+import com.pnr.tv.util.ui.SortPreferenceManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -27,10 +36,11 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -42,21 +52,31 @@ import javax.inject.Inject
 class SeriesViewModel
     @Inject
     constructor(
-        private val contentRepository: ContentRepository,
-        private val viewerRepository: ViewerRepository,
+        private val seriesRepository: SeriesRepository,
+        favoriteRepository: FavoriteRepository,
+        private val _viewerRepository: ViewerRepository,
         private val sortPreferenceManager: SortPreferenceManager,
+        private val _adultContentPreferenceManager: AdultContentPreferenceManager,
+        private val _premiumManager: PremiumManager,
+        private val _contentFavoriteHandler: ContentFavoriteHandler,
+        private val _categoryBuilder: CategoryBuilder,
         @ApplicationContext override val context: Context,
-    ) : BaseViewModel() {
+    ) : BaseContentViewModel() {
+        override val favoriteRepository: FavoriteRepository = favoriteRepository
+        override val contentFavoriteHandler: ContentFavoriteHandler = _contentFavoriteHandler
+        override val categoryBuilder: CategoryBuilder = _categoryBuilder
+        override val viewerRepository: ViewerRepository
+            get() = _viewerRepository
+        override val adultContentPreferenceManager: AdultContentPreferenceManager
+            get() = _adultContentPreferenceManager
+        override val premiumManager: PremiumManager
+            get() = _premiumManager
+
         companion object {
             // Sanal kategori ID'leri - Diziler için
             val VIRTUAL_CATEGORY_ID_FAVORITES_SERIES = ContentConstants.VirtualCategoryIds.FAVORITES_STRING
             val VIRTUAL_CATEGORY_ID_RECENTLY_ADDED_SERIES = ContentConstants.VirtualCategoryIds.RECENTLY_ADDED_STRING
-            val VIRTUAL_CATEGORY_ID_ALL_SERIES = ContentConstants.VirtualCategoryIds.ALL_STRING
         }
-
-        private val favoriteIds: Flow<List<Int>> = contentRepository.getAllFavoriteChannelIds()
-
-        private fun getViewerCategoryId(viewerId: Int): String = "viewer_$viewerId"
 
         private val defaultViewerIdFlow: Flow<Int?> =
             viewerRepository.getAllViewers().map { viewers ->
@@ -64,59 +84,12 @@ class SeriesViewModel
             }
 
         private val seriesCategories: Flow<List<SeriesCategoryEntity>> =
-            combine(
-                contentRepository.getSeriesCategories(),
-                favoriteIds,
-                viewerRepository.getViewerIdsWithFavorites(),
-                viewerRepository.getAllViewers(),
-            ) { normalCategories, _, viewerIdsWithFavorites, allViewers ->
-                mutableListOf<SeriesCategoryEntity>().apply {
-                    add(
-                        SeriesCategoryEntity(
-                            VIRTUAL_CATEGORY_ID_RECENTLY_ADDED_SERIES,
-                            context.getString(R.string.category_recently_added),
-                            ContentConstants.SortOrder.DEFAULT,
-                            ContentConstants.SortOrder.FAVORITES - 1,
-                        ),
-                    )
-
-                    val defaultViewer = allViewers.find { !it.isDeletable }
-                    val defaultViewerHasFavorites = defaultViewer?.let { it.id in viewerIdsWithFavorites } ?: false
-
-                    if (defaultViewerHasFavorites && defaultViewer != null) {
-                        add(
-                            SeriesCategoryEntity(
-                                VIRTUAL_CATEGORY_ID_FAVORITES_SERIES,
-                                context.getString(R.string.category_favorites),
-                                ContentConstants.SortOrder.DEFAULT,
-                                ContentConstants.SortOrder.FAVORITES,
-                            ),
-                        )
+            buildCategories().map { categories ->
+                categories.mapNotNull { category ->
+                    when (category) {
+                        is SeriesCategoryEntity -> category
+                        else -> null
                     }
-
-                    viewerIdsWithFavorites.forEach { viewerId ->
-                        val viewer = allViewers.find { it.id == viewerId }
-                        if (viewer != null && viewer.isDeletable) {
-                            add(
-                                SeriesCategoryEntity(
-                                    getViewerCategoryId(viewerId),
-                                    context.getString(R.string.category_viewer_favorites, viewer.name.uppercase()),
-                                    ContentConstants.SortOrder.DEFAULT,
-                                    ContentConstants.SortOrder.FAVORITES,
-                                ),
-                            )
-                        }
-                    }
-
-                    add(
-                        SeriesCategoryEntity(
-                            VIRTUAL_CATEGORY_ID_ALL_SERIES,
-                            context.getString(R.string.category_all_series),
-                            ContentConstants.SortOrder.DEFAULT,
-                            ContentConstants.SortOrder.ALL,
-                        ),
-                    )
-                    addAll(normalCategories)
                 }
             }
 
@@ -131,125 +104,247 @@ class SeriesViewModel
         private val _isSeriesLoading = MutableStateFlow(false)
         val isSeriesLoading: StateFlow<Boolean> = _isSeriesLoading.asStateFlow()
 
-        private val _seriesErrorMessage = MutableStateFlow<String?>(null)
-        val seriesErrorMessage: StateFlow<String?> = _seriesErrorMessage.asStateFlow()
-
-        @OptIn(ExperimentalCoroutinesApi::class)
-        private val series: Flow<List<SeriesEntity>> =
-            _selectedSeriesCategoryId.asStateFlow().flatMapLatest { categoryId ->
-                val categoryIdString = categoryId as? String ?: VIRTUAL_CATEGORY_ID_ALL_SERIES
-                Timber.tag("GRID_UPDATE").d("📺 series Flow tetiklendi: categoryId=$categoryIdString")
-                when (categoryIdString) {
-                    VIRTUAL_CATEGORY_ID_RECENTLY_ADDED_SERIES ->
-                        flow {
-                            emit(contentRepository.getRecentlyAddedSeries(20))
-                        }
-                    VIRTUAL_CATEGORY_ID_FAVORITES_SERIES ->
-                        defaultViewerIdFlow.flatMapLatest { defaultId ->
-                            if (defaultId != null) {
-                                contentRepository.getFavoriteChannelIds(defaultId).flatMapLatest { ids ->
-                                    flow {
-                                        emit(contentRepository.getSeriesByIds(ids))
-                                    }
-                                }
-                            } else {
-                                kotlinx.coroutines.flow.flowOf(emptyList())
-                            }
-                        }
-                    VIRTUAL_CATEGORY_ID_ALL_SERIES -> contentRepository.getSeries()
-                    else -> {
-                        if (categoryIdString.startsWith("viewer_")) {
-                            val viewerId = categoryIdString.removePrefix("viewer_").toIntOrNull()
-                            if (viewerId != null) {
-                                contentRepository.getFavoriteChannelIds(viewerId).flatMapLatest { ids ->
-                                    flow {
-                                        emit(contentRepository.getSeriesByIds(ids))
-                                    }
-                                }
-                            } else {
-                                kotlinx.coroutines.flow.flowOf(emptyList())
-                            }
-                        } else {
-                            contentRepository.getSeriesByCategoryId(categoryIdString)
-                        }
-                    }
-                }
-            }
+        // Error message artık BaseViewModel'den geliyor
+        val seriesErrorMessage: StateFlow<String?> = errorMessage
 
         private val seriesSortOrderFlow: Flow<SortOrder?> = sortPreferenceManager.getSortOrder(ContentType.SERIES)
 
         // Search query için debounce'lu flow (sadece arama için gecikme)
         @OptIn(FlowPreview::class)
-        private val debouncedSeriesSearchQuery: Flow<String> = _seriesSearchQuery.asStateFlow().debounce(500)
+        private val debouncedSeriesSearchQuery: Flow<String> =
+            _seriesSearchQuery.asStateFlow().debounce(
+                UIConstants.DelayDurations.SEARCH_DEBOUNCE_MS,
+            )
+
+        // Önceki veriyi korumak için StateFlow
+        private val _previousSeries = MutableStateFlow<List<SeriesEntity>>(emptyList())
+
+        // Arama yapıldığında tüm dizileri, yapılmadığında seçili kategorideki dizileri getir
+        @OptIn(ExperimentalCoroutinesApi::class)
+        private val seriesWithSearch: Flow<List<SeriesEntity>> =
+            combine(
+                debouncedSeriesSearchQuery.onStart { emit("") },
+                _selectedSeriesCategoryId.asStateFlow(),
+            ) { query, categoryId ->
+                // Arama yapılıyorsa (3+ karakter), tüm dizileri al
+                if (query.length >= 3) {
+                    Pair(true, query)
+                } else {
+                    // Arama yapılmıyorsa, seçili kategorideki dizileri al
+                    Pair(false, categoryId as? String)
+                }
+            }.flatMapLatest { (isSearch, value) ->
+                if (isSearch) {
+                    // Arama modu: Tüm dizileri al
+                    seriesRepository.getSeries().map { resource ->
+                        when (resource) {
+                            is Resource.Loading -> {
+                                _isSeriesLoading.value = true
+                                emptyList<SeriesEntity>()
+                            }
+                            is Resource.Success -> {
+                                _isSeriesLoading.value = false
+                                clearError()
+                                _previousSeries.value = resource.data
+                                resource.data
+                            }
+                            is Resource.Error -> {
+                                _isSeriesLoading.value = false
+                                handleResourceError(resource)
+                                _previousSeries.value
+                            }
+                        }
+                    }
+                } else {
+                    // Normal mod: Seçili kategorideki dizileri al
+                    @Suppress("UNCHECKED_CAST")
+                    val categoryIdString = value as? String
+                    if (categoryIdString == null) {
+                        kotlinx.coroutines.flow.flowOf(_previousSeries.value)
+                    } else {
+                        when (categoryIdString) {
+                            VIRTUAL_CATEGORY_ID_RECENTLY_ADDED_SERIES ->
+                                seriesRepository.getRecentlyAddedSeries(DatabaseConstants.RECENTLY_ADDED_LIMIT)
+                                    .onEach { series ->
+                                        _previousSeries.value = series
+                                    }
+                            VIRTUAL_CATEGORY_ID_FAVORITES_SERIES ->
+                                defaultViewerIdFlow.flatMapLatest { defaultId ->
+                                    if (defaultId != null) {
+                                        favoriteRepository.getFavoriteChannelIds(defaultId).flatMapLatest { ids ->
+                                            flow {
+                                                val series = seriesRepository.getSeriesByIds(ids)
+                                                _previousSeries.value = series
+                                                emit(series)
+                                            }
+                                        }
+                                    } else {
+                                        kotlinx.coroutines.flow.flowOf(_previousSeries.value)
+                                    }
+                                }
+                            else -> {
+                                if (categoryIdString.startsWith("viewer_")) {
+                                    val viewerId = categoryIdString.removePrefix("viewer_").toIntOrNull()
+                                    if (viewerId != null) {
+                                        favoriteRepository.getFavoriteChannelIds(viewerId).flatMapLatest { ids ->
+                                            flow {
+                                                val series = seriesRepository.getSeriesByIds(ids)
+                                                _previousSeries.value = series
+                                                emit(series)
+                                            }
+                                        }
+                                    } else {
+                                        kotlinx.coroutines.flow.flowOf(_previousSeries.value)
+                                    }
+                                } else {
+                                    seriesRepository.getSeriesByCategoryId(categoryIdString).map { resource ->
+                                        when (resource) {
+                                            is Resource.Loading -> {
+                                                _isSeriesLoading.value = true
+                                                emptyList<SeriesEntity>()
+                                            }
+                                            is Resource.Success -> {
+                                                _isSeriesLoading.value = false
+                                                clearError()
+                                                _previousSeries.value = resource.data
+                                                resource.data
+                                            }
+                                            is Resource.Error -> {
+                                                _isSeriesLoading.value = false
+                                                handleResourceError(resource)
+                                                _previousSeries.value
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
         // Kategori ve sort değişiklikleri anında yansısın, sadece search query debounce olsun
         val seriesFlow: Flow<List<ContentItem>> =
             combine(
-                series.onStart { emit(emptyList()) }, // Başlangıç değeri - combine için gerekli
+                seriesWithSearch.onStart { emit(emptyList()) }, // Başlangıç değeri - combine için gerekli
                 seriesSortOrderFlow.onStart { emit(null) }, // Başlangıç değeri
                 debouncedSeriesSearchQuery.onStart { emit("") }, // Başlangıç değeri
-            ) { items, sortOrder, query ->
+                adultContentPreferenceManager.isAdultContentEnabled().onStart { emit(false) }, // Başlangıç değeri
+            ) { items, sortOrder, query, adultContentEnabled ->
                 val combineStartTime = System.currentTimeMillis()
-                Timber.tag("GRID_UPDATE").d("🔄 seriesFlow combine: items=${items.size}, sort=$sortOrder, query='$query'")
+
                 val sortedItems = applySorting(items, sortOrder)
-                val filteredItems = applySearchFilter(sortedItems, query)
+                val searchFilteredItems = applySearchFilter(sortedItems, query)
+                val adultFilteredItems = applyAdultContentFilter(searchFilteredItems, adultContentEnabled)
                 val combineTime = System.currentTimeMillis() - combineStartTime
-                Timber.tag("GRID_UPDATE").d("✅ seriesFlow sonuç: ${filteredItems.size} item (combine süresi: ${combineTime}ms)")
-                filteredItems
-            }
+                adultFilteredItems
+            }.flowOn(Dispatchers.Default) // Heavy computations on background thread
 
         init {
-            // İlk kategoriyi seç
-            _selectedSeriesCategoryId.value = VIRTUAL_CATEGORY_ID_ALL_SERIES
+            // Kategori seçimi fragment'ta yapılacak (ilk kategori otomatik seçilecek)
+            _selectedSeriesCategoryId.value = null
+            // Verileri ViewModel oluşturulur oluşturulmaz yükle
+            loadSeries()
         }
 
         /**
-         * Dizileri yükler (eğer daha önce yüklenmemişse).
-         * Ana sayfada zaten yüklenmişse, tekrar yüklemez.
+         * Dizileri yükler.
+         * Veriler yalnızca bir kez (ViewModel ilk oluşturulduğunda) yüklenir.
          */
-        fun loadSeriesIfNeeded() {
-            viewModelScope.launch {
-                _seriesErrorMessage.value = null
-                
-                // Önce veritabanında veri olup olmadığını kontrol et
-                val hasData = contentRepository.hasSeries()
-                val hasCategories = contentRepository.hasSeriesCategories()
-                
-                if (hasData && hasCategories) {
-                    // Veri zaten var, yükleme yapma
-                    Timber.d("📺 Diziler zaten yüklü, tekrar yükleme atlanıyor")
-                    _isSeriesLoading.value = false
-                    return@launch
-                }
-                
-                // Veri yok, yükleme yap
-                _isSeriesLoading.value = true
-                Timber.d("📺 Diziler yükleniyor (veri yok veya eksik)")
+        private fun loadSeries() {
+            loadContentIfNeeded()
+        }
 
-                try {
-                    val categoriesResult = contentRepository.refreshSeriesCategories()
-                    if (categoriesResult is Result.Error) {
-                        _seriesErrorMessage.value = context.getString(R.string.error_categories_short)
-                        _isSeriesLoading.value = false
-                        return@launch
+        override val logTag: String = "📺"
+
+        override val isLoading: MutableStateFlow<Boolean> = _isSeriesLoading
+
+        // Error message artık BaseViewModel'den geliyor, override gerekmiyor
+        override val contentLoadErrorStringId: Int = R.string.error_series_load_failed
+        override val errorContext: String = "SeriesViewModel"
+        override val virtualCategoryIdFavorites: String = VIRTUAL_CATEGORY_ID_FAVORITES_SERIES
+        override val virtualCategoryIdRecentlyAdded: String = VIRTUAL_CATEGORY_ID_RECENTLY_ADDED_SERIES
+
+        override suspend fun refreshCategories(): Result<Unit> {
+            return seriesRepository.refreshSeriesCategories()
+        }
+
+        override suspend fun hasData(): Boolean {
+            return seriesRepository.hasSeries()
+        }
+
+        override suspend fun refreshContent(): Result<Unit> {
+            return seriesRepository.refreshSeries()
+        }
+
+        override fun getNormalCategories(): Flow<List<CategoryItem>> {
+            return seriesRepository.getSeriesCategories().map { resource ->
+                when (resource) {
+                    is Resource.Loading -> emptyList()
+                    is Resource.Success -> {
+                        clearError()
+                        resource.data
                     }
-                    val seriesResult = contentRepository.refreshSeries()
-                    if (seriesResult is Result.Error) {
-                        _seriesErrorMessage.value = context.getString(R.string.error_series_short)
+                    is Resource.Error -> {
+                        handleResourceError(resource)
+                        emptyList()
                     }
-                } catch (e: Exception) {
-                    _seriesErrorMessage.value = context.getString(R.string.error_unknown)
-                } finally {
-                    _isSeriesLoading.value = false
                 }
             }
+        }
+
+        override fun getAllContent(): Flow<List<ContentItem>> {
+            return seriesRepository.getSeries().map { resource ->
+                when (resource) {
+                    is Resource.Loading -> emptyList()
+                    is Resource.Success -> {
+                        clearError()
+                        resource.data
+                    }
+                    is Resource.Error -> {
+                        handleResourceError(resource)
+                        emptyList()
+                    }
+                }
+            }
+        }
+
+        override suspend fun getCategoryCounts(): Map<String, Int> {
+            return seriesRepository.getCategoryCounts()
+        }
+
+        override fun ContentItem.isAdultContent(): Boolean {
+            return when (this) {
+                is SeriesEntity -> this.isAdult == true
+                else -> false
+            }
+        }
+
+        override fun ContentItem.getCategoryId(): String? {
+            return when (this) {
+                is SeriesEntity -> this.categoryId
+                else -> null
+            }
+        }
+
+        override fun createVirtualCategoryEntity(
+            categoryId: String,
+            categoryName: String,
+            parentId: Int,
+            sortOrder: Int,
+        ): CategoryItem {
+            return SeriesCategoryEntity(
+                categoryId = categoryId,
+                categoryName = categoryName,
+                parentId = parentId,
+                sortOrder = sortOrder,
+            )
         }
 
         /**
          * Kategori seçer (Diziler için).
          */
         fun selectSeriesCategory(categoryId: Any) {
-            Timber.tag("GRID_UPDATE").d("📺 selectSeriesCategory: $categoryId")
             _selectedSeriesCategoryId.value = categoryId
         }
 
@@ -260,10 +355,7 @@ class SeriesViewModel
             contentId: Int,
             viewerId: Int,
         ) {
-            viewModelScope.launch {
-                contentRepository.addFavorite(contentId, viewerId)
-                showToast(context.getString(R.string.toast_favorite_added))
-            }
+            addFavorite(contentId, viewerId)
         }
 
         /**
@@ -273,10 +365,7 @@ class SeriesViewModel
             contentId: Int,
             viewerId: Int,
         ) {
-            viewModelScope.launch {
-                contentRepository.removeFavorite(contentId, viewerId)
-                showToast(context.getString(R.string.toast_favorite_removed))
-            }
+            removeFavorite(contentId, viewerId)
         }
 
         /**
@@ -285,7 +374,7 @@ class SeriesViewModel
         fun isSeriesFavorite(
             contentId: Int,
             viewerId: Int,
-        ): Flow<Boolean> = contentRepository.isFavorite(contentId, viewerId)
+        ): Flow<Boolean> = isFavorite(contentId, viewerId)
 
         /**
          * Dizi arama sorgusunu günceller.
@@ -307,66 +396,4 @@ class SeriesViewModel
          * Mevcut dizi sıralama tercihini döndürür.
          */
         fun getCurrentSeriesSortOrder(): Flow<SortOrder?> = seriesSortOrderFlow
-
-        // ==================== Helper Functions ====================
-
-        /**
-         * İçerik listesine arama filtresi uygular.
-         */
-        private fun applySearchFilter(
-            items: List<ContentItem>,
-            query: String,
-        ): List<ContentItem> {
-            if (query.length < 3) {
-                return items
-            }
-
-            val lowerQuery = query.lowercase()
-            return items.filter { item ->
-                item.title.lowercase().contains(lowerQuery)
-            }
-        }
-
-        /**
-         * İçerik listesine sıralama uygular.
-         */
-        private fun applySorting(
-            items: List<ContentItem>,
-            sortOrder: SortOrder?,
-        ): List<ContentItem> {
-            if (sortOrder == null) return items
-
-            return when (sortOrder) {
-                SortOrder.A_TO_Z -> items.sortedBy { it.title.lowercase() }
-                SortOrder.Z_TO_A -> items.sortedByDescending { it.title.lowercase() }
-                SortOrder.RATING_HIGH_TO_LOW ->
-                    items.sortedByDescending { item ->
-                        when (item) {
-                            is SeriesEntity -> item.rating ?: 0.0
-                            else -> 0.0
-                        }
-                    }
-                SortOrder.RATING_LOW_TO_HIGH ->
-                    items.sortedBy { item ->
-                        when (item) {
-                            is SeriesEntity -> item.rating ?: Double.MAX_VALUE
-                            else -> Double.MAX_VALUE
-                        }
-                    }
-                SortOrder.DATE_NEW_TO_OLD ->
-                    items.sortedByDescending { item ->
-                        when (item) {
-                            is SeriesEntity -> item.added
-                            else -> null
-                        }?.toLongOrNull() ?: 0L
-                    }
-                SortOrder.DATE_OLD_TO_NEW ->
-                    items.sortedBy { item ->
-                        when (item) {
-                            is SeriesEntity -> item.added
-                            else -> null
-                        }?.toLongOrNull() ?: Long.MAX_VALUE
-                    }
-            }
-        }
     }

@@ -117,5 +117,20 @@
         
     </androidx.constraintlayout.widget.ConstraintLayout>
     
+    <!-- Banner Ad - Alt kısımda gösterilir, premium kullanıcılar için gizlenir -->
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/ad_view_banner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        app:adUnitId="ca-app-pub-3940256099942544/6300978111"
+        app:adSize="BANNER"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+    
 </androidx.constraintlayout.widget.ConstraintLayout>
 

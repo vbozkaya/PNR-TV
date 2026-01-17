@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/transparent"
+    android:background="@drawable/player_controls_background"
     android:focusable="false"
     android:focusableInTouchMode="false"
     android:descendantFocusability="beforeDescendants">
@@ -25,7 +25,7 @@
     
     <!-- ÜST KISIM: Film/Dizi adı ve IMDB puanı -->
     <FrameLayout
-        android:id="@+id/panel_top_section"
+        android:id="@+id/panelTopSection"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:paddingStart="40dp"
@@ -37,7 +37,7 @@
         
         <!-- Film/Dizi adı ve IMDB puanı -->
         <TextView
-            android:id="@+id/txt_content_title"
+            android:id="@+id/txtContentTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical|start"
@@ -52,7 +52,7 @@
     
     <!-- ALT KISIM: SeekBar ve zaman göstergeleri -->
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/panel_bottom_section"
+        android:id="@+id/panelBottomSection"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:paddingStart="16dp"
@@ -103,10 +103,11 @@
             android:id="@+id/seekbar_progress"
             android:layout_width="0dp"
             android:layout_height="9dp"
-            android:progressDrawable="@drawable/seekbar_progress"
+            android:progressDrawable="@drawable/seekbar_progress_with_watched"
             android:thumb="@drawable/seekbar_thumb_selector"
             android:max="100"
             android:progress="0"
+            android:secondaryProgress="0"
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:minHeight="9dp"
@@ -119,7 +120,7 @@
         
         <!-- Geçen süre - SeekBar'ın üstünde, sol -->
         <TextView
-            android:id="@+id/txt_current_time"
+            android:id="@+id/txtCurrentTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="00:00"
@@ -132,7 +133,7 @@
         
         <!-- Toplam süre - SeekBar'ın üstünde, sağ -->
         <TextView
-            android:id="@+id/txt_total_time"
+            android:id="@+id/txtTotalTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="00:00"
@@ -168,7 +169,7 @@
         
         <!-- Stop Butonu - Video oynatılıyorsa görünür (Play ile aynı constraint'ler) -->
         <ImageButton
-            android:id="@+id/btn_stop"
+            android:id="@+id/btnStop"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:minWidth="48dp"

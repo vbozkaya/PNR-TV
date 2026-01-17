@@ -302,4 +302,23 @@
     <string name="player_loading_preparing">コンテンツを準備しています...</string>
     <string name="player_loading_fetching_url">チャンネルアドレスを取得しています...</string>
     <string name="player_loading_buffering">ストリームを読み込んでいます...</string>
+    
+    <!-- Error Messages - Intent Validation -->
+    <string name="error_invalid_intent_data">無効なインテントデータ</string>
+    
+    <!-- Rating Format -->
+    <string name="rating_format">%1$.1f / 10</string>
+    
+    <!-- Billing Error Messages -->
+    <string name="error_billing_product_not_found">エラー: 製品が見つかりませんでした (%1$s)。Play Consoleライセンステスト設定を確認してください。</string>
+    <string name="error_billing_unavailable">Google Play Servicesが利用できないか、最新ではありません</string>
+    <string name="error_billing_service_unavailable">Google Play Servicesは一時的に利用できません</string>
+    <string name="error_billing_item_not_owned">製品が見つかりませんでした。Google Play Consoleで製品がアクティブであることを確認してください。</string>
+    <string name="error_billing_product_details_failed">製品の詳細を取得できませんでした: %1$s</string>
+    
+    <!-- User Status Placeholder -->
+    <string name="user_status_not_available">-</string>
+    
+    <!-- Connection Format -->
+    <string name="connection_format">%1$s/%2$s</string>
 </resources>

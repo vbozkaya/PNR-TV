@@ -33,7 +33,6 @@
 
         <!-- Gradient Gölge Overlay - Alt kısımdan yukarıya, kartın yaklaşık %27'sini kaplar -->
         <View
-            android:id="@+id/gradient_shadow_overlay"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:background="@drawable/gradient_card_bottom_shadow"

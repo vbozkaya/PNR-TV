@@ -1,58 +1,58 @@
-# PNR TV Projesi
+# PNR TV Project
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.22-blue.svg)](https://kotlinlang.org/)
 [![Android](https://img.shields.io/badge/Android-TV-green.svg)](https://developer.android.com/tv)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-PNR TV, sadece Android TV platformu için geliştirilmiş bir IPTV (İnternet Protokolü Televizyonu) uygulamasıdır. Kullanıcıların canlı yayınları, filmleri ve dizileri izlemesine olanak tanır.
+PNR TV - Smart Media Player is a professional media player application optimized specifically for Android TV interfaces. It delivers a smooth, intuitive, and cinematic experience for your video content, allowing you to manage and play your playlists with ease.
 
-Bu proje, mobil cihazları hedeflemez ve tamamen TV kullanıcı deneyimine odaklanmıştır.
+This project does not target mobile devices and is entirely focused on TV user experience.
 
-## 📋 İçindekiler
+## 📋 Table of Contents
 
-- [Özellikler](#-özellikler)
-- [Teknolojiler](#-teknolojiler)
-- [Kurulum](#-kurulum)
-- [Dokümantasyon](#-dokümantasyon)
-- [Katkıda Bulunma](#-katkıda-bulunma)
-- [Telif Hakkı ve Sorumluluk Reddi](#️-telif-hakkı-ve-sorumluluk-reddi)
-- [Lisans](#-lisans)
+- [Features](#-features)
+- [Technologies](#-technologies)
+- [Installation](#-installation)
+- [Documentation](#-documentation)
+- [Contributing](#-contributing)
+- [Copyright and Disclaimer](#️-copyright-and-disclaimer)
+- [License](#-license)
 
-## ✨ Özellikler
+## ✨ Features
 
-### İçerik Yönetimi
-- 🎬 **Filmler (VOD):** Film kategorileri, detaylar ve oynatma
-- 📺 **Diziler:** Dizi kategorileri, sezonlar, bölümler ve oynatma
-- 📡 **Canlı Yayınlar:** Canlı TV kanalları ve kategorileri
-- 🔍 **TMDB Entegrasyonu:** Film ve dizi detayları için The Movie Database desteği
+### Content Management
+- 🎬 **Movies (VOD):** Movie categories, details, and playback
+- 📺 **Series:** Series categories, seasons, episodes, and playback
+- 📡 **Live Streams:** Live TV channels and categories
+- 🔍 **TMDB Integration:** The Movie Database support for movie and series details
 
-### Kullanıcı Özellikleri
-- 👤 **Çoklu Kullanıcı:** Birden fazla IPTV hesabı yönetimi
-- 🎭 **İzleyici Profilleri:** Her kullanıcı için ayrı izleyici profilleri
-- ⭐ **Favoriler:** Favori kanalları kaydetme
-- 📚 **Son İzlenenler:** Son izlenen içerikleri takip etme
-- ⏯️ **Oynatma Pozisyonu:** Kaldığınız yerden devam etme
+### User Features
+- 👤 **Multi-User:** Multiple media service account management
+- 🎭 **Viewer Profiles:** Separate viewer profiles for each user
+- ⭐ **Favorites:** Save favorite content
+- 📚 **Recently Watched:** Track recently watched content
+- ⏯️ **Playback Position:** Resume from where you left off
 
-### Diğer Özellikler
-- 🔄 **Offline Desteği:** Yerel veritabanı ile offline çalışma
-- 🎨 **Modern UI:** Android TV Leanback Library ile optimize edilmiş arayüz
-- 🔐 **Güvenlik:** Network security config ile özel sertifika desteği
-- 📊 **Analytics:** Firebase Analytics ve Crashlytics entegrasyonu
+### Other Features
+- 🔄 **Offline Support:** Local database for offline operation
+- 🎨 **Modern UI:** Optimized interface with Android TV Leanback Library
+- 🔐 **Security:** Network security config with custom certificate support
+- 📊 **Analytics:** Firebase Analytics and Crashlytics integration
 
-## 🛠️ Teknolojiler
+## 🛠️ Technologies
 
-### Dil ve Platform
-- **Dil:** Kotlin 1.9.22
+### Language and Platform
+- **Language:** Kotlin 1.9.22
 - **Platform:** Android TV
 - **Min SDK:** 21 (Android 5.0 Lollipop)
 - **Target SDK:** 34 (Android 14)
 
-### Mimari
-- **Mimari Desen:** MVVM (Model-View-ViewModel)
+### Architecture
+- **Architecture Pattern:** MVVM (Model-View-ViewModel)
 - **Dependency Injection:** Hilt (Dagger)
 - **Reactive Programming:** Kotlin Coroutines & Flow
 
-### Kütüphaneler
+### Libraries
 - **UI:** AndroidX Leanback, Material Design
 - **Database:** Room
 - **Network:** Retrofit, OkHttp, Moshi
@@ -61,51 +61,45 @@ Bu proje, mobil cihazları hedeflemez ve tamamen TV kullanıcı deneyimine odakl
 - **Analytics:** Firebase Analytics, Crashlytics
 - **Background Tasks:** WorkManager
 
-## 🚀 Kurulum
+## 🚀 Installation
 
-Detaylı kurulum rehberi için [SETUP_GUIDE.md](SETUP_GUIDE.md) dosyasına bakın.
+For detailed installation guide, see [SETUP_GUIDE.md](SETUP_GUIDE.md).
 
-### Hızlı Başlangıç
+### Quick Start
 
-1. **Gereksinimler:**
-   - Android Studio Hedgehog (2023.1.1) veya üzeri
+1. **Requirements:**
+   - Android Studio Hedgehog (2023.1.1) or higher
    - JDK 21
    - Android SDK 34
 
-2. **Projeyi Klonlama:**
+2. **Clone the Project:**
    ```bash
    git clone <repository-url>
    cd "PNR TV"
-Yapılandırma:
+   ```
 
-local.properties dosyası oluşturun
+3. **Configuration:**
+   - Create `local.properties` file
+   - Add `TMDB_API_KEY` (see SETUP_GUIDE.md for details)
 
-TMDB_API_KEY ekleyin (detaylar için SETUP_GUIDE.md)
+4. **Run:**
+   - Open the project in Android Studio
+   - Wait for Gradle synchronization
+   - Run on Android TV emulator or physical device
 
-Çalıştırma:
+## 📚 Documentation
 
-Android Studio'da projeyi açın
+Project documentation:
 
-Gradle senkronizasyonunu bekleyin
+- **API_DOCUMENTATION.md** - API endpoints and request/response formats
+- **ARCHITECTURE.md** - Architecture structure, components, and data flow
+- **SETUP_GUIDE.md** - Detailed installation and configuration guide
+- **CONTRIBUTING.md** - Contributing guide
+- **CHANGELOG.md** - Version history and changes
 
-Android TV emülatöründe veya fiziksel cihazda çalıştırın
+### Project Structure
 
-📚 Dokümantasyon
-Proje dokümantasyonu:
-
-API_DOCUMENTATION.md - API endpoint'leri ve request/response formatları
-
-ARCHITECTURE.md - Mimari yapı, bileşenler ve veri akışı
-
-SETUP_GUIDE.md - Detaylı kurulum ve yapılandırma rehberi
-
-CONTRIBUTING.md - Katkıda bulunma rehberi
-
-CHANGELOG.md - Sürüm geçmişi ve değişiklikler
-
-Proje Yapısı
-bash
-Kodu kopyala
+```
 app/src/main/java/com/pnr/tv/
 ├── db/              # Room Database (Entities, DAOs)
 ├── di/              # Hilt Modules (Dependency Injection)
@@ -114,54 +108,47 @@ app/src/main/java/com/pnr/tv/
 ├── repository/      # Data Repositories
 ├── ui/              # UI Components (Activities, Fragments, ViewModels)
 └── util/            # Utility Classes
-🤝 Katkıda Bulunma
-Katkıda bulunmak istiyorsanız, lütfen CONTRIBUTING.md dosyasını okuyun.
+```
 
-Katkı Süreci
-Projeyi fork edin
+## 🤝 Contributing
 
-Feature branch oluşturun (git checkout -b feature/AmazingFeature)
+If you want to contribute, please read the CONTRIBUTING.md file.
 
-Değişikliklerinizi commit edin (git commit -m 'Add some AmazingFeature')
+### Contribution Process
 
-Branch'inizi push edin (git push origin feature/AmazingFeature)
+1. Fork the project
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-Pull Request oluşturun
+## ⚠️ Copyright and Disclaimer
 
-⚠️ Telif Hakkı ve Sorumluluk Reddi
-PNR TV uygulaması herhangi bir canlı yayın, film, dizi veya telif hakkına tabi içerik sağlamaz.
-Uygulama yalnızca kullanıcının kendi temin ettiği içerik kaynaklarını (ör. IPTV listeleri) oynatmasına olanak tanıyan bir medya oynatıcıdır.
+PNR TV does not supply or include any media or content. The app is purely a media player that allows users to play content sources they provide themselves (e.g., playlists, network streams).
 
-Kullanıcının izlediği veya eriştiği içeriklerin:
+PNR TV has no affiliation with any third-party content provider. Users must provide their own content from their own storage or playlists.
 
-Telif haklarına uygunluğu,
+We do not endorse the streaming of copyright-protected material without permission of the copyright holder.
 
-Yasal olup olmadığı,
+The user is solely responsible for the copyright compliance, legality, and compliance with the legislation of their country regarding the content they watch or access.
 
-Bulunduğu ülkenin mevzuatına uygunluğu
+As developers of this application:
+- We accept no responsibility for the content users watch
+- We accept no responsibility for copyright violations
+- We accept no responsibility for illegal content usage
 
-tamamen kullanıcının kendi sorumluluğundadır.
+Users are explicitly advised not to watch any copyrighted and illegal broadcasts.
 
-Uygulamayı geliştirenler olarak:
+## 📝 License
 
-Kullanıcının izlediği içeriklerden,
+This project is licensed under the MIT License. See the LICENSE file for details.
 
-Telif hakkı ihlallerinden,
+## 🙏 Acknowledgments
 
-Yasa dışı içerik kullanımından
+- **The Movie Database (TMDB)** - For movie and series data
+- **Android TV Leanback Library** - For TV UI components
+- **All open-source library developers**
 
-hiçbir şekilde sorumluluk kabul edilmez.
+---
 
-Kullanıcılara, telif hakkı bulunan ve yasal olmayan hiçbir yayını izlememeleri açıkça tavsiye edilir.
-
-📝 Lisans
-Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için LICENSE dosyasına bakın.
-
-🙏 Teşekkürler
-The Movie Database (TMDB) - Film ve dizi verileri için
-
-Android TV Leanback Library - TV UI bileşenleri için
-
-Tüm açık kaynak kütüphane geliştiricilerine
-
-Not: Bu proje sadece Android TV platformu için geliştirilmiştir. Mobil cihazlarda çalışmaz.
+**Note:** This project is developed exclusively for the Android TV platform. It does not work on mobile devices.

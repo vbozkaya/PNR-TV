@@ -57,3 +57,35 @@ fun String.normalizeBaseUrl(): String {
         }
     }
 }
+
+/**
+ * IPTV görsel URL'ini normalize eder.
+ * Eğer relative path ise (örn: "/path/to/image.jpg"), base URL ekler.
+ * Eğer zaten absolute URL ise, olduğu gibi döner.
+ *
+ * @param baseUrl IPTV sunucu base URL'i (örn: "http://example.com")
+ * @return Normalize edilmiş görsel URL'i
+ *
+ * Örnek:
+ * - "/path/to/image.jpg" + "http://example.com" -> "http://example.com/path/to/image.jpg"
+ * - "http://example.com/path/to/image.jpg" + "http://example.com" -> "http://example.com/path/to/image.jpg"
+ * - null veya empty -> null
+ */
+fun String?.normalizeIptvImageUrl(baseUrl: String?): String? {
+    if (this.isNullOrBlank() || baseUrl.isNullOrBlank()) return this
+
+    val trimmed = this.trim()
+
+    // Zaten absolute URL ise (http:// veya https:// ile başlıyorsa), olduğu gibi döner
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+        return trimmed
+    }
+
+    // Relative path ise (örn: "/path/to/image.jpg"), base URL ekle
+    val normalizedBaseUrl = baseUrl.normalizeBaseUrl()
+    return if (trimmed.startsWith("/")) {
+        "$normalizedBaseUrl$trimmed"
+    } else {
+        "$normalizedBaseUrl/$trimmed"
+    }
+}

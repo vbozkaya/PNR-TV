@@ -16,113 +16,75 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
     
-    <LinearLayout
-        android:id="@+id/layout_settings_content"
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:orientation="vertical"
-        android:paddingStart="32dp"
-        android:paddingEnd="32dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
         app:layout_constraintTop_toBottomOf="@id/navbar"
+        app:layout_constraintBottom_toTopOf="@id/ad_view_banner"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <TextView
-            android:id="@+id/btn_user_status"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/second_focus_selector"
-            android:paddingStart="24dp"
-            android:paddingEnd="24dp"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp"
-            android:text="@string/settings_user_status"
-            android:textColor="@android:color/white"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:focusable="true"
-            android:clickable="true"
-            android:focusableInTouchMode="true"
-            android:gravity="center_vertical" />
+            android:layout_marginTop="32dp"
+            android:orientation="vertical"
+            android:paddingStart="32dp"
+            android:paddingEnd="32dp"
+            android:paddingBottom="32dp">
 
-        <TextView
-            android:id="@+id/btn_app_language"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/second_focus_selector"
-            android:paddingStart="24dp"
-            android:paddingEnd="24dp"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp"
-            android:text="@string/settings_app_language"
-            android:textColor="@android:color/white"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:focusable="true"
-            android:clickable="true"
-            android:focusableInTouchMode="true"
-            android:gravity="center_vertical" />
+            <!-- Account Settings Fragment Container -->
+            <FrameLayout
+                android:id="@+id/settings_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
-        <TextView
-            android:id="@+id/btn_viewers"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/second_focus_selector"
-            android:paddingStart="24dp"
-            android:paddingEnd="24dp"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp"
-            android:text="@string/page_viewers"
-            android:textColor="@android:color/white"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:focusable="true"
-            android:clickable="true"
-            android:focusableInTouchMode="true"
-            android:gravity="center_vertical" />
+            <!-- General Settings Fragment Container -->
+            <FrameLayout
+                android:id="@+id/general_settings_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
-        <TextView
-            android:id="@+id/btn_clear_cache"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/second_focus_selector"
-            android:paddingStart="24dp"
-            android:paddingEnd="24dp"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp"
-            android:text="@string/settings_clear_cache"
-            android:textColor="@android:color/white"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:focusable="true"
-            android:clickable="true"
-            android:focusableInTouchMode="true"
-            android:gravity="center_vertical" />
+            <!-- Premium Settings Fragment Container -->
+            <FrameLayout
+                android:id="@+id/premium_settings_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
-        <TextView
-            android:id="@+id/btn_about"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/second_focus_selector"
-            android:paddingStart="24dp"
-            android:paddingEnd="24dp"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp"
-            android:text="@string/settings_about_app"
-            android:textColor="@android:color/white"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:focusable="true"
-            android:clickable="true"
-            android:focusableInTouchMode="true"
-            android:gravity="center_vertical" />
+            <!-- Crashlytics Debug (sadece debug build'lerde görünür) -->
+            <LinearLayout
+                android:id="@+id/btn_crashlytics_debug"
+                style="@style/SettingsRowStyle"
+                android:orientation="horizontal"
+                android:visibility="gone">
 
-    </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Crashlytics Debug (Debug Only)"
+                    style="@style/SettingsRowTextStyle" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+    
+    <!-- Banner Ad - Alt kısımda gösterilir, premium kullanıcılar için gizlenir -->
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/ad_view_banner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        app:adUnitId="ca-app-pub-3940256099942544/6300978111"
+        app:adSize="BANNER"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
     
 </androidx.constraintlayout.widget.ConstraintLayout>
 

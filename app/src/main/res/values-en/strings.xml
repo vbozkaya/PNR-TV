@@ -178,6 +178,12 @@
     <string name="settings_adult_content">Adult Content</string>
     <string name="settings_adult_content_on">On</string>
     <string name="settings_adult_content_off">Off</string>
+    <string name="adult_content_reward_dialog_title">Watch Rewarded Ad</string>
+    <string name="adult_content_reward_dialog_message">You can gain 15 minutes of access by watching a rewarded ad to use this feature.</string>
+    <string name="adult_content_reward_dialog_yes">Watch</string>
+    <string name="adult_content_reward_dialog_no">Cancel</string>
+    <string name="adult_content_reward_ad_loading">Loading ad, please wait...</string>
+    <string name="adult_content_reward_ad_error">Ad could not be loaded. Please try again later.</string>
     <string name="settings_clear_cache">Clear Cache and All Data</string>
     <string name="settings_about_app">About App</string>
     
@@ -297,5 +303,24 @@
     <string name="player_loading_preparing">Preparing content...</string>
     <string name="player_loading_fetching_url">Fetching channel address...</string>
     <string name="player_loading_buffering">Loading stream...</string>
+    
+    <!-- Error Messages - Intent Validation -->
+    <string name="error_invalid_intent_data">Invalid intent data</string>
+    
+    <!-- Rating Format -->
+    <string name="rating_format">%1$.1f / 10</string>
+    
+    <!-- Billing Error Messages -->
+    <string name="error_billing_product_not_found">Error: Product not found (%1$s). Please check Play Console License Test settings.</string>
+    <string name="error_billing_unavailable">Google Play Services is not available or not up to date</string>
+    <string name="error_billing_service_unavailable">Google Play Services is temporarily unavailable</string>
+    <string name="error_billing_item_not_owned">Product not found. Make sure the product is active in Google Play Console.</string>
+    <string name="error_billing_product_details_failed">Product details could not be retrieved: %1$s</string>
+    
+    <!-- User Status Placeholder -->
+    <string name="user_status_not_available">-</string>
+    
+    <!-- Connection Format -->
+    <string name="connection_format">%1$s/%2$s</string>
 </resources>
 

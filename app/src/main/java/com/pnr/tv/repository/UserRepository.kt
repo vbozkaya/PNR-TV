@@ -1,6 +1,6 @@
 package com.pnr.tv.repository
 
-import com.pnr.tv.SessionManager
+import com.pnr.tv.ui.main.SessionManager
 import com.pnr.tv.db.dao.FavoriteDao
 import com.pnr.tv.db.dao.LiveStreamCategoryDao
 import com.pnr.tv.db.dao.LiveStreamDao
@@ -19,7 +19,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
-import timber.log.Timber
 import javax.inject.Inject
 
 class UserRepository
@@ -75,33 +74,19 @@ class UserRepository
             val userId = user.id
 
             // Kullanıcıya ait tüm verileri sil
-            Timber.d("🗑️ Kullanıcı siliniyor: ${user.accountName} (ID: $userId)")
-            Timber.d("   • Favoriler siliniyor...")
             favoriteDao.deleteByUserId(userId)
-
-            Timber.d("   • Son izlenenler siliniyor...")
             recentlyWatchedDao.deleteByUserId(userId)
-
-            Timber.d("   • Oynatma pozisyonları siliniyor...")
             playbackPositionDao.deleteByUserId(userId)
-
-            Timber.d("   • İzlenen bölümler siliniyor...")
             watchedEpisodeDao.deleteByUserId(userId)
-
-            Timber.d("   • Viewer'lar siliniyor...")
             viewerDao.deleteByUserId(userId)
 
             // Kullanıcıyı sil
-            Timber.d("   • Kullanıcı hesabı siliniyor...")
             userDao.deleteUser(user)
 
             // Eğer silinen kullanıcı seçili kullanıcıysa, seçili kullanıcıyı temizle
             if (currentUserId == userId) {
-                Timber.d("   • Seçili kullanıcı temizleniyor (silinen kullanıcı seçiliydi)...")
                 sessionManager.clearCurrentUser()
             }
-
-            Timber.d("✅ Kullanıcı ve tüm verileri başarıyla silindi")
         }
 
         suspend fun setCurrentUser(user: UserAccountEntity) {
@@ -127,57 +112,32 @@ class UserRepository
          * - Seçili kullanıcı (SessionManager)
          */
         suspend fun clearAllData() {
-            Timber.d("🗑️ TÜM VERİLER TEMİZLENİYOR...")
-
             // Kullanıcı verileri
-            Timber.d("   • Kullanıcılar siliniyor...")
             val allUsers = userDao.getAllUsers().firstOrNull() ?: emptyList()
             allUsers.forEach { userDao.deleteUser(it) }
 
             // Kullanıcı tercihleri
-            Timber.d("   • Favoriler siliniyor...")
             favoriteDao.deleteAll()
-
-            Timber.d("   • Son izlenenler siliniyor...")
             recentlyWatchedDao.deleteAll()
-
-            Timber.d("   • Oynatma pozisyonları siliniyor...")
             playbackPositionDao.deleteAll()
 
-            Timber.d("   • İzlenen bölümler siliniyor...")
             watchedEpisodeDao.clearAll()
-
-            Timber.d("   • Viewer'lar siliniyor...")
             viewerDao.deleteAll()
 
             // İçerik verileri
-            Timber.d("   • Filmler siliniyor...")
             movieDao.clearAll()
-
-            Timber.d("   • Diziler siliniyor...")
             seriesDao.clearAll()
-
-            Timber.d("   • Canlı yayınlar siliniyor...")
             liveStreamDao.clearAll()
 
             // Kategoriler
-            Timber.d("   • Film kategorileri siliniyor...")
             movieCategoryDao.clearAll()
-
-            Timber.d("   • Dizi kategorileri siliniyor...")
             seriesCategoryDao.clearAll()
-
-            Timber.d("   • Canlı yayın kategorileri siliniyor...")
             liveStreamCategoryDao.clearAll()
 
             // Cache
-            Timber.d("   • TMDB cache siliniyor...")
             tmdbCacheDao.clearAllCache()
 
             // Session
-            Timber.d("   • Seçili kullanıcı temizleniyor...")
             sessionManager.clearCurrentUser()
-
-            Timber.d("✅ TÜM VERİLER BAŞARIYLA TEMİZLENDİ")
         }
     }

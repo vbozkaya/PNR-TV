@@ -38,10 +38,34 @@ class ViewersAdapter(
         val deleteButton: Button = itemView.findViewById(R.id.btn_delete)
 
         fun bind(viewer: ViewerEntity) {
-            nameTextView.text = viewer.name
+            // Varsayılan izleyici için adı string resource'dan al (tüm dillerde gösterilsin)
+            nameTextView.text =
+                if (!viewer.isDeletable) {
+                    itemView.context.getString(R.string.default_viewer_name)
+                } else {
+                    viewer.name
+                }
             deleteButton.visibility = if (viewer.isDeletable) View.VISIBLE else View.GONE
             deleteButton.setOnClickListener {
                 onDeleteClick(viewer)
+            }
+
+            // Varsayılan izleyici (isDeletable=false) için focus'u devre dışı bırak
+            if (!viewer.isDeletable) {
+                itemView.isFocusable = false
+                itemView.isFocusableInTouchMode = false
+                itemView.isClickable = false
+                nameTextView.isFocusable = false
+                nameTextView.isFocusableInTouchMode = false
+                nameTextView.isClickable = false
+            } else {
+                // Normal izleyiciler için focus aktif
+                itemView.isFocusable = false // ConstraintLayout zaten focusable değil
+                itemView.isFocusableInTouchMode = false
+                itemView.isClickable = false
+                nameTextView.isFocusable = false
+                nameTextView.isFocusableInTouchMode = false
+                nameTextView.isClickable = false
             }
 
             // Focus scroll: Sil butonu focus alındığında item'ı görünür alana getir

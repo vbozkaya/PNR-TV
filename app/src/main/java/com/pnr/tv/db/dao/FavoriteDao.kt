@@ -19,6 +19,16 @@ interface FavoriteDao {
         userId: Int,
     )
 
+    /**
+     * Belirli bir içeriği (channelId) tüm izleyicilerden favorilerden çıkarır.
+     * Toggle favori işlemi için kullanılır.
+     */
+    @Query("DELETE FROM favorite_channels WHERE channelId = :channelId AND userId = :userId")
+    suspend fun removeFavoriteForAllViewers(
+        channelId: Int,
+        userId: Int,
+    )
+
     @Query("SELECT EXISTS(SELECT 1 FROM favorite_channels WHERE channelId = :channelId AND viewerId = :viewerId AND userId = :userId)")
     fun isFavorite(
         channelId: Int,

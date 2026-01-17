@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+ (API 31+) için SplashScreen API çakışmasını önlemek -->
+    <!-- windowSplashScreenAnimatedIcon sistemin otomatik ikonunu şeffaf yapar -->
+    <!-- Böylece sadece windowBackground'daki splash_image görünür -->
+    <style name="Theme.Splash" parent="Theme.AppCompat.NoActionBar">
+        <!-- Sistemin otomatik splash ikonunu şeffaf yap - çift logo sorununu önler -->
+        <item name="android:windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+        <!-- Splash ekranının arka plan rengini siyah yap - titreme olmasın -->
+        <item name="android:windowSplashScreenBackground">@android:color/black</item>
+        <!-- TV launcher'ları Android 12 standartlarına uymuyorsa, sistem preview'ını tamamen devre dışı bırak -->
+        <item name="android:windowDisablePreview">true</item>
+    </style>
+</resources>

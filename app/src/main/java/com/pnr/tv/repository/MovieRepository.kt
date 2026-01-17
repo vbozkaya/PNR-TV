@@ -8,9 +8,14 @@ import com.pnr.tv.db.entity.MovieEntity
 import com.pnr.tv.di.IptvRetrofit
 import com.pnr.tv.network.ApiActions
 import com.pnr.tv.network.dto.toEntity
+import com.pnr.tv.util.error.ErrorHelper
+import com.pnr.tv.util.error.Resource
+import com.pnr.tv.util.validation.AdultContentDetector
+import com.pnr.tv.util.validation.DataValidationHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flow
 import retrofit2.Retrofit
 import timber.log.Timber
 import javax.inject.Inject
@@ -21,26 +26,59 @@ import javax.inject.Inject
 class MovieRepository
     @Inject
     constructor(
-        @IptvRetrofit retrofitBuilder: Retrofit.Builder,
+        apiServiceManager: ApiServiceManager,
         userRepository: UserRepository,
         private val tmdbRepository: TmdbRepository,
         private val movieDao: MovieDao,
         private val movieCategoryDao: MovieCategoryDao,
         @ApplicationContext context: Context,
     ) : BaseContentRepository(
-            retrofitBuilder,
+            apiServiceManager,
             userRepository,
             context,
         ) {
         // ==================== Read Operations ====================
 
-        fun getMovies(): Flow<List<MovieEntity>> = movieDao.getAll()
+        fun getMovies(): Flow<Resource<List<MovieEntity>>> =
+            flow {
+                emit(Resource.Loading)
+                try {
+                    movieDao.getAll().collect { data ->
+                        emit(Resource.Success(data))
+                    }
+                } catch (e: Exception) {
+                    val errorMessage = ErrorHelper.createError(e, context, errorContext = "MovieRepository.getMovies").message
+                    emit(Resource.Error(errorMessage, e))
+                }
+            }
 
-        fun getMoviesByCategoryId(categoryId: String): Flow<List<MovieEntity>> = movieDao.getByCategoryId(categoryId)
+        fun getMoviesByCategoryId(categoryId: String): Flow<Resource<List<MovieEntity>>> =
+            flow {
+                emit(Resource.Loading)
+                try {
+                    movieDao.getByCategoryId(categoryId).collect { data ->
+                        emit(Resource.Success(data))
+                    }
+                } catch (e: Exception) {
+                    val errorMessage = ErrorHelper.createError(e, context, errorContext = "MovieRepository.getMoviesByCategoryId").message
+                    emit(Resource.Error(errorMessage, e))
+                }
+            }
 
-        suspend fun getRecentlyAddedMovies(limit: Int): List<MovieEntity> = movieDao.getRecentlyAdded(limit)
+        fun getRecentlyAddedMovies(limit: Int): Flow<List<MovieEntity>> = movieDao.getRecentlyAdded(limit)
 
-        fun getMovieCategories(): Flow<List<MovieCategoryEntity>> = movieCategoryDao.getAll()
+        fun getMovieCategories(): Flow<Resource<List<MovieCategoryEntity>>> =
+            flow {
+                emit(Resource.Loading)
+                try {
+                    movieCategoryDao.getAll().collect { data ->
+                        emit(Resource.Success(data))
+                    }
+                } catch (e: Exception) {
+                    val errorMessage = ErrorHelper.createError(e, context, errorContext = "MovieRepository.getMovieCategories").message
+                    emit(Resource.Error(errorMessage, e))
+                }
+            }
 
         suspend fun getMoviesByIds(movieIds: List<Int>): List<MovieEntity> {
             if (movieIds.isEmpty()) return emptyList()
@@ -48,11 +86,26 @@ class MovieRepository
         }
 
         /**
+         * Kategori ID'ye göre film sayılarını döndürür (performans optimizasyonu için).
+         * @return Kategori ID -> Sayı mapping'i
+         */
+        suspend fun getCategoryCounts(): Map<String, Int> {
+            return movieDao.getCategoryCounts().associate { it.categoryId to it.count }
+        }
+
+        /**
          * Veritabanında film verisi olup olmadığını kontrol eder.
          * @return true ise veri var, false ise veri yok
          */
         suspend fun hasMovies(): Boolean {
-            return getMovies().firstOrNull()?.isNotEmpty() == true
+            return try {
+                // DAO'dan direkt veri kontrolü yap - Flow wrapper'ı kullanmadan
+                val data = movieDao.getAll().firstOrNull()
+                data?.isNotEmpty() ?: false
+            } catch (e: Exception) {
+                timber.log.Timber.e(e, "Film veri kontrolü hatası")
+                false
+            }
         }
 
         /**
@@ -60,7 +113,29 @@ class MovieRepository
          * @return true ise veri var, false ise veri yok
          */
         suspend fun hasMovieCategories(): Boolean {
-            return getMovieCategories().firstOrNull()?.isNotEmpty() == true
+            return try {
+                val resource = getMovieCategories().firstOrNull()
+                when (resource) {
+                    is Resource.Success -> resource.data.isNotEmpty()
+                    else -> false
+                }
+            } catch (e: Exception) {
+                false
+            }
+        }
+
+        /**
+         * Veritabanındaki toplam film sayısını döndürür.
+         * Direkt DAO'dan COUNT(*) sorgusu ile okur (performans için).
+         * @return Film sayısı
+         */
+        suspend fun getMoviesCount(): Int {
+            return try {
+                movieDao.getCount()
+            } catch (e: Exception) {
+                Timber.e(e, "Film sayısı alınamadı")
+                0
+            }
         }
 
         // ==================== Refresh Operations ====================
@@ -76,65 +151,80 @@ class MovieRepository
             skipTmdbSync: Boolean = false,
             forMainScreenUpdate: Boolean = false,
             maxRetries: Int = 2,
-        ): Result<Unit> =
-            safeApiCall(
+        ): Result<Unit> {
+            // EN BAŞTA kategorileri güncelle (safeApiCall dışında)
+            val categoriesResult = refreshMovieCategories()
+            if (categoriesResult is Result.Error) {
+                Timber.tag("DB_DEBUG").w("⚠️  Film kategorileri güncellemesi başarısız oldu: ${categoriesResult.message}")
+            }
+
+            return safeApiCall(
                 forMainScreenUpdate = forMainScreenUpdate,
                 maxRetries = maxRetries,
                 retryDelayMs = 2000L,
                 apiCall = { api, user, pass ->
-                    Timber.d("═══════════════════════════════════════")
-                    Timber.d("📥 FİLM VERİLERİ GÜNCELENİYOR...")
-                    Timber.d("═══════════════════════════════════════")
-
                     // API çağrısı yap
                     val moviesDto = api.getMovies(user, pass, ApiActions.GET_VOD_STREAMS)
-                    Timber.d("✅ API'den ${moviesDto.size} film alındı")
 
                     // Veri doğrulama - eksik field'ları kontrol et
-                    val validationReport = com.pnr.tv.util.DataValidationHelper.validateMovies(moviesDto)
+                    val validationReport = DataValidationHelper.validateMovies(moviesDto)
                     validationReport.logReport()
-
-                    // İlk 3 filmin örnek verisini göster
-                    if (moviesDto.isNotEmpty()) {
-                        Timber.d("───────────────────────────────────────")
-                        Timber.d("📋 İLK 3 FİLM ÖRNEĞİ (HAM VERİ):")
-                        moviesDto.take(3).forEachIndexed { index, movie ->
-                            Timber.d("${index + 1}. Film:")
-                            Timber.d("   • ID: ${movie.streamId}")
-                            Timber.d("   • İsim: ${movie.name}")
-                            Timber.d("   • Rating: ${movie.rating}")
-                            Timber.d("   • Plot: ${movie.plot?.take(50)}...")
-                            Timber.d("   • CategoryId: ${movie.categoryId}")
-                            Timber.d("   • Ekleme Tarihi: ${movie.added}")
-                            Timber.d("   • Icon URL: ${movie.streamIconUrl?.take(50)}...")
-                        }
-                        Timber.d("───────────────────────────────────────")
-                    }
 
                     // Entity'ye dönüştür
                     val entities = moviesDto.mapNotNull { it.toEntity() }
-                    Timber.d("🔄 ${entities.size} film entity'ye dönüştürüldü")
+
+                    // Kategori adlarına göre yetişkin içerik tespiti
+                    val categoryMap =
+                        movieCategoryDao.getAll().firstOrNull()
+                            ?.associateBy { it.categoryId } ?: emptyMap()
+
+                    var categoryBasedAdultCount = 0
+                    val entitiesWithAdultCheck =
+                        entities.map { entity ->
+                            // Kategori adını kontrol et (her zaman kontrol et, API'den gelen değeri doğrula)
+                            val category = entity.categoryId?.let { categoryMap[it] }
+                            val isAdultFromCategory = AdultContentDetector.isAdultCategory(category?.categoryName)
+
+                            // Eğer kategori kontrolü adult içerik değil diyorsa (null dönerse), API'den gelen isAdult=true değerini override et
+                            if (isAdultFromCategory == null && entity.isAdult == true) {
+                                // Kategori kontrolü adult içerik değil diyor, API'den gelen true değerini null yap
+                                entity.copy(isAdult = null)
+                            } else if (isAdultFromCategory == true) {
+                                // Kategori kontrolü adult içerik diyor
+                                categoryBasedAdultCount++
+                                entity.copy(isAdult = true)
+                            } else {
+                                // Kategori kontrolü belirsiz (null) ve API'den gelen değer de null/false, mevcut değeri koru
+                                entity
+                            }
+                        }
+
+                    val finalEntities = entitiesWithAdultCheck
 
                     // Dönüştürülemeyen filmler varsa uyar
-                    if (entities.size < moviesDto.size) {
-                        val failed = moviesDto.size - entities.size
+                    if (finalEntities.size < moviesDto.size) {
+                        val failed = moviesDto.size - finalEntities.size
                         Timber.w("⚠️  $failed film entity'ye dönüştürülemedi!")
                     }
 
-                    // Veritabanına kaydet
-                    movieDao.replaceAll(entities)
-                    Timber.d("💾 ${entities.size} film veritabanına kaydedildi")
+                    // Veritabanına kaydet - AÇIK AÇIK SİL VE EKLE
+                    try {
+                        // Önce silmeyi dene
+                        movieDao.clearAll()
 
-                    // ═══════════════════════════════════════
-                    // DELTA SENKRONIZASYONU - Arka planda WorkManager ile yapılacak
-                    // ═══════════════════════════════════════
+                        // Sonra ekle
+                        if (finalEntities.isNotEmpty()) {
+                            movieDao.insertAll(finalEntities)
+                        }
+                    } catch (e: Exception) {
+                        Timber.tag("DB_DEBUG").e(e, "!!! FİLM GÜNCELLEME HATASI: Silme veya Ekleme başarısız !!!")
+                        // Hatayı yutma, fırlat ki transaction rollback olsun veya üst katman bilsin
+                        throw e
+                    }
 
                     if (!skipTmdbSync) {
-                        Timber.d("🔄 DELTA SENKRONIZASYONU BAŞLIYOR...")
-
                         // 1. TMDB ID'si olan filmleri bul
-                        val moviesWithTmdbId = entities.filter { it.tmdbId != null }
-                        Timber.d("   • TMDB ID'li film sayısı: ${moviesWithTmdbId.size}")
+                        val moviesWithTmdbId = finalEntities.filter { it.tmdbId != null }
 
                         if (moviesWithTmdbId.isNotEmpty()) {
                             // 2. Tüm TMDB ID'lerini topla
@@ -150,79 +240,40 @@ class MovieRepository
                                     .filter { it.tmdbId !in existingTmdbIds }
                                     .map { Pair(it.streamId, it.tmdbId!!) }
 
-                            val newMovieCount = moviesToFetch.size
-                            Timber.d("   • Yeni film (cache'de yok): $newMovieCount")
-                            Timber.d("   • Mevcut film (cache'de var): ${moviesWithTmdbId.size - newMovieCount}")
-
                             // 5. Sadece yeni filmler için TMDB verilerini çek
                             if (moviesToFetch.isNotEmpty()) {
-                                Timber.d("🎬 $newMovieCount yeni film için TMDB verileri çekiliyor...")
-                                val fetchedCount = tmdbRepository.batchFetchMovieDetails(moviesToFetch)
-                                Timber.d("✅ $fetchedCount/$newMovieCount film başarıyla işlendi")
-                            } else {
-                                Timber.d("✅ Yeni film yok, TMDB isteği atılmadı")
+                                tmdbRepository.batchFetchMovieDetails(moviesToFetch)
                             }
-                        } else {
-                            Timber.d("⚠️  TMDB ID'li film yok, delta senkronizasyonu atlanıyor")
                         }
-                    } else {
-                        Timber.d("⏭️  TMDB senkronizasyonu atlandı (WorkManager'da yapılacak)")
                     }
-
-                    Timber.d("═══════════════════════════════════════")
-
-                    // Rating istatistikleri
-                    val withRating = entities.count { it.rating != null && it.rating > 0 }
-                    val withPlot = entities.count { !it.plot.isNullOrBlank() }
-                    val withTmdb = entities.count { it.tmdbId != null }
-                    Timber.d("📊 İSTATİSTİKLER:")
-                    Timber.d("   • Rating olan: $withRating / ${entities.size}")
-                    Timber.d("   • Açıklama olan: $withPlot / ${entities.size}")
-                    Timber.d("   • TMDB ID olan: $withTmdb / ${entities.size}")
-                    Timber.d("═══════════════════════════════════════")
                 },
             )
+        }
 
-        suspend fun refreshMovieCategories(): Result<Unit> =
-            safeApiCall(
+        suspend fun refreshMovieCategories(): Result<Unit> {
+            return refreshCategories(
                 apiCall = { api, user, pass ->
-                    Timber.d("═══════════════════════════════════════")
-                    Timber.d("📂 FİLM KATEGORİLERİ GÜNCELENİYOR...")
-                    Timber.d("═══════════════════════════════════════")
-
-                    val categoriesDto = api.getMovieCategories(user, pass)
-                    Timber.d("✅ API'den ${categoriesDto.size} kategori alındı")
-
-                    // İlk 5 kategoriyi göster
-                    if (categoriesDto.isNotEmpty()) {
-                        Timber.d("───────────────────────────────────────")
-                        Timber.d("📋 İLK 5 KATEGORİ ÖRNEĞİ:")
-                        categoriesDto.take(5).forEachIndexed { index, cat ->
-                            Timber.d("${index + 1}. ${cat.categoryName} (ID: ${cat.categoryId}, Parent: ${cat.parentId})")
-                        }
-                        Timber.d("───────────────────────────────────────")
-                    }
-
-                    val entities =
-                        categoriesDto.mapIndexedNotNull { index, dto ->
-                            val categoryIdString = dto.getCategoryIdAsString()
-                            if (categoryIdString == null) {
-                                Timber.w("⚠️  Kategori için ID null: ${dto.categoryName}")
-                            }
-                            categoryIdString?.let {
-                                MovieCategoryEntity(
-                                    categoryId = it,
-                                    categoryName = dto.categoryName,
-                                    parentId = dto.parentId ?: 0,
-                                    sortOrder = index,
-                                )
-                            }
-                        }
-
-                    Timber.d("🔄 ${entities.size} kategori entity'ye dönüştürüldü")
-                    movieCategoryDao.replaceAll(entities)
-                    Timber.d("💾 ${entities.size} kategori veritabanına kaydedildi")
-                    Timber.d("═══════════════════════════════════════")
+                    api.getMovieCategories(user, pass)
                 },
+                entityMapper = { categoriesDto ->
+                    categoriesDto.mapIndexedNotNull { index, dto ->
+                        val categoryIdString = dto.getCategoryIdAsString()
+                        if (categoryIdString == null) {
+                            Timber.w("⚠️  Kategori için ID null: ${dto.categoryName}")
+                        }
+                        categoryIdString?.let {
+                            MovieCategoryEntity(
+                                categoryId = it,
+                                categoryName = dto.categoryName,
+                                parentId = dto.parentId ?: 0,
+                                sortOrder = index,
+                            )
+                        }
+                    }
+                },
+                daoClearAll = { movieCategoryDao.clearAll() },
+                daoInsertAll = { entities -> movieCategoryDao.insertAll(entities) },
+                daoGetAll = { movieCategoryDao.getAll() },
             )
+        }
     }

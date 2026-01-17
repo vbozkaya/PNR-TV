@@ -166,6 +166,12 @@
     <string name="settings_adult_content">Yetişkin İçerikler</string>
     <string name="settings_adult_content_on">Açık</string>
     <string name="settings_adult_content_off">Kapalı</string>
+    <string name="adult_content_reward_dialog_title">Ödüllü Reklam İzleyin</string>
+    <string name="adult_content_reward_dialog_message">Bu özelliği kullanmak için ödüllü bir reklam izleyerek 15 dakika erişim kazanabilirsiniz.</string>
+    <string name="adult_content_reward_dialog_yes">İzle</string>
+    <string name="adult_content_reward_dialog_no">İptal</string>
+    <string name="adult_content_reward_ad_loading">Reklam yükleniyor, lütfen bekleyin...</string>
+    <string name="adult_content_reward_ad_error">Reklam yüklenemedi. Lütfen daha sonra tekrar deneyin.</string>
     <string name="settings_clear_cache">Önbelleği Temizle</string>
     <string name="settings_about_app">Uygulama Hakkında</string>
     
@@ -308,6 +314,25 @@
     <!-- Player Loading Messages -->
     <string name="player_loading_preparing">Preparing content...</string>
     <string name="player_loading_fetching_url">Fetching channel address...</string>
-    <string name="player_loading_buffering">Loading stream...</string>
+    <string name="player_loading_buffering">Hazırlanıyor / Streaming...</string>
+    
+    <!-- Error Messages - Intent Validation -->
+    <string name="error_invalid_intent_data">Geçersiz intent verisi</string>
+    
+    <!-- Rating Format -->
+    <string name="rating_format">%1$.1f / 10</string>
+    
+    <!-- Billing Error Messages -->
+    <string name="error_billing_product_not_found">Hata: Ürün bulunamadı (%1$s). Play Console Lisans Testi ayarlarını kontrol edin.</string>
+    <string name="error_billing_unavailable">Google Play Services mevcut değil veya güncel değil</string>
+    <string name="error_billing_service_unavailable">Google Play Services geçici olarak kullanılamıyor</string>
+    <string name="error_billing_item_not_owned">Ürün bulunamadı. Google Play Console\'da ürünün aktif olduğundan emin olun.</string>
+    <string name="error_billing_product_details_failed">Ürün detayları alınamadı: %1$s</string>
+    
+    <!-- User Status Placeholder -->
+    <string name="user_status_not_available">-</string>
+    
+    <!-- Connection Format -->
+    <string name="connection_format">%1$s/%2$s</string>
 </resources>
 

@@ -94,7 +94,7 @@
     <string name="error_with_message">Kesalahan: %1$s</string>
     <string name="error_user_not_found">Informasi pengguna tidak ditemukan atau informasi DNS hilang</string>
     <string name="error_network_connection">Kesalahan koneksi jaringan</string>
-    <string name="error_network_generic">Kesalahan jaringan: %1$d %2$s</string>
+    <string name="error_network_generic">Kesalahan jaringan (Kode: %1$d). Silakan coba lagi.</string>
     <string name="error_unexpected">Kesalahan tidak terduga: %1$s</string>
     
     <!-- Pesan Kesalahan Pembaruan Layar Utama -->
@@ -277,5 +277,29 @@
     <string name="dialog_resume_playback_title">Lanjutkan Pemutaran</string>
     <string name="btn_resume_from_position">Lanjutkan dari Posisi</string>
     <string name="btn_start_from_beginning">Mulai dari Awal</string>
+    
+    <!-- Error Messages - Intent Validation -->
+    <string name="error_invalid_intent_data">Data intent tidak valid</string>
+    
+    <!-- Rating Format -->
+    <string name="rating_format">%1$.1f / 10</string>
+    
+    <!-- Billing Error Messages -->
+    <string name="error_billing_product_not_found">Error: Produk tidak ditemukan (%1$s). Silakan periksa pengaturan Uji Lisensi Play Console.</string>
+    <string name="error_billing_unavailable">Google Play Services tidak tersedia atau tidak diperbarui</string>
+    <string name="error_billing_service_unavailable">Google Play Services tidak tersedia sementara</string>
+    <string name="error_billing_item_not_owned">Produk tidak ditemukan. Pastikan produk aktif di Google Play Console.</string>
+    <string name="error_billing_product_details_failed">Detail produk tidak dapat diambil: %1$s</string>
+    
+    <!-- User Status Placeholder -->
+    <string name="user_status_not_available">-</string>
+    
+    <!-- Connection Format -->
+    <string name="connection_format">%1$s/%2$s</string>
+    
+    <!-- Player Loading Messages -->
+    <string name="player_loading_preparing">Mempersiapkan konten...</string>
+    <string name="player_loading_fetching_url">Mengambil alamat saluran...</string>
+    <string name="player_loading_buffering">Memuat streaming...</string>
 </resources>
 

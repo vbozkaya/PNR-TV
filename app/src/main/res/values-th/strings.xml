@@ -306,4 +306,23 @@
     <string name="player_loading_preparing">กำลังเตรียมเนื้อหา...</string>
     <string name="player_loading_fetching_url">กำลังดึงที่อยู่ช่อง...</string>
     <string name="player_loading_buffering">กำลังโหลดสตรีม...</string>
+    
+    <!-- Error Messages - Intent Validation -->
+    <string name="error_invalid_intent_data">ข้อมูลอินเทนต์ไม่ถูกต้อง</string>
+    
+    <!-- Rating Format -->
+    <string name="rating_format">%1$.1f / 10</string>
+    
+    <!-- Billing Error Messages -->
+    <string name="error_billing_product_not_found">ข้อผิดพลาด: ไม่พบผลิตภัณฑ์ (%1$s) กรุณาตรวจสอบการตั้งค่าการทดสอบใบอนุญาต Play Console</string>
+    <string name="error_billing_unavailable">Google Play Services ไม่พร้อมใช้งานหรือไม่ได้อัปเดต</string>
+    <string name="error_billing_service_unavailable">Google Play Services ไม่พร้อมใช้งานชั่วคราว</string>
+    <string name="error_billing_item_not_owned">ไม่พบผลิตภัณฑ์ ตรวจสอบให้แน่ใจว่าผลิตภัณฑ์เปิดใช้งานใน Google Play Console</string>
+    <string name="error_billing_product_details_failed">ไม่สามารถดึงรายละเอียดผลิตภัณฑ์ได้: %1$s</string>
+    
+    <!-- User Status Placeholder -->
+    <string name="user_status_not_available">-</string>
+    
+    <!-- Connection Format -->
+    <string name="connection_format">%1$s/%2$s</string>
 </resources>

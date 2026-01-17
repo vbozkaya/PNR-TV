@@ -21,6 +21,9 @@ interface LiveStreamDao {
     @Query("SELECT * FROM live_streams WHERE categoryId = :categoryId ORDER BY name ASC")
     fun getByCategoryId(categoryId: Int): Flow<List<LiveStreamEntity>>
 
+    @Query("SELECT * FROM live_streams WHERE categoryId = :categoryId ORDER BY name ASC")
+    suspend fun getByCategoryIdSync(categoryId: Int): List<LiveStreamEntity>
+
     @Query("SELECT * FROM live_streams WHERE streamId IN (:streamIds)")
     suspend fun getByIds(streamIds: List<Int>): List<LiveStreamEntity>
 

@@ -94,7 +94,7 @@
     <string name="error_with_message">Erreur: %1$s</string>
     <string name="error_user_not_found">Informations utilisateur introuvables ou informations DNS manquantes</string>
     <string name="error_network_connection">Erreur de connexion réseau</string>
-    <string name="error_network_generic">Erreur réseau: %1$d %2$s</string>
+    <string name="error_network_generic">Erreur réseau (Code: %1$d). Veuillez réessayer.</string>
     <string name="error_unexpected">Erreur inattendue: %1$s</string>
     
     <!-- Messages d\'Erreur de Mise à Jour de l\'Écran Principal -->
@@ -277,5 +277,29 @@
     <string name="dialog_resume_playback_title">Reprendre la Lecture</string>
     <string name="btn_resume_from_position">Reprendre à la Position</string>
     <string name="btn_start_from_beginning">Commencer depuis le Début</string>
+    
+    <!-- Error Messages - Intent Validation -->
+    <string name="error_invalid_intent_data">Données d\'intention non valides</string>
+    
+    <!-- Rating Format -->
+    <string name="rating_format">%1$.1f / 10</string>
+    
+    <!-- Billing Error Messages -->
+    <string name="error_billing_product_not_found">Erreur : Produit introuvable (%1$s). Veuillez vérifier les paramètres de Test de Licence de Play Console.</string>
+    <string name="error_billing_unavailable">Google Play Services n\'est pas disponible ou n\'est pas à jour</string>
+    <string name="error_billing_service_unavailable">Google Play Services n\'est pas disponible temporairement</string>
+    <string name="error_billing_item_not_owned">Produit introuvable. Assurez-vous que le produit est actif dans Google Play Console.</string>
+    <string name="error_billing_product_details_failed">Les détails du produit n\'ont pas pu être récupérés : %1$s</string>
+    
+    <!-- User Status Placeholder -->
+    <string name="user_status_not_available">-</string>
+    
+    <!-- Connection Format -->
+    <string name="connection_format">%1$s/%2$s</string>
+    
+    <!-- Player Loading Messages -->
+    <string name="player_loading_preparing">Préparation du contenu...</string>
+    <string name="player_loading_fetching_url">Récupération de l\'adresse du canal...</string>
+    <string name="player_loading_buffering">Chargement du flux...</string>
 </resources>
 

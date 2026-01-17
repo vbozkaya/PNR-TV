@@ -1,21 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout 
+<androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="550dp"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="24dp"
-    android:background="#1a1a1a">
+    android:layout_gravity="center"
+    app:cardCornerRadius="16dp"
+    app:cardBackgroundColor="#F21A1A1A"
+    app:cardElevation="8dp"
+    app:cardUseCompatPadding="false">
     
-    <TextView
-        android:id="@+id/txt_dialog_title"
-        android:layout_width="wrap_content"
+    <!-- İçerik container'ı -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/dialog_sort_title"
-        android:textColor="@android:color/white"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="24dp" />
+        android:orientation="vertical"
+        android:padding="32dp">
+        
+        <!-- Başlık -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/dialog_sort_title"
+            android:textColor="#FFFFFF"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="24dp" />
     
     <RadioGroup
         android:id="@+id/radio_group_sort"
@@ -103,21 +114,24 @@
         
     </RadioGroup>
     
-    <Button
-        android:id="@+id/btn_save_sort"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/btn_save"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:layout_marginTop="24dp"
-        android:padding="16dp"
-        android:background="@drawable/navyfocus_selector"
-        android:textColor="@android:color/white"
-        android:focusable="true"
-        android:focusableInTouchMode="true" />
+        <Button
+            android:id="@+id/btn_save_sort"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_save"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginTop="24dp"
+            android:padding="16dp"
+            android:background="@drawable/navyfocus_selector"
+            android:textColor="@android:color/white"
+            android:focusable="true"
+            android:clickable="true"
+            android:focusableInTouchMode="true" />
+        
+    </LinearLayout>
     
-</LinearLayout>
+</androidx.cardview.widget.CardView>
 
 
 

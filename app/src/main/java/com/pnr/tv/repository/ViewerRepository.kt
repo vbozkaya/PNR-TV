@@ -1,6 +1,6 @@
 package com.pnr.tv.repository
 
-import com.pnr.tv.SessionManager
+import com.pnr.tv.ui.main.SessionManager
 import com.pnr.tv.db.dao.ViewerDao
 import com.pnr.tv.db.entity.ViewerEntity
 import kotlinx.coroutines.ExperimentalCoroutinesApi

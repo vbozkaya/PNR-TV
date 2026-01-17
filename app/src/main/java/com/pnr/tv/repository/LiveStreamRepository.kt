@@ -1,6 +1,7 @@
 package com.pnr.tv.repository
 
 import android.content.Context
+import com.pnr.tv.core.constants.NetworkConstants
 import com.pnr.tv.db.dao.LiveStreamCategoryDao
 import com.pnr.tv.db.dao.LiveStreamDao
 import com.pnr.tv.db.entity.LiveStreamCategoryEntity
@@ -8,9 +9,13 @@ import com.pnr.tv.db.entity.LiveStreamEntity
 import com.pnr.tv.di.IptvRetrofit
 import com.pnr.tv.network.ApiActions
 import com.pnr.tv.network.dto.toEntity
+import com.pnr.tv.util.error.ErrorHelper
+import com.pnr.tv.util.error.Resource
+import com.pnr.tv.util.validation.DataValidationHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flow
 import retrofit2.Retrofit
 import timber.log.Timber
 import javax.inject.Inject
@@ -21,27 +26,74 @@ import javax.inject.Inject
 class LiveStreamRepository
     @Inject
     constructor(
-        @IptvRetrofit retrofitBuilder: Retrofit.Builder,
+        apiServiceManager: ApiServiceManager,
         userRepository: UserRepository,
         private val liveStreamDao: LiveStreamDao,
         private val liveStreamCategoryDao: LiveStreamCategoryDao,
         @ApplicationContext context: Context,
     ) : BaseContentRepository(
-            retrofitBuilder,
+            apiServiceManager,
             userRepository,
             context,
         ) {
         // ==================== Read Operations ====================
 
-        fun getLiveStreams(): Flow<List<LiveStreamEntity>> = liveStreamDao.getAll()
+        fun getLiveStreams(): Flow<Resource<List<LiveStreamEntity>>> =
+            flow {
+                emit(Resource.Loading)
+                try {
+                    liveStreamDao.getAll().collect { data ->
+                        emit(Resource.Success(data))
+                    }
+                } catch (e: Exception) {
+                    val errorMessage = ErrorHelper.createError(e, context, errorContext = "LiveStreamRepository.getLiveStreams").message
+                    emit(Resource.Error(errorMessage, e))
+                }
+            }
 
-        fun getLiveStreamsByCategoryId(categoryId: Int): Flow<List<LiveStreamEntity>> = liveStreamDao.getByCategoryId(categoryId)
+        fun getLiveStreamsByCategoryId(categoryId: Int): Flow<Resource<List<LiveStreamEntity>>> =
+            flow {
+                emit(Resource.Loading)
+                try {
+                    liveStreamDao.getByCategoryId(categoryId).collect { data ->
+                        emit(Resource.Success(data))
+                    }
+                } catch (e: Exception) {
+                    val errorMessage =
+                        ErrorHelper.createError(
+                            e,
+                            context,
+                            errorContext = "LiveStreamRepository.getLiveStreamsByCategoryId",
+                        ).message
+                    emit(Resource.Error(errorMessage, e))
+                }
+            }
 
-        fun getLiveStreamCategories(): Flow<List<LiveStreamCategoryEntity>> = liveStreamCategoryDao.getAll()
+        fun getLiveStreamCategories(): Flow<Resource<List<LiveStreamCategoryEntity>>> =
+            flow {
+                emit(Resource.Loading)
+                try {
+                    liveStreamCategoryDao.getAll().collect { data ->
+                        emit(Resource.Success(data))
+                    }
+                } catch (e: Exception) {
+                    val errorMessage =
+                        ErrorHelper.createError(
+                            e,
+                            context,
+                            errorContext = "LiveStreamRepository.getLiveStreamCategories",
+                        ).message
+                    emit(Resource.Error(errorMessage, e))
+                }
+            }
 
         suspend fun getLiveStreamsByIds(channelIds: List<Int>): List<LiveStreamEntity> {
             if (channelIds.isEmpty()) return emptyList()
             return liveStreamDao.getByIds(channelIds)
+        }
+
+        suspend fun getLiveStreamsByCategoryIdSync(categoryId: Int): List<LiveStreamEntity> {
+            return liveStreamDao.getByCategoryIdSync(categoryId)
         }
 
         /**
@@ -49,7 +101,14 @@ class LiveStreamRepository
          * @return true ise veri var, false ise veri yok
          */
         suspend fun hasLiveStreams(): Boolean {
-            return getLiveStreams().firstOrNull()?.isNotEmpty() == true
+            return try {
+                // DAO'dan direkt veri kontrolü yap - Flow wrapper'ı kullanmadan
+                val data = liveStreamDao.getAll().firstOrNull()
+                data?.isNotEmpty() ?: false
+            } catch (e: Exception) {
+                timber.log.Timber.e(e, "Canlı yayın veri kontrolü hatası")
+                false
+            }
         }
 
         /**
@@ -57,7 +116,15 @@ class LiveStreamRepository
          * @return true ise veri var, false ise veri yok
          */
         suspend fun hasLiveStreamCategories(): Boolean {
-            return getLiveStreamCategories().firstOrNull()?.isNotEmpty() == true
+            return try {
+                val resource = getLiveStreamCategories().firstOrNull()
+                when (resource) {
+                    is Resource.Success -> resource.data.isNotEmpty()
+                    else -> false
+                }
+            } catch (e: Exception) {
+                false
+            }
         }
 
         // ==================== Refresh Operations ====================
@@ -74,46 +141,36 @@ class LiveStreamRepository
             safeApiCall(
                 forMainScreenUpdate = forMainScreenUpdate,
                 maxRetries = maxRetries,
-                retryDelayMs = 2000L,
+                retryDelayMs = NetworkConstants.Network.LONG_RETRY_DELAY_MILLIS,
                 apiCall = { api, user, pass ->
-                    Timber.d("═══════════════════════════════════════")
-                    Timber.d("📡 CANLI YAYIN VERİLERİ GÜNCELENİYOR...")
-                    Timber.d("═══════════════════════════════════════")
-
                     refreshLiveStreamCategories()
 
                     val liveStreamsDto = api.getLiveStreams(user, pass, ApiActions.GET_LIVE_STREAMS)
-                    Timber.d("✅ API'den ${liveStreamsDto.size} canlı yayın alındı")
 
                     // Veri doğrulama - eksik field'ları kontrol et
-                    val validationReport = com.pnr.tv.util.DataValidationHelper.validateLiveStreams(liveStreamsDto)
+                    val validationReport = DataValidationHelper.validateLiveStreams(liveStreamsDto)
                     validationReport.logReport()
 
-                    if (liveStreamsDto.isNotEmpty()) {
-                        Timber.d("───────────────────────────────────────")
-                        Timber.d("📋 İLK 3 CANLI YAYIN ÖRNEĞİ:")
-                        liveStreamsDto.take(3).forEachIndexed { index, stream ->
-                            Timber.d("${index + 1}. ${stream.name} (Kategori: ${stream.categoryId})")
-                        }
-                        Timber.d("───────────────────────────────────────")
-                    }
-
                     val entities = liveStreamsDto.mapNotNull { it.toEntity() }
-                    Timber.d("🔄 ${entities.size} canlı yayın entity'ye dönüştürüldü")
 
                     // Akıllı güncelleme (Upsert) kullan - sadece değişiklikleri işle
                     liveStreamDao.upsert(entities)
-                    Timber.d("💾 ${entities.size} canlı yayın veritabanına akıllı güncelleme ile kaydedildi")
-                    Timber.d("═══════════════════════════════════════")
                 },
             )
 
-        suspend fun refreshLiveStreamCategories(): Result<Unit> =
-            safeApiCall(
+        suspend fun refreshLiveStreamCategories(): Result<Unit> {
+            return refreshCategories(
                 apiCall = { api, user, pass ->
-                    val categoriesDto = api.getLiveStreamCategories(user, pass, ApiActions.GET_LIVE_CATEGORIES)
-                    val entities = categoriesDto.mapIndexedNotNull { index, dto -> dto.toEntity(sortOrder = index) }
-                    liveStreamCategoryDao.replaceAll(entities)
+                    api.getLiveStreamCategories(user, pass, ApiActions.GET_LIVE_CATEGORIES)
                 },
+                entityMapper = { categoriesDto ->
+                    categoriesDto.mapIndexedNotNull { index, dto ->
+                        dto.toEntity(sortOrder = index)
+                    }
+                },
+                daoClearAll = { liveStreamCategoryDao.clearAll() },
+                daoInsertAll = { entities -> liveStreamCategoryDao.insertAll(entities) },
+                daoGetAll = { liveStreamCategoryDao.getAll() },
             )
+        }
     }

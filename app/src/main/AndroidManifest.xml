@@ -4,23 +4,75 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Google Play Billing için gerekli izin -->
+    <uses-permission android:name="com.android.vending.BILLING" />
 
+    <!-- Android TV için gerekli feature declarations -->
+    <!-- NOT: Bu uygulama bir OYUN DEĞİLDİR. Video/Medya oynatma uygulamasıdır. -->
+    <!-- Google Play Console'da "Games" kategorisi seçilmemelidir. -->
+    <!-- Uygun kategoriler: Entertainment, Video Players, Media & Video -->
+    
+    <!-- Leanback launcher - Android TV kanalı için ZORUNLU (required="true") -->
+    <!-- Google Play Console TV kanalı bu özelliğin required="true" olmasını zorunlu kılıyor -->
     <uses-feature
         android:name="android.software.leanback"
         android:required="true" />
+    
+    <!-- Touchscreen zorunlu değil (TV cihazları için) -->
     <uses-feature
         android:name="android.hardware.touchscreen"
         android:required="false" />
+    
+    <!-- WiFi ve Ethernet - Tüm TV cihazlarında çalışması için -->
+    <uses-feature
+        android:name="android.hardware.wifi"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.ethernet"
+        android:required="false" />
+    
+    <!-- TV cihazları için landscape orientation -->
+    <uses-feature
+        android:name="android.hardware.screen.landscape"
+        android:required="false" />
+    
+    <!-- Kamera ve mikrofon gerekli değil (TV uygulaması) -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.microphone"
+        android:required="false" />
 
     <application
-        android:name=".PnrTvApplication"
+        android:name=".core.base.PnrTvApplication"
         android:allowBackup="false"
+        android:banner="@drawable/banner"
         android:fullBackupContent="false"
+        android:icon="@mipmap/ic_launcher"
+        android:isGame="false"
+        android:largeHeap="true"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
         android:networkSecurityConfig="@xml/network_security_config"
+        android:usesCleartextTraffic="true"
         android:supportsRtl="true"
         android:theme="@style/Theme.Leanback"
         tools:ignore="GoogleAppIndexingWarning,DataExtractionRules">
+        
+        <!-- AdMob App ID - Production App ID -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-8479210484809920~7742385848" />
+        
+        <!-- Ad Services Config - AdMob ve Firebase çakışmasını çözmek için -->
+        <property
+            android:name="android.adservices.AD_SERVICES_CONFIG"
+            android:resource="@xml/gma_ad_services_config"
+            tools:replace="android:resource" />
         <!-- WorkManager on-demand initialization için otomatik initialization'ı devre dışı bırak -->
         <provider
             android:name="androidx.startup.InitializationProvider"
@@ -33,41 +85,54 @@
                 tools:node="remove" />
         </provider>
         <activity
-            android:name=".SplashActivity"
+            android:name=".ui.main.SplashActivity"
             android:exported="true"
-            android:banner="@mipmap/banner_foreground"
-            android:theme="@style/Theme.Leanback">
+            android:theme="@style/Theme.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.main.MainActivity"
             android:exported="false"
-            android:banner="@mipmap/banner_foreground" />
+            android:theme="@style/Theme.App.MainActivity" />
         <activity 
-            android:name=".UserManagementActivity"
+            android:name=".ui.users.UserManagementActivity"
             android:theme="@style/Theme.Leanback.OtherActivities" />
         <activity 
-            android:name=".UsersListActivity"
+            android:name=".ui.users.UsersListActivity"
             android:theme="@style/Theme.Leanback.OtherActivities" />
         <activity 
-            android:name=".AddUserActivity"
+            android:name=".ui.users.AddUserActivity"
             android:theme="@style/Theme.Leanback.OtherActivities" />
         <activity 
-            android:name=".SettingsActivity"
+            android:name=".ui.main.SettingsActivity"
             android:theme="@style/Theme.Leanback.OtherActivities" />
         <activity 
-            android:name=".AboutActivity"
+            android:name=".ui.main.AboutActivity"
             android:theme="@style/Theme.Leanback.OtherActivities" />
+        <activity 
+            android:name=".ui.debug.CrashlyticsDebugActivity"
+            android:theme="@style/Theme.Leanback.OtherActivities"
+            tools:ignore="ExportedActivity" />
+        <activity 
+            android:name=".ui.debug.AdStatusActivity"
+            android:theme="@style/Theme.Leanback.OtherActivities"
+            tools:ignore="ExportedActivity" />
         <activity 
             android:name=".ui.viewers.ViewersActivity"
             android:theme="@style/Theme.Leanback.OtherActivities" />
         <activity 
-            android:name=".PlayerActivity"
+            android:name=".ui.player.PlayerActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|uiMode"
-            android:launchMode="singleTask" />
+            android.launchMode="singleTask" />
+        <activity 
+            android:name=".ui.movies.MovieDetailActivity"
+            android:theme="@style/Theme.Leanback.OtherActivities" />
+        <activity 
+            android:name=".ui.series.SeriesDetailActivity"
+            android:theme="@style/Theme.Leanback.OtherActivities" />
     </application>
 
 </manifest>

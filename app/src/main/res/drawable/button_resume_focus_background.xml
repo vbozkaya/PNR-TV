@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Focus durumunda buton arka planı (normal background + border) -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Normal arka plan -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="8dp" />
+            <solid android:color="#1AFFFFFF" />
+        </shape>
+    </item>
+    <!-- Focus border -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="8dp" />
+            <stroke
+                android:width="2dp"
+                android:color="@color/category_selected" />
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </item>
+</layer-list>
+
+
+
+
+
+
+

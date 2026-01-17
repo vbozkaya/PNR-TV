@@ -1,10 +1,10 @@
 package com.pnr.tv.repository
 
-import com.pnr.tv.SessionManager
+import com.pnr.tv.ui.main.SessionManager
+import com.pnr.tv.core.constants.TimeConstants
 import com.pnr.tv.db.dao.PlaybackPositionDao
 import com.pnr.tv.db.entity.PlaybackPositionEntity
 import kotlinx.coroutines.flow.firstOrNull
-import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -37,7 +37,6 @@ class PlaybackPositionRepository
                     lastUpdated = System.currentTimeMillis(),
                 )
             playbackPositionDao.upsert(position)
-            Timber.d("💾 Pozisyon kaydedildi: $contentId -> ${positionMs / 1000}s / ${durationMs / 1000}s")
         }
 
         /**
@@ -56,15 +55,13 @@ class PlaybackPositionRepository
         suspend fun deletePlaybackPosition(contentId: String) {
             val userId = sessionManager.getCurrentUserId().firstOrNull() ?: return
             playbackPositionDao.deletePosition(contentId, userId)
-            Timber.d("🗑️ Pozisyon silindi: $contentId")
         }
 
         /**
          * 30 günden eski pozisyonları temizler (otomatik temizlik).
          */
         suspend fun cleanupOldPlaybackPositions() {
-            val thirtyDaysAgo = System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000)
+            val thirtyDaysAgo = System.currentTimeMillis() - TimeConstants.Intervals.THIRTY_DAYS_MS
             playbackPositionDao.deleteOlderThan(thirtyDaysAgo)
-            Timber.d("🧹 30 günden eski pozisyonlar temizlendi")
         }
     }

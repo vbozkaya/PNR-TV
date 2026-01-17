@@ -30,15 +30,15 @@ class ViewerInitializer
         suspend fun initializeIfNeeded() {
             val isInitialized = context.dataStore.data.first()[VIEWER_INITIALIZED_KEY] ?: false
             if (!isInitialized) {
-                // Get current user account name
-                val currentUser = userRepository.currentUser.firstOrNull()
-                val accountName = currentUser?.accountName ?: context.getString(R.string.default_viewer_name)
+                // Varsayılan izleyiciyi oluştur
+                // Adı string resource'dan alınacak (tüm dillerde gösterilsin)
+                val defaultViewerName = context.getString(R.string.default_viewer_name)
 
                 // Create default viewer
                 // userId will be set by repository
                 val defaultViewer =
                     ViewerEntity(
-                        name = accountName,
+                        name = defaultViewerName,
                         userId = 0,
                         isDeletable = false,
                     )
@@ -47,6 +47,22 @@ class ViewerInitializer
                 // Mark as initialized
                 context.dataStore.edit { preferences ->
                     preferences[VIEWER_INITIALIZED_KEY] = true
+                }
+            } else {
+                // Eğer zaten initialize edilmişse, varsayılan izleyicinin var olup olmadığını kontrol et
+                // Eğer yoksa oluştur (veritabanı temizlenmiş olabilir)
+                val allViewers = viewerRepository.getAllViewers().firstOrNull() ?: emptyList()
+                val hasDefaultViewer = allViewers.any { !it.isDeletable }
+                if (!hasDefaultViewer) {
+                    // Varsayılan izleyici yok, oluştur
+                    val defaultViewerName = context.getString(R.string.default_viewer_name)
+                    val defaultViewer =
+                        ViewerEntity(
+                            name = defaultViewerName,
+                            userId = 0,
+                            isDeletable = false,
+                        )
+                    viewerRepository.addViewer(defaultViewer)
                 }
             }
         }

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Android TV için Leanback teması -->
+    <!-- windowBackground kaldırıldı - Glide ile runtime'da dinamik olarak yüklenecek -->
     <style name="Theme.Leanback" parent="Theme.AppCompat.NoActionBar">
-        <item name="android:windowBackground">@drawable/home_background</item>
+        <item name="android:windowBackground">@android:color/black</item>
         <!-- TV için optimize edilmiş pencere ayarları -->
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowContentOverlay">@null</item>
@@ -13,7 +14,32 @@
     <!-- Diğer activity'ler için siyah window background -->
     <!-- Activity geçişlerinde MainActivity'nin butonlarının görünmesini önlemek için -->
     <style name="Theme.Leanback.OtherActivities" parent="Theme.Leanback">
-        <item name="android:windowBackground">@drawable/window_background_black</item>
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
+    
+    <!-- MainActivity için özel tema - arka plan resmi Glide ile runtime'da yüklenecek -->
+    <style name="Theme.App.MainActivity" parent="Theme.Leanback">
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
+    
+    <!-- SplashActivity için özel tema - Sistem logosunu devre dışı bırakır -->
+    <!-- Window background siyah - activity_splash.xml içeriği gösterilecek -->
+    <!-- Android 12+ SplashScreen API çakışmasını önlemek için windowDisablePreview kullanılır -->
+    <style name="Theme.Splash" parent="Theme.AppCompat.NoActionBar">
+        <!-- Window background siyah - Sistem logosu gösterilmesin -->
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <!-- Splash ekranında status bar'ı gizle -->
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">false</item>
+        <!-- Window background'un şeffaf kalmasını engelle -->
+        <item name="android:windowIsTranslucent">false</item>
+        <!-- Sistemin otomatik splash preview'ını devre dışı bırak - Android 12+ çakışmasını önler -->
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowAnimationStyle">@null</item>
     </style>
 </resources>
 

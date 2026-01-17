@@ -2,18 +2,24 @@ package com.pnr.tv.ui.livestreams
 
 import android.content.Context
 import androidx.lifecycle.viewModelScope
-import com.pnr.tv.ContentConstants
 import com.pnr.tv.R
+import com.pnr.tv.core.constants.UIConstants
 import com.pnr.tv.db.entity.LiveStreamCategoryEntity
 import com.pnr.tv.db.entity.LiveStreamEntity
 import com.pnr.tv.domain.BuildLiveStreamUrlUseCase
 import com.pnr.tv.model.CategoryItem
-import com.pnr.tv.repository.ContentRepository
+import com.pnr.tv.repository.LiveStreamRepository
 import com.pnr.tv.repository.Result
-import com.pnr.tv.ui.base.BaseViewModel
+import com.pnr.tv.core.base.BaseViewModel
+import com.pnr.tv.util.error.ErrorHelper
+import com.pnr.tv.util.error.Resource
+import com.pnr.tv.util.validation.AdultContentDetector
+import com.pnr.tv.util.validation.AdultContentPreferenceManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,8 +28,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -31,59 +41,87 @@ import javax.inject.Inject
 /**
  * Canlı yayınlar için ViewModel.
  *
- * Canlı yayın kategorileri, kanallar, favoriler ve player navigation işlemlerini yönetir.
+ * Canlı yayın kategorileri, kanallar ve player navigation işlemlerini yönetir.
  */
 @HiltViewModel
 class LiveStreamViewModel
     @Inject
     constructor(
-        private val contentRepository: ContentRepository,
+        private val liveStreamRepository: LiveStreamRepository,
         private val buildLiveStreamUrlUseCase: BuildLiveStreamUrlUseCase,
+        private val adultContentPreferenceManager: AdultContentPreferenceManager,
         @ApplicationContext override val context: Context,
     ) : BaseViewModel() {
-        companion object {
-            // Sanal kategori ID'leri - Canlı Yayınlar için
-            val VIRTUAL_CATEGORY_ID_FAVORITES = ContentConstants.VirtualCategoryIdsInt.FAVORITES
-            val VIRTUAL_CATEGORY_ID_RECENTLY_WATCHED = ContentConstants.VirtualCategoryIdsInt.RECENTLY_WATCHED
-        }
-
-        // For now, use default viewer (id = 1)
-        private val defaultViewerId = 1
-        private val favoriteChannelIds: Flow<List<Int>> = contentRepository.getFavoriteChannelIds(defaultViewerId)
-        private val recentlyWatchedChannelIds: Flow<List<Int>> = contentRepository.getRecentlyWatchedChannelIds()
-
         // Canlı yayın kategorileri
         val liveStreamCategories: Flow<List<CategoryItem>> =
             combine(
-                contentRepository.getLiveStreamCategories(),
-                favoriteChannelIds,
-                recentlyWatchedChannelIds,
-            ) { normalCategories, _, _ ->
+                liveStreamRepository.getLiveStreamCategories().map { resource ->
+                    when (resource) {
+                        is Resource.Loading -> emptyList<LiveStreamCategoryEntity>()
+                        is Resource.Success -> {
+                            clearError()
+                            resource.data
+                        }
+                        is Resource.Error -> {
+                            handleResourceError(resource)
+                            emptyList<LiveStreamCategoryEntity>()
+                        }
+                    }
+                },
+                adultContentPreferenceManager.isAdultContentEnabled().onStart { emit(false) },
+                liveStreamRepository.getLiveStreams().map { resource ->
+                    when (resource) {
+                        is Resource.Loading -> emptyList<LiveStreamEntity>()
+                        is Resource.Success -> {
+                            clearError()
+                            resource.data
+                        }
+                        is Resource.Error -> {
+                            handleResourceError(resource)
+                            emptyList<LiveStreamEntity>()
+                        }
+                    }
+                }, // Tüm kanalları al (filtrelenmemiş)
+            ) { normalCategories: List<LiveStreamCategoryEntity>,
+                adultContentEnabled: Boolean,
+                allStreams: List<LiveStreamEntity>,
+                ->
+                // Yetişkin içerik ayarına göre filtrelenmiş kanallar
+                val filteredStreams =
+                    if (adultContentEnabled) {
+                        allStreams
+                    } else {
+                        allStreams.filter { it.isAdult != true }
+                    }
+
+                // Kategori ID'ye göre kanal sayısını hesapla (null categoryId'leri filtrele)
+                val categoryStreamCounts =
+                    filteredStreams
+                        .filter { it.categoryId != null } // Null categoryId'leri filtrele
+                        .groupBy { it.categoryId!! } // Null olmayan categoryId'leri garanti et
+                        .mapValues { it.value.size }
+
                 val categoriesWithVirtual = mutableListOf<LiveStreamCategoryEntity>()
 
-                // Favoriler kategorisini her zaman en başa ekle
-                categoriesWithVirtual.add(
-                    LiveStreamCategoryEntity(
-                        categoryIdInt = VIRTUAL_CATEGORY_ID_FAVORITES,
-                        categoryName = context.getString(R.string.category_favorites),
-                        sortOrder = ContentConstants.SortOrder.FAVORITES,
-                    ),
-                )
+                // Normal kategoriler - sadece içerik varsa göster
+                normalCategories.forEach { category: LiveStreamCategoryEntity ->
+                    val categoryId = category.categoryIdInt
+                    val streamCount = categoryStreamCounts[categoryId] ?: 0
 
-                // Son İzlenenler kategorisini her zaman ekle
-                categoriesWithVirtual.add(
-                    LiveStreamCategoryEntity(
-                        categoryIdInt = VIRTUAL_CATEGORY_ID_RECENTLY_WATCHED,
-                        categoryName = context.getString(R.string.category_recently_watched),
-                        sortOrder = ContentConstants.SortOrder.ALL,
-                    ),
-                )
+                    // Kategori adına göre yetişkin içerik kontrolü
+                    val isAdultCategory = AdultContentDetector.isAdultCategory(category.categoryName) == true
 
-                // Normal kategorileri ekle
-                categoriesWithVirtual.addAll(normalCategories)
+                    // Yetişkin içerik ayarı kapalıysa ve kategori yetişkin içerik ise, kategoriyi gizle
+                    if (!adultContentEnabled && isAdultCategory) {
+                        // Kategori gizlendi
+                    } else if (streamCount > 0) {
+                        // İçerik varsa ve (yetişkin içerik ayarı açık veya kategori yetişkin içerik değilse) göster
+                        categoriesWithVirtual.add(category)
+                    }
+                }
 
                 categoriesWithVirtual
-            }
+            }.flowOn(Dispatchers.Default) // Heavy computations on background thread
 
         // Seçili kategori ID (String format - CategoryAdapter için)
         private val _selectedLiveStreamCategoryId = MutableStateFlow<String?>(null)
@@ -97,48 +135,121 @@ class LiveStreamViewModel
         private val _liveStreamsErrorMessage = MutableStateFlow<String?>(null)
         val liveStreamsErrorMessage: StateFlow<String?> = _liveStreamsErrorMessage.asStateFlow()
 
+        // Arama sorgusu
+        private val _liveStreamSearchQuery = MutableStateFlow<String>("")
+        val liveStreamSearchQuery: StateFlow<String> = _liveStreamSearchQuery.asStateFlow()
+
+        // Search query için debounce'lu flow
+        @OptIn(FlowPreview::class)
+        private val debouncedLiveStreamSearchQuery: Flow<String> =
+            _liveStreamSearchQuery.asStateFlow().debounce(
+                UIConstants.DelayDurations.SEARCH_DEBOUNCE_MS,
+            )
+
         // Seçili kategoriye ait kanalları döndürür
         @OptIn(ExperimentalCoroutinesApi::class)
-        val liveStreams: Flow<List<LiveStreamEntity>> =
-            _selectedLiveStreamCategoryId
-                .asStateFlow()
-                .flatMapLatest { categoryIdString ->
+        private val rawLiveStreams: Flow<List<LiveStreamEntity>> =
+            combine(
+                debouncedLiveStreamSearchQuery.onStart { emit("") },
+                _selectedLiveStreamCategoryId.asStateFlow(),
+            ) { query, categoryIdString ->
+                // Arama yapılıyorsa (3+ karakter), tüm kanalları al
+                if (query.length >= 3) {
+                    Pair(true, null)
+                } else {
+                    // Arama yapılmıyorsa, seçili kategorideki kanalları al
+                    Pair(false, categoryIdString)
+                }
+            }.flatMapLatest { (isSearch, categoryIdString) ->
+                if (isSearch) {
+                    // Arama modu: Tüm kanalları al
+                    liveStreamRepository.getLiveStreams().map { resource ->
+                        when (resource) {
+                            is Resource.Loading -> {
+                                _isLiveStreamsLoading.value = true
+                                emptyList<LiveStreamEntity>()
+                            }
+                            is Resource.Success -> {
+                                _isLiveStreamsLoading.value = false
+                                clearError()
+                                resource.data
+                            }
+                            is Resource.Error -> {
+                                _isLiveStreamsLoading.value = false
+                                handleResourceError(resource)
+                                emptyList<LiveStreamEntity>()
+                            }
+                        }
+                    }
+                } else {
+                    // Normal mod: Seçili kategorideki kanalları al
                     val categoryId = categoryIdString?.toIntOrNull()
-                    Timber.tag("GRID_UPDATE").d("📡 liveStreams Flow tetiklendi: categoryId=$categoryIdString")
                     if (categoryId != null) {
-                        when (categoryId) {
-                            VIRTUAL_CATEGORY_ID_FAVORITES -> {
-                                favoriteChannelIds.flatMapLatest { favoriteIds ->
-                                    if (favoriteIds.isNotEmpty()) {
-                                        flow {
-                                            val channels = contentRepository.getLiveStreamsByIds(favoriteIds)
-                                            emit(channels)
-                                        }
-                                    } else {
-                                        kotlinx.coroutines.flow.flowOf(emptyList())
-                                    }
+                        liveStreamRepository.getLiveStreamsByCategoryId(categoryId).map { resource ->
+                            when (resource) {
+                                is Resource.Loading -> {
+                                    _isLiveStreamsLoading.value = true
+                                    emptyList<LiveStreamEntity>()
                                 }
-                            }
-                            VIRTUAL_CATEGORY_ID_RECENTLY_WATCHED -> {
-                                recentlyWatchedChannelIds.flatMapLatest { recentlyWatchedIds ->
-                                    if (recentlyWatchedIds.isNotEmpty()) {
-                                        flow {
-                                            val channels = contentRepository.getLiveStreamsByIds(recentlyWatchedIds)
-                                            emit(channels)
-                                        }
-                                    } else {
-                                        kotlinx.coroutines.flow.flowOf(emptyList())
-                                    }
+                                is Resource.Success -> {
+                                    _isLiveStreamsLoading.value = false
+                                    clearError()
+                                    resource.data
                                 }
-                            }
-                            else -> {
-                                contentRepository.getLiveStreamsByCategoryId(categoryId)
+                                is Resource.Error -> {
+                                    _isLiveStreamsLoading.value = false
+                                    handleResourceError(resource)
+                                    emptyList<LiveStreamEntity>()
+                                }
                             }
                         }
                     } else {
                         kotlinx.coroutines.flow.flowOf(emptyList())
                     }
                 }
+            }
+
+        // Yetişkin içerik ve arama filtresi ile kanalları döndürür
+        val liveStreams: Flow<List<LiveStreamEntity>> =
+            combine(
+                rawLiveStreams.onStart { emit(emptyList()) },
+                adultContentPreferenceManager.isAdultContentEnabled().onStart { emit(false) },
+                debouncedLiveStreamSearchQuery.onStart { emit("") },
+            ) { streams, adultContentEnabled, query ->
+                // Önce yetişkin içerik filtresini uygula
+                val adultFilteredStreams =
+                    if (adultContentEnabled) {
+                        streams
+                    } else {
+                        streams.filter { stream ->
+                            stream.isAdult != true
+                        }
+                    }
+
+                // Sonra arama filtresini uygula
+                applySearchFilter(adultFilteredStreams, query)
+            }.flowOn(Dispatchers.Default) // Heavy computations on background thread
+
+        /**
+         * İçerik listesine arama filtresi uygular.
+         *
+         * @param items Filtrelenecek içerik listesi
+         * @param query Arama sorgusu
+         * @return Filtrelenmiş içerik listesi
+         */
+        private fun applySearchFilter(
+            items: List<LiveStreamEntity>,
+            query: String,
+        ): List<LiveStreamEntity> {
+            if (query.length < 3) {
+                return items
+            }
+
+            val lowerQuery = query.lowercase()
+            return items.filter { item ->
+                item.title.lowercase().contains(lowerQuery)
+            }
+        }
 
         // Channel selection event - URL building için
         private val _openPlayerEvent = MutableSharedFlow<Triple<String, Int, Int?>>()
@@ -146,36 +257,66 @@ class LiveStreamViewModel
 
         /**
          * Canlı yayınları yükler (eğer daha önce yüklenmemişse).
-         * Ana sayfada zaten yüklenmişse, tekrar yüklemez.
+         * İçerikler sadece yoksa yüklenir (performans için).
+         * Kategoriler sadece ana sayfadan "Güncelle" butonuna basıldığında güncellenir.
+         *
+         * CACHE KONTROLÜ: Eğer veriler zaten yüklüyse, loading state'i tetiklemez ve
+         * Flow'ları gereksiz yere yeniden yüklemez. Veriler veritabanından okunur.
          */
         fun loadLiveStreamsIfNeeded() {
             viewModelScope.launch {
                 _liveStreamsErrorMessage.value = null
-                
-                // Önce veritabanında veri olup olmadığını kontrol et
-                val hasData = contentRepository.hasLiveStreams()
-                val hasCategories = contentRepository.hasLiveStreamCategories()
-                
-                if (hasData && hasCategories) {
-                    // Veri zaten var, yükleme yapma
-                    Timber.d("📡 Canlı yayınlar zaten yüklü, tekrar yükleme atlanıyor")
-                    _isLiveStreamsLoading.value = false
+
+                // Önce veritabanında içerik verisi olup olmadığını kontrol et
+                val hasData = liveStreamRepository.hasLiveStreams()
+
+                // Eğer veriler zaten yüklüyse, hiçbir şey yapma
+                // Veriler veritabanından Flow'lar aracılığıyla otomatik olarak gösterilir
+                if (hasData) {
+                    // Loading state'i tetikleme - veriler zaten yüklü
                     return@launch
                 }
-                
-                // Veri yok, yükleme yap
+
+                // Veriler yoksa, normal yükleme işlemini yap
                 _isLiveStreamsLoading.value = true
-                Timber.d("📡 Canlı yayınlar yükleniyor (veri yok veya eksik)")
 
                 try {
-                    val result = contentRepository.refreshLiveStreams()
+                    val result = liveStreamRepository.refreshLiveStreams()
                     if (result is Result.Error) {
-                        _liveStreamsErrorMessage.value = context.getString(R.string.error_live_streams_short)
+                        // ErrorHelper'dan gelen kullanıcı dostu mesajı kullan
+                        _liveStreamsErrorMessage.value =
+                            result.message.ifEmpty {
+                                context.getString(R.string.error_live_streams_short)
+                            }
                     }
                 } catch (e: Exception) {
-                    _liveStreamsErrorMessage.value = context.getString(R.string.error_unknown)
+                    // ErrorHelper kullanarak kullanıcı dostu mesaj oluştur
+                    val errorResult =
+                        ErrorHelper.createError(
+                            exception = e,
+                            context = context,
+                            errorContext = "LiveStreamViewModel",
+                        )
+                    _liveStreamsErrorMessage.value = errorResult.message
                 } finally {
                     _isLiveStreamsLoading.value = false
+                }
+            }
+        }
+
+        /**
+         * Sadece kategorileri günceller (içerikleri yüklemez).
+         * Fragment onResume() içinde çağrılır, kaynak değişikliklerini yansıtmak için.
+         */
+        fun refreshCategoriesOnly() {
+            viewModelScope.launch {
+                try {
+                    val categoriesResult = liveStreamRepository.refreshLiveStreamCategories()
+                    if (categoriesResult is Result.Error) {
+                        // Kategori güncelleme hatası - sessizce devam et
+                    }
+                } catch (e: Exception) {
+                    // Kategori güncelleme hatası - sessizce devam et
                 }
             }
         }
@@ -188,43 +329,24 @@ class LiveStreamViewModel
         }
 
         /**
-         * Kanalı favorilere ekler.
-         */
-        fun addLiveStreamFavorite(channelId: Int) {
-            viewModelScope.launch {
-                contentRepository.addFavorite(channelId, defaultViewerId)
-                showToast(context.getString(R.string.toast_favorite_added))
-            }
-        }
-
-        /**
-         * Kanalı favorilerden çıkarır.
-         */
-        fun removeLiveStreamFavorite(channelId: Int) {
-            viewModelScope.launch {
-                contentRepository.removeFavorite(channelId, defaultViewerId)
-                showToast(context.getString(R.string.toast_favorite_removed))
-            }
-        }
-
-        /**
-         * Kanalın favori olup olmadığını kontrol eder.
-         */
-        fun isLiveStreamFavorite(channelId: Int): Flow<Boolean> = contentRepository.isFavorite(channelId, defaultViewerId)
-
-        /**
          * Kanal seçildiğinde çağrılır.
          */
         fun onChannelSelected(channel: LiveStreamEntity) {
             viewModelScope.launch {
                 val url = buildLiveStreamUrlUseCase(channel)
-                if (url != null) {
-                    Timber.d("📡 CANLI YAYIN URL: $url")
+                if (url != null && url.isNotBlank()) {
                     _openPlayerEvent.emit(Triple(url, channel.streamId, channel.categoryId))
                 } else {
-                    Timber.e("❌ Canlı yayın stream URL oluşturulamadı!")
+                    showToast(context.getString(R.string.error_video_url_not_found))
+                    timber.log.Timber.e("❌ Canlı yayın URL oluşturulamadı: channelId=${channel.streamId}, channelName=${channel.name}")
                 }
             }
         }
-        
+
+        /**
+         * Canlı yayın arama sorgusunu günceller.
+         */
+        fun onLiveStreamSearchQueryChanged(query: String) {
+            _liveStreamSearchQuery.value = query
+        }
     }

@@ -9,7 +9,7 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.pnr.tv" />
-                  <option name="mobileSdkAppId" value="1:522089837552:android:4104c92a58522dda35e335" />
+                  <option name="mobileSdkAppId" value="1:522089837552:android:43937e5d1431b42e35e335" />
                   <option name="projectId" value="pnrtv-33635" />
                   <option name="projectNumber" value="522089837552" />
                 </ConnectionSetting>

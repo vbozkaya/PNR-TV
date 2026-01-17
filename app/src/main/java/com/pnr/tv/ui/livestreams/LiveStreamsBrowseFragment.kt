@@ -2,6 +2,8 @@ package com.pnr.tv.ui.livestreams
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,20 +12,22 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.pnr.tv.PlayerActivity
 import com.pnr.tv.R
-import com.pnr.tv.UIConstants
+import com.pnr.tv.core.constants.UIConstants
 import com.pnr.tv.db.entity.LiveStreamEntity
 import com.pnr.tv.model.CategoryItem
 import com.pnr.tv.model.ContentItem
-import com.pnr.tv.ui.base.BaseBrowseFragment
-import com.pnr.tv.ui.browse.ContentAdapter
+import com.pnr.tv.core.base.BaseBrowseFragment
+import com.pnr.tv.ui.player.PlayerActivity
+import com.pnr.tv.ui.player.handler.PlayerIntentHandler
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import timber.log.Timber
+import javax.inject.Inject
 
 /**
  * Canlı yayınlar için Fragment.
@@ -33,8 +37,11 @@ import kotlinx.coroutines.launch
 class LiveStreamsBrowseFragment : BaseBrowseFragment() {
     private val liveStreamViewModel: LiveStreamViewModel by activityViewModels()
 
+    @javax.inject.Inject
+    lateinit var contentRepository: com.pnr.tv.repository.ContentRepository
+
     // BaseBrowseFragment requires BaseViewModel
-    override val viewModel: com.pnr.tv.ui.base.BaseViewModel
+    override val viewModel: com.pnr.tv.core.base.BaseViewModel
         get() = liveStreamViewModel
 
     private val playerActivityLauncher =
@@ -44,7 +51,12 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
         super.onCreate(savedInstanceState)
         // Sadece ilk oluşturulduğunda yükle, savedInstanceState null ise
         if (savedInstanceState == null) {
-            onInitialLoad()
+            lifecycleScope.launch {
+                // Veri kontrolü yap, eğer veri yoksa uyarı göster ve çık
+                if (checkDataAndShowWarningIfNeeded()) {
+                    onInitialLoad()
+                }
+            }
         }
     }
 
@@ -68,32 +80,16 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
         observeLoadingState()
     }
 
-    /**
-     * Adapter'ları oluşturur ve OK tuşu long press desteği ekler.
-     */
-    override fun createAdapters() {
-        // Önce base adapter'ları oluştur
-        super.createAdapters()
-
-        // ContentAdapter'ı OK tuşu long press desteği ile yeniden oluştur
-        contentAdapter =
-            ContentAdapter(
-                onContentClick = { content ->
-                    onContentClicked(content)
-                },
-                onContentLongPress = { content ->
-                    onContentLongPressed(content)
-                },
-                gridColumnCount = getGridColumnCount(),
-                onOkButtonLongPress = { content ->
-                    // OK tuşuna 3 saniye basılı tutulduğunda favori işlemi yap
-                    toggleFavorite(content)
-                },
-            )
-
-        // RecyclerView'a yeni adapter'ı set et
-        contentRecyclerView.adapter = contentAdapter
+    override fun onResume() {
+        super.onResume()
+        // Reaktif yapıya güven: Veritabanı (Room) ve Flow yapısı zaten kullanılıyor.
+        // Veri değişirse UI otomatik güncellenir. Manuel bir API isteğine onResume içinde gerek yok.
+        // Yükleme işlemi sadece Fragment ilk oluşturulduğunda (onCreate / onInitialLoad) yapılır.
+        // Kullanıcı sadece Ana Sayfadan manuel "Güncelle" dediğinde veriler yenilenir.
     }
+
+    // Note: createAdapters() metodunu BrowseSetupDelegate yönetiyor artık
+    // Eğer özel adapter özelleştirmesi gerekiyorsa, initializeViews() sonrasında yapılabilir
 
     private fun observeErrorState() {
         viewLifecycleOwner.lifecycleScope.launch {
@@ -140,7 +136,7 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
     // Abstract methods from BaseBrowseFragment
     override fun getNavbarTitle(): String = getString(R.string.page_live_streams)
 
-    override fun getCategoriesRecyclerViewId(): Int = R.id.recycler_categories
+    override fun getCategoriesRecyclerViewId(): Int = R.id.categories_recycler_view
 
     override fun getContentRecyclerViewId(): Int = R.id.recycler_channels
 
@@ -148,13 +144,80 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
 
     override fun getGridColumnCount(): Int = UIConstants.GRID_COLUMN_COUNT
 
+    /**
+     * Canlı Kanallar sayfasında arama çubuğu gösterilir, filtre butonu gizlenir
+     * Arama çubuğu premium kontrolü altındadır
+     */
+    override fun setupFilterButton() {
+        super.setupFilterButton()
+        val filterButton = navbarView?.findViewById<View>(R.id.btn_navbar_filter)
+        val searchEditText = navbarView?.findViewById<android.widget.EditText>(R.id.edt_navbar_search)
+
+        // Filtre butonunu gizle
+        filterButton?.visibility = View.GONE
+
+        // Arama kutusu ayarları
+        searchEditText?.visibility = View.VISIBLE
+        searchEditText?.isFocusable = true
+        searchEditText?.isFocusableInTouchMode = true // TV remote için gerekli
+
+        // Metin değişikliklerini dinle - premium durumuna göre
+        viewLifecycleOwner.lifecycleScope.launch {
+            premiumManager.isPremium().collectLatest { isPremium ->
+                if (isPremium) {
+                    // Premium ise TextWatcher ekle
+                    searchEditText?.addTextChangedListener(
+                        object : TextWatcher {
+                            override fun beforeTextChanged(
+                                s: CharSequence?,
+                                start: Int,
+                                count: Int,
+                                after: Int,
+                            ) {}
+
+                            override fun onTextChanged(
+                                s: CharSequence?,
+                                start: Int,
+                                before: Int,
+                                count: Int,
+                            ) {
+                                liveStreamViewModel.onLiveStreamSearchQueryChanged(s?.toString() ?: "")
+                            }
+
+                            override fun afterTextChanged(s: Editable?) {}
+                        },
+                    )
+                } else {
+                    // Premium değilse TextWatcher'ı kaldır ve metni temizle
+                    searchEditText?.text?.clear()
+                    searchEditText?.removeTextChangedListener(null)
+                }
+            }
+        }
+    }
+
     // Override hooks from BaseBrowseFragment
+    override suspend fun hasData(): Boolean {
+        return try {
+            contentRepository.hasLiveStreams()
+        } catch (e: Exception) {
+            Timber.e(e, "Canlı yayın veri kontrolü hatası")
+            false
+        }
+    }
+
     override fun onInitialLoad() {
         liveStreamViewModel.loadLiveStreamsIfNeeded()
     }
 
-    override fun onCategoryClicked(category: CategoryItem) {
-        liveStreamViewModel.selectLiveStreamCategory(category.categoryId)
+    override fun onCategoryClicked(item: CategoryItem) {
+        // Arama çubuğunu temizle (Kategoriye geçiş yapıldığında arama modundan çıkmak için)
+        val searchEditText = navbarView?.findViewById<android.widget.EditText>(R.id.edt_navbar_search)
+        if (!searchEditText?.text.isNullOrEmpty()) {
+            searchEditText?.text?.clear()
+        }
+
+        liveStreamViewModel.selectLiveStreamCategory(item.categoryId)
     }
 
     override fun selectCategoryById(categoryId: String?) {
@@ -164,13 +227,13 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
         }
     }
 
-    override fun onCategoryFocused(category: CategoryItem) {
-        // Focus geldiğinde kategoriyi seç ve içerikleri yükle
-        val startTime = System.currentTimeMillis()
-        timber.log.Timber.tag("GRID_UPDATE").d("🎯 Kategori focus: ${category.categoryName} (ID: ${category.categoryId})")
-        liveStreamViewModel.selectLiveStreamCategory(category.categoryId)
-        val focusTime = System.currentTimeMillis() - startTime
-        timber.log.Timber.tag("GRID_UPDATE").d("⚡ Kategori focus süresi: ${focusTime}ms")
+    override fun onCategoryFocused(item: CategoryItem) {
+        // Sadece focus değişikliği - içerik yükleme YOK
+        // İçerik yükleme sadece OK tuşuna basıldığında (onCategoryClicked) yapılır
+        // Base sınıfın onCategoryFocused metodunu çağır (pendingRestorePosition temizlemek için)
+        super.onCategoryFocused(item)
+
+        // NOT: Kategori seçimi yapılmıyor - sadece focus değişikliği
     }
 
     override fun onContentClicked(item: ContentItem) {
@@ -189,53 +252,18 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
     }
 
     override fun onContentLongPressed(item: ContentItem) {
-        // Long press: toggle favorite (for touch/long press events)
-        toggleFavorite(item)
+        // Long press özelliği kullanılmıyor
     }
-
-    /**
-     * Favori durumunu değiştirir.
-     */
-    private fun toggleFavorite(item: ContentItem) {
-        if (item is LiveStreamEntity) {
-            viewLifecycleOwner.lifecycleScope.launch {
-                val isFavorite = liveStreamViewModel.isLiveStreamFavorite(item.streamId).first()
-                if (isFavorite) {
-                    liveStreamViewModel.removeLiveStreamFavorite(item.streamId)
-                } else {
-                    liveStreamViewModel.addLiveStreamFavorite(item.streamId)
-                }
-            }
-        }
-    }
-
 
     override fun updateEmptyState(
         contents: List<ContentItem>,
         selectedCategoryId: String?,
     ) {
         val channels = contents.filterIsInstance<LiveStreamEntity>()
-        val categoryIdInt = selectedCategoryId?.toIntOrNull()
-        if (categoryIdInt != null &&
-            (
-                categoryIdInt == LiveStreamViewModel.VIRTUAL_CATEGORY_ID_FAVORITES ||
-                    categoryIdInt == LiveStreamViewModel.VIRTUAL_CATEGORY_ID_RECENTLY_WATCHED
-            ) &&
-            channels.isEmpty()
-        ) {
-            val message =
-                when (categoryIdInt) {
-                    LiveStreamViewModel.VIRTUAL_CATEGORY_ID_FAVORITES -> {
-                        getString(R.string.empty_favorites)
-                    }
-                    LiveStreamViewModel.VIRTUAL_CATEGORY_ID_RECENTLY_WATCHED -> {
-                        getString(R.string.empty_recently_watched)
-                    }
-                    else -> ""
-                }
-            showEmptyState(message)
+        if (channels.isEmpty()) {
+            showEmptyState(getString(R.string.empty_live_streams))
         } else {
-            super.updateEmptyState(contents, selectedCategoryId)
+            showContentState()
         }
     }
 
@@ -248,11 +276,11 @@ class LiveStreamsBrowseFragment : BaseBrowseFragment() {
                 liveStreamViewModel.openPlayerEvent.collect { (url, channelId, categoryId) ->
                     val intent =
                         Intent(requireContext(), PlayerActivity::class.java).apply {
-                            putExtra(PlayerActivity.EXTRA_VIDEO_URL, url)
-                            putExtra(PlayerActivity.EXTRA_CHANNEL_ID, channelId)
+                            putExtra(PlayerIntentHandler.EXTRA_VIDEO_URL, url)
+                            putExtra(PlayerIntentHandler.EXTRA_CHANNEL_ID, channelId)
                             // Kategori ID'sini ekle (kanal değişimi için)
                             categoryId?.let {
-                                putExtra(PlayerActivity.EXTRA_CATEGORY_ID, it)
+                                putExtra(PlayerIntentHandler.EXTRA_CATEGORY_ID, it)
                             }
                         }
                     playerActivityLauncher.launch(intent)

@@ -18,7 +18,23 @@ data class SeriesDto(
     @Json(name = "category_id") val categoryId: String?, // API'den string olarak geliyor
     @Json(name = "added") val added: String?,
     @Json(name = "tmdb") val tmdb: String?, // TMDB ID'si (string olarak)
+    @Json(name = "is_adult") val isAdult: Int?,
+    @Json(name = "adult") val adult: Int?, // Alternatif alan adı
+    @Json(name = "isAdult") val isAdultCamel: Int?, // Camel case alternatifi
 )
+
+/**
+ * Yetişkin içerik değerini belirler. Farklı alan adlarını kontrol eder.
+ */
+private fun determineAdultContent(
+    isAdult: Int?,
+    adult: Int?,
+    isAdultCamel: Int?,
+): Boolean? {
+    // Önce is_adult, sonra adult, sonra isAdult kontrol et
+    val value = isAdult ?: adult ?: isAdultCamel
+    return value?.let { it == 1 }
+}
 
 fun SeriesDto.toEntity(): SeriesEntity? {
     // TMDB ID'yi parse et (String'den Int'e)
@@ -35,6 +51,7 @@ fun SeriesDto.toEntity(): SeriesEntity? {
             categoryId = categoryId,
             added = added,
             tmdbId = tmdbIdValue,
+            isAdult = determineAdultContent(isAdult, adult, isAdultCamel),
         )
     }
 }

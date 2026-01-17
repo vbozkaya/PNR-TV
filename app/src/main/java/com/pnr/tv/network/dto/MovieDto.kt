@@ -18,19 +18,32 @@ data class MovieDto(
     @Json(name = "trailer") val trailer: String?,
     @Json(name = "added") val added: String?,
     @Json(name = "is_adult") val isAdult: Int?,
+    @Json(name = "adult") val adult: Int?, // Alternatif alan adı
+    @Json(name = "isAdult") val isAdultCamel: Int?, // Camel case alternatifi
     @Json(name = "category_ids") val categoryIds: List<Int>?,
     @Json(name = "container_extension") val containerExtension: String?,
     @Json(name = "custom_sid") val customSid: String?,
     @Json(name = "direct_source") val directSource: String?,
 )
 
+/**
+ * Yetişkin içerik değerini belirler. Farklı alan adlarını kontrol eder.
+ */
+private fun determineAdultContent(
+    isAdult: Int?,
+    adult: Int?,
+    isAdultCamel: Int?,
+): Boolean? {
+    // Önce is_adult, sonra adult, sonra isAdult kontrol et
+    val value = isAdult ?: adult ?: isAdultCamel
+    return value?.let { it == 1 }
+}
+
 fun MovieDto.toEntity(): MovieEntity? {
     val id = streamId ?: num
     val finalCategoryId = categoryId ?: categoryIds?.firstOrNull()?.toString()
     // TMDB ID'yi parse et (String'den Int'e)
     val tmdbIdValue = tmdb?.toIntOrNull()
-
-    timber.log.Timber.d("🎬 API'den film: $name, containerExtension: ${containerExtension ?: "null (varsayılan ts kullanılacak)"}")
 
     return id?.let {
         MovieEntity(
@@ -43,6 +56,7 @@ fun MovieDto.toEntity(): MovieEntity? {
             added = added,
             tmdbId = tmdbIdValue,
             containerExtension = containerExtension,
+            isAdult = determineAdultContent(isAdult, adult, isAdultCamel),
         )
     }
 }
